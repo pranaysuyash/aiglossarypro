@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import type { Request, Response } from 'express';
 import { db } from './db';
 
+import logger from './utils/logger';
 interface DashboardMetrics {
   totalUsers: number;
   activeUsers: number;
@@ -67,7 +68,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       })),
     };
   } catch (error) {
-    console.error('Error fetching dashboard metrics:', error);
+    logger.error('Error fetching dashboard metrics:', error);
     return {
       totalUsers: 0,
       activeUsers: 0,
@@ -96,7 +97,7 @@ export async function handleDashboardMetrics(req: Request, res: Response) {
     const metrics = await getDashboardMetrics();
     res.json(metrics);
   } catch (error) {
-    console.error('Dashboard metrics error:', error);
+    logger.error('Dashboard metrics error:', error);
     res.status(500).json({ message: 'Failed to fetch dashboard metrics' });
   }
 }

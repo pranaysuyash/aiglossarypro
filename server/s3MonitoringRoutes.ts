@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { mockIsAuthenticated } from './middleware/dev/mockAuth';
 import { type AlertRule, getS3MonitoringService } from './s3MonitoringService';
 
+import logger from './utils/logger';
 const router = Router();
 const monitoringService = getS3MonitoringService();
 
@@ -15,7 +16,7 @@ router.get('/metrics', mockIsAuthenticated, async (_req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error generating metrics:', error);
+    logger.error('Error generating metrics:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate metrics',
@@ -36,7 +37,7 @@ router.get('/logs', mockIsAuthenticated, async (req, res) => {
       total: logs.length,
     });
   } catch (error) {
-    console.error('Error fetching logs:', error);
+    logger.error('Error fetching logs:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch logs',
@@ -78,7 +79,7 @@ router.get('/logs/range', mockIsAuthenticated, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching logs by date range:', error);
+    logger.error('Error fetching logs by date range:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch logs',
@@ -110,7 +111,7 @@ router.get('/logs/export', mockIsAuthenticated, async (req, res) => {
     res.setHeader('Content-Type', contentType);
     res.send(exportData);
   } catch (error) {
-    console.error('Error exporting logs:', error);
+    logger.error('Error exporting logs:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to export logs',
@@ -127,7 +128,7 @@ router.get('/alerts', mockIsAuthenticated, async (_req, res) => {
       alerts,
     });
   } catch (error) {
-    console.error('Error fetching alerts:', error);
+    logger.error('Error fetching alerts:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch alerts',
@@ -156,7 +157,7 @@ router.post('/alerts', mockIsAuthenticated, async (req, res) => {
       message: 'Alert created successfully',
     });
   } catch (error) {
-    console.error('Error creating alert:', error);
+    logger.error('Error creating alert:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create alert',
@@ -184,7 +185,7 @@ router.put('/alerts/:id', mockIsAuthenticated, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error updating alert:', error);
+    logger.error('Error updating alert:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update alert',
@@ -211,7 +212,7 @@ router.delete('/alerts/:id', mockIsAuthenticated, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error deleting alert:', error);
+    logger.error('Error deleting alert:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to delete alert',
@@ -257,7 +258,7 @@ router.get('/metrics/realtime', mockIsAuthenticated, async (_req, res) => {
       data: realtimeData,
     });
   } catch (error) {
-    console.error('Error generating realtime metrics:', error);
+    logger.error('Error generating realtime metrics:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate realtime metrics',
@@ -336,7 +337,7 @@ router.get('/analytics/performance', mockIsAuthenticated, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error generating performance analytics:', error);
+    logger.error('Error generating performance analytics:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate performance analytics',
@@ -417,7 +418,7 @@ router.get('/analytics/usage', mockIsAuthenticated, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error generating usage analytics:', error);
+    logger.error('Error generating usage analytics:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate usage analytics',

@@ -2,6 +2,7 @@ import type { Express, Request, Response } from 'express';
 import { enhancedStorage } from './enhancedTermsStorage';
 import { mockIsAuthenticated } from './middleware/dev/mockAuth';
 
+import logger from './utils/logger';
 /**
  * Demo routes to showcase the enhanced API capabilities
  * These routes demonstrate the full functionality of the enhanced parsing system
@@ -70,7 +71,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         searches: searchResults,
       });
     } catch (error) {
-      console.error('Error in enhanced search demo:', error);
+      logger.error('Error in enhanced search demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -143,7 +144,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         filters: filterResults,
       });
     } catch (error) {
-      console.error('Error in advanced filtering demo:', error);
+      logger.error('Error in advanced filtering demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -171,7 +172,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error in search facets demo:', error);
+      logger.error('Error in search facets demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -211,7 +212,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error in personalization demo:', error);
+      logger.error('Error in personalization demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -249,7 +250,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error in analytics demo:', error);
+      logger.error('Error in analytics demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -382,7 +383,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error in enhanced term structure demo:', error);
+      logger.error('Error in enhanced term structure demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -480,7 +481,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error in API overview demo:', error);
+      logger.error('Error in API overview demo:', error);
       res.status(500).json({
         message: 'Demo failed',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -488,5 +489,5 @@ export function registerEnhancedDemoRoutes(app: Express): void {
     }
   });
 
-  console.log('✅ Enhanced demo routes registered successfully');
+  logger.info('✅ Enhanced demo routes registered successfully');
 }

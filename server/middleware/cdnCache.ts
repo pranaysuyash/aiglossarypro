@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { NextFunction, Request, Response } from 'express';
 
+import logger from '../utils/logger';
 interface CacheConfig {
   maxAge: number;
   sMaxAge?: number;
@@ -317,7 +318,7 @@ export function cdnCacheMiddleware(req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    console.error('CDN Cache Middleware Error:', error);
+    logger.error('CDN Cache Middleware Error:', error);
     next();
   }
 }
@@ -364,7 +365,7 @@ export function apiNoCacheMiddleware(req: Request, res: Response, next: NextFunc
 export class CDNCacheInvalidator {
   static async invalidateCloudflare(paths: string[]): Promise<boolean> {
     if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ZONE_ID) {
-      console.warn('Cloudflare credentials not configured');
+      logger.warn('Cloudflare credentials not configured');
       return false;
     }
 
@@ -386,7 +387,7 @@ export class CDNCacheInvalidator {
       const result = await response.json();
       return result.success;
     } catch (error) {
-      console.error('Cloudflare cache invalidation failed:', error);
+      logger.error('Cloudflare cache invalidation failed:', error);
       return false;
     }
   }
@@ -394,7 +395,7 @@ export class CDNCacheInvalidator {
   static async invalidateCloudFront(_paths: string[]): Promise<boolean> {
     // AWS CloudFront invalidation would require AWS SDK
     // This is a placeholder for the implementation
-    console.log('CloudFront invalidation not implemented yet');
+    logger.info('CloudFront invalidation not implemented yet');
     return false;
   }
 

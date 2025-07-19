@@ -7,17 +7,18 @@ import { sql } from 'drizzle-orm';
 import { db } from './db';
 import { createSearchIndexes } from './optimizedSearchService';
 
+import logger from './utils/logger';
 export async function initializeSearchOptimizations(): Promise<void> {
-  console.log('🔧 Initializing search optimizations...');
+  logger.info('🔧 Initializing search optimizations...');
 
   try {
     // 1. Enable required PostgreSQL extensions
-    console.log('📦 Enabling PostgreSQL extensions...');
+    logger.info('📦 Enabling PostgreSQL extensions...');
     try {
       await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
-      console.log('✓ pg_trgm extension enabled');
+      logger.info('✓ pg_trgm extension enabled');
     } catch (error) {
-      console.warn(
+      logger.warn(
         '⚠ pg_trgm extension setup:',
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -25,9 +26,9 @@ export async function initializeSearchOptimizations(): Promise<void> {
 
     try {
       await db.execute(sql`CREATE EXTENSION IF NOT EXISTS unaccent`);
-      console.log('✓ unaccent extension enabled');
+      logger.info('✓ unaccent extension enabled');
     } catch (error) {
-      console.warn(
+      logger.warn(
         '⚠ unaccent extension setup:',
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -37,20 +38,20 @@ export async function initializeSearchOptimizations(): Promise<void> {
     await createSearchIndexes();
 
     // 3. Update table statistics for better query planning
-    console.log('📊 Updating database statistics...');
+    logger.info('📊 Updating database statistics...');
     try {
       await db.execute(sql`ANALYZE terms, categories`);
-      console.log('✓ Database statistics updated');
+      logger.info('✓ Database statistics updated');
     } catch (error) {
-      console.warn(
+      logger.warn(
         '⚠ Statistics update:',
         error instanceof Error ? error.message : 'Unknown error'
       );
     }
 
-    console.log('✅ Search optimizations initialized successfully');
+    logger.info('✅ Search optimizations initialized successfully');
   } catch (error) {
-    console.error('❌ Failed to initialize search optimizations:', error);
+    logger.error('❌ Failed to initialize search optimizations:', error);
     throw error;
   }
 }
@@ -59,11 +60,11 @@ export async function initializeSearchOptimizations(): Promise<void> {
 if (import.meta.url === `file://${process.argv[1]}`) {
   initializeSearchOptimizations()
     .then(() => {
-      console.log('Search optimizations setup complete');
+      logger.info('Search optimizations setup complete');
       process.exit(0);
     })
     .catch(error => {
-      console.error('Setup failed:', error);
+      logger.error('Setup failed:', error);
       process.exit(1);
     });
 }

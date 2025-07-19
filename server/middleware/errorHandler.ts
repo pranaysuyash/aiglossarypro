@@ -7,6 +7,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { NextFunction, Request, Response } from 'express';
 
+import logger from '../utils/logger';
 // Error types for better categorization
 export enum ErrorCategory {
   DATABASE = 'DATABASE',
@@ -92,9 +93,9 @@ class ErrorLogger {
 
     // Console log for development
     if (process.env.NODE_ENV === 'development') {
-      console.error(`[${severity.toUpperCase()}] ${category}: ${error.message}`);
+      logger.error(`[${severity.toUpperCase()}] ${category}: ${error.message}`);
       if (error.stack) {
-        console.error(error.stack);
+        logger.error(error.stack);
       }
     }
 
@@ -134,7 +135,7 @@ class ErrorLogger {
       const logLine = `${JSON.stringify(error)}\n`;
       fs.appendFileSync(filepath, logLine);
     } catch (writeError) {
-      console.error('Failed to write error log:', writeError);
+      logger.error('Failed to write error log:', writeError);
     }
   }
 
@@ -313,23 +314,23 @@ export const notFoundHandler = (req: Request, res: Response) => {
  */
 export const gracefulShutdown = (server: any) => {
   const shutdown = async () => {
-    console.log('🔄 Graceful shutdown initiated...');
+    logger.info('🔄 Graceful shutdown initiated...');
 
     // Shutdown job queue system first
     try {
       const { jobQueueManager } = await import('../jobs/queue');
-      console.log('🔄 Shutting down job queue system...');
+      logger.info('🔄 Shutting down job queue system...');
       await jobQueueManager.shutdown();
-      console.log('✅ Job queue system shutdown complete');
+      logger.info('✅ Job queue system shutdown complete');
     } catch (error) {
-      console.error('❌ Error shutting down job queue system:', error);
+      logger.error('❌ Error shutting down job queue system:', error);
     }
 
     server.close(() => {
-      console.log('✅ HTTP server closed');
+      logger.info('✅ HTTP server closed');
 
       // Save final error logs
-      console.log('💾 Saving final error logs...');
+      logger.info('💾 Saving final error logs...');
 
       // Exit process
       process.exit(0);
@@ -337,7 +338,7 @@ export const gracefulShutdown = (server: any) => {
 
     // Force close after 15 seconds (increased to allow job queue cleanup)
     setTimeout(() => {
-      console.error('❌ Could not close connections in time, forcefully shutting down');
+      logger.error('❌ Could not close connections in time, forcefully shutting down');
       process.exit(1);
     }, 15000);
   };
@@ -348,13 +349,13 @@ export const gracefulShutdown = (server: any) => {
 
   // Handle uncaught exceptions
   process.on('uncaughtException', async error => {
-    console.error('❌ Uncaught Exception:', error);
+    logger.error('❌ Uncaught Exception:', error);
     await errorLogger.logError(error, {} as Request, ErrorCategory.UNKNOWN, 'critical');
     process.exit(1);
   });
 
   process.on('unhandledRejection', async (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    logger.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
     const error = new Error(`Unhandled Rejection: ${reason}`);
     await errorLogger.logError(error, {} as Request, ErrorCategory.UNKNOWN, 'critical');
     process.exit(1);

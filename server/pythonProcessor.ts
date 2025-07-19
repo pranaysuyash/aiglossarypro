@@ -10,6 +10,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from './db';
 import { downloadFileFromS3 } from './s3Service';
 
+import logger from './utils/logger';
 /**
  * Run the Python Excel processor script with the given parameters
  */
@@ -32,13 +33,13 @@ export async function runPythonExcelProcessor(
       // If we have a fileKey, download the file from S3 first
       let localFilePath = '';
       if (fileKey) {
-        console.log(`Downloading file from S3: ${bucketName}/${fileKey}`);
+        logger.info(`Downloading file from S3: ${bucketName}/${fileKey}`);
         const fileName =
           fileKey.split('/').pop() || `s3_${Date.now()}_${fileKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
         localFilePath = path.join(tempDir, fileName);
 
         await downloadFileFromS3(bucketName, fileKey, localFilePath);
-        console.log(`File downloaded to ${localFilePath}`);
+        logger.info(`File downloaded to ${localFilePath}`);
       } else {
         return reject(new Error('No file key provided'));
       }
@@ -72,18 +73,18 @@ export async function runPythonExcelProcessor(
         args.push('--max-chunks', maxChunks.toString());
       }
 
-      console.log(`Executing Python script: ${venvPath} ${args.join(' ')}`);
+      logger.info(`Executing Python script: ${venvPath} ${args.join(' ')}`);
 
       // Execute the Python script with execFile (safer than exec)
       execFile(venvPath, args, (error, stdout, stderr) => {
         if (error) {
-          console.error(`Error executing Python script: ${error.message}`);
-          console.error(`stderr: ${stderr}`);
+          logger.error(`Error executing Python script: ${error.message}`);
+          logger.error(`stderr: ${stderr}`);
           return reject(error);
         }
 
         if (stderr) {
-          console.warn(`Python script warnings: ${stderr}`);
+          logger.warn(`Python script warnings: ${stderr}`);
         }
 
         // Parse the output
@@ -110,7 +111,7 @@ export async function runPythonExcelProcessor(
               fs.unlinkSync(localFilePath);
             }
           } catch (e) {
-            console.warn(`Error removing temp files: ${e}`);
+            logger.warn(`Error removing temp files: ${e}`);
           }
 
           resolve({
@@ -118,13 +119,13 @@ export async function runPythonExcelProcessor(
             data: outputData,
           });
         } catch (parseError) {
-          console.error(`Error parsing Python script output: ${parseError}`);
-          console.log('Raw output:', stdout);
+          logger.error(`Error parsing Python script output: ${parseError}`);
+          logger.info('Raw output:', stdout);
           reject(parseError);
         }
       });
     } catch (e) {
-      console.error(`Error in Python processor setup: ${e}`);
+      logger.error(`Error in Python processor setup: ${e}`);
       reject(e);
     }
   });
@@ -135,7 +136,7 @@ export async function runPythonExcelProcessor(
  */
 export async function importProcessedData(data: any): Promise<any> {
   try {
-    console.log(
+    logger.info(
       `Importing ${data.categories.length} categories, ${data.subcategories.length} subcategories, and ${data.terms.length} terms`
     );
 
@@ -174,7 +175,7 @@ export async function importProcessedData(data: any): Promise<any> {
           categoryIdMap.set(category.id, existing[0].id);
         }
       } catch (e) {
-        console.warn(`Error importing category ${category.name}: ${e}`);
+        logger.warn(`Error importing category ${category.name}: ${e}`);
       }
     }
 
@@ -184,7 +185,7 @@ export async function importProcessedData(data: any): Promise<any> {
         // Check if the category exists
         const mappedCategoryId = categoryIdMap.get(subcategory.categoryId);
         if (!mappedCategoryId) {
-          console.warn(
+          logger.warn(
             `Skipping subcategory ${subcategory.name}: category ID ${subcategory.categoryId} not found`
           );
           continue;
@@ -210,7 +211,7 @@ export async function importProcessedData(data: any): Promise<any> {
           imported.subcategories++;
         }
       } catch (e) {
-        console.warn(`Error importing subcategory ${subcategory.name}: ${e}`);
+        logger.warn(`Error importing subcategory ${subcategory.name}: ${e}`);
       }
     }
 
@@ -250,7 +251,7 @@ export async function importProcessedData(data: any): Promise<any> {
           imported.terms++;
         }
       } catch (e) {
-        console.warn(`Error importing term ${term.name}: ${e}`);
+        logger.warn(`Error importing term ${term.name}: ${e}`);
       }
     }
 
@@ -259,7 +260,7 @@ export async function importProcessedData(data: any): Promise<any> {
       imported,
     };
   } catch (error) {
-    console.error(`Error importing processed data: ${error}`);
+    logger.error(`Error importing processed data: ${error}`);
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -277,7 +278,7 @@ export async function processAndImportFromS3(
   maxChunks?: number
 ): Promise<any> {
   try {
-    console.log(`Processing Excel file from S3: ${bucketName}/${fileKey || 'latest'}`);
+    logger.info(`Processing Excel file from S3: ${bucketName}/${fileKey || 'latest'}`);
 
     // Run the Python processor
     const processingResult = await runPythonExcelProcessor(bucketName, fileKey, region, maxChunks);
@@ -295,7 +296,7 @@ export async function processAndImportFromS3(
       import: importResult,
     };
   } catch (error) {
-    console.error(`Error processing and importing Excel file: ${error}`);
+    logger.error(`Error processing and importing Excel file: ${error}`);
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),

@@ -15,6 +15,7 @@ import jwt from 'jsonwebtoken';
 import type { AuthenticatedRequest } from '../../shared/types';
 import { optimizedStorage as storage } from '../optimizedStorage';
 
+import logger from '../utils/logger';
 // OAuth configurations
 interface OAuthConfig {
   google: {
@@ -239,7 +240,7 @@ export async function githubOAuthLogin(code: string): Promise<{ user: any; token
  * Setup simple auth routes
  */
 export function setupSimpleAuth(app: Express) {
-  console.log('🔧 Setting up simple JWT + OAuth authentication');
+  logger.info('🔧 Setting up simple JWT + OAuth authentication');
 
   // Google OAuth callback
   app.get('/api/auth/google/callback', async (req: Request, res: Response) => {
@@ -265,7 +266,7 @@ export function setupSimpleAuth(app: Express) {
 
       res.redirect('/?auth=success');
     } catch (error) {
-      console.error('Google OAuth error:', error);
+      logger.error('Google OAuth error:', error);
       res.redirect('/?auth=error');
     }
   });
@@ -294,7 +295,7 @@ export function setupSimpleAuth(app: Express) {
 
       res.redirect('/?auth=success');
     } catch (error) {
-      console.error('GitHub OAuth error:', error);
+      logger.error('GitHub OAuth error:', error);
       res.redirect('/?auth=error');
     }
   });

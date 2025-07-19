@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import type { NextFunction, Request, Response } from 'express';
 import { db } from '../db';
 
+import logger from '../utils/logger';
 interface RateLimitConfig {
   dailyLimit: number;
   gracePeriodDays: number;
@@ -30,7 +31,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
 
     // Premium users have unlimited access
     if (user.lifetime_access) {
-      console.log(`User ${userId} has premium access - unlimited views`);
+      logger.info(`User ${userId} has premium access - unlimited views`);
       return true;
     }
 
@@ -41,7 +42,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
 
     // Apply rate limiting only to accounts older than grace period
     if (daysSinceCreation <= DEFAULT_CONFIG.gracePeriodDays) {
-      console.log(
+      logger.info(
         `User ${userId} is in grace period (${daysSinceCreation}/${DEFAULT_CONFIG.gracePeriodDays} days)`
       );
       return true; // Allow unlimited access during grace period
@@ -59,7 +60,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
 
     // Check if over daily limit
     if (todayViews >= DEFAULT_CONFIG.dailyLimit) {
-      console.warn(`Rate limit exceeded for user ${userId}: ${todayViews} views today`);
+      logger.warn(`Rate limit exceeded for user ${userId}: ${todayViews} views today`);
       return false;
     }
 
@@ -73,7 +74,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
 
     return true;
   } catch (error) {
-    console.error('Rate limiting error:', error);
+    logger.error('Rate limiting error:', error);
     return true; // Fail open to avoid blocking legitimate users
   }
 }
@@ -104,7 +105,7 @@ export function rateLimitMiddleware(req: Request, _res: Response, next: NextFunc
       }
     })
     .catch(error => {
-      console.error('Rate limit middleware error:', error);
+      logger.error('Rate limit middleware error:', error);
       next(); // Fail open
     });
 }
@@ -131,8 +132,8 @@ export async function initializeRateLimiting() {
       ON user_term_views(user_id, term_id, DATE(viewed_at))
     `);
 
-    console.log('✅ Rate limiting table initialized');
+    logger.info('✅ Rate limiting table initialized');
   } catch (error) {
-    console.error('❌ Error initializing rate limiting:', error);
+    logger.error('❌ Error initializing rate limiting:', error);
   }
 }

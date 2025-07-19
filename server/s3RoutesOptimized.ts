@@ -7,6 +7,7 @@ import { WebSocket } from 'ws';
 import { mockIsAuthenticated } from './middleware/dev/mockAuth';
 import { getOptimizedS3Client, type UploadProgress } from './s3ServiceOptimized';
 
+import logger from './utils/logger';
 const router = Router();
 const _wsRouter = expressWs(router as any).getWss;
 
@@ -95,7 +96,7 @@ router.get('/files', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error listing S3 files:', error);
+    logger.error('Error listing S3 files:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to list files',
@@ -166,7 +167,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    logger.error('Error uploading file:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Upload failed',
@@ -258,7 +259,7 @@ router.post('/upload/bulk', upload.array('files', 10), async (req, res) => {
       errors,
     });
   } catch (error) {
-    console.error('Error in bulk upload:', error);
+    logger.error('Error in bulk upload:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Bulk upload failed',
@@ -289,7 +290,7 @@ router.get('/download/:key(*)', async (req, res) => {
       decompress: shouldDecompress,
       onProgress: (progress: UploadProgress) => {
         // Could implement Server-Sent Events for download progress
-        console.log(`Download progress: ${progress.percentage}%`);
+        logger.info(`Download progress: ${progress.percentage}%`);
       },
     });
 
@@ -304,11 +305,11 @@ router.get('/download/:key(*)', async (req, res) => {
     // Clean up temp file after sending
     fileStream.on('end', () => {
       fs.unlink(downloadedPath, err => {
-        if (err) {console.warn('Failed to cleanup temp file:', err);}
+        if (err) {logger.warn('Failed to cleanup temp file:', err);}
       });
     });
   } catch (error) {
-    console.error('Error downloading file:', error);
+    logger.error('Error downloading file:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Download failed',
@@ -342,7 +343,7 @@ router.post('/presigned-url', async (req, res) => {
       expiresAt: new Date(Date.now() + parseInt(expiresIn) * 1000).toISOString(),
     });
   } catch (error) {
-    console.error('Error generating presigned URL:', error);
+    logger.error('Error generating presigned URL:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate presigned URL',
@@ -370,7 +371,7 @@ router.post('/validate', async (req, res) => {
       validation,
     });
   } catch (error) {
-    console.error('Error validating file:', error);
+    logger.error('Error validating file:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'File validation failed',
@@ -404,7 +405,7 @@ router.delete('/bulk', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error in bulk delete:', error);
+    logger.error('Error in bulk delete:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Bulk delete failed',
@@ -437,11 +438,11 @@ router.post('/archive', async (req, res) => {
     // Clean up temp file after sending
     fileStream.on('end', () => {
       fs.unlink(archivePath, err => {
-        if (err) {console.warn('Failed to cleanup archive file:', err);}
+        if (err) {logger.warn('Failed to cleanup archive file:', err);}
       });
     });
   } catch (error) {
-    console.error('Error creating archive:', error);
+    logger.error('Error creating archive:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Archive creation failed',
@@ -470,7 +471,7 @@ router.post('/cleanup', mockIsAuthenticated, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error cleaning up files:', error);
+    logger.error('Error cleaning up files:', error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Cleanup failed',
@@ -492,7 +493,7 @@ router.ws('/progress', (ws, req) => {
     });
     
     ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
+      logger.error('WebSocket error:', error);
       progressConnections.delete(sessionId);
     });
     

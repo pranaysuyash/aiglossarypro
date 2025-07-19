@@ -10,6 +10,7 @@ import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { engagementTrackingService } from '../services/engagementTrackingService';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 
+import logger from '../utils/logger';
 // Validation schemas
 const trackInteractionSchema = z.object({
   sessionId: z.string().min(1),
@@ -168,7 +169,7 @@ export function registerEngagementRoutes(app: Express): void {
         );
       }
 
-      console.error('Track interaction error:', error);
+      logger.error('Track interaction error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -269,7 +270,7 @@ export function registerEngagementRoutes(app: Express): void {
         );
       }
 
-      console.error('Track reading progress error:', error);
+      logger.error('Track reading progress error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -352,7 +353,7 @@ export function registerEngagementRoutes(app: Express): void {
         data: sessionMetrics,
       });
     } catch (error) {
-      console.error('Get session engagement error:', error);
+      logger.error('Get session engagement error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -432,7 +433,7 @@ export function registerEngagementRoutes(app: Express): void {
         data: contentMetrics,
       });
     } catch (error) {
-      console.error('Get content engagement error:', error);
+      logger.error('Get content engagement error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -545,7 +546,7 @@ export function registerEngagementRoutes(app: Express): void {
           );
         }
 
-        console.error('Get engagement insights error:', error);
+        logger.error('Get engagement insights error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }

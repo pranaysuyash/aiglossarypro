@@ -26,6 +26,7 @@ import {
 } from 'drizzle-orm';
 import { db } from './db';
 
+import logger from './utils/logger';
 // Enhanced search parameters type
 type EnhancedSearchParams = {
   query: string;
@@ -887,7 +888,7 @@ class EnhancedStorage {
 
   async updateUserStreak(userId: string, streakData: any) {
     // Placeholder implementation - would need streak tracking
-    console.log('Update user streak placeholder:', { userId, streakData });
+    logger.info('Update user streak placeholder:', { userId, streakData });
     return {
       currentStreak: 0,
       longestStreak: 0,

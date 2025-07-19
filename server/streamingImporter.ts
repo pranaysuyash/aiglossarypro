@@ -10,6 +10,7 @@ import { and, eq } from 'drizzle-orm';
 import { categories, subcategories, termSubcategories, terms } from '../shared/schema';
 import { db } from './db';
 
+import logger from './utils/logger';
 interface StreamingImportOptions {
   batchSize?: number;
   skipExisting?: boolean;
@@ -91,10 +92,10 @@ class StreamingJSONParser extends Transform {
               this.objectCount++;
 
               if (this.objectCount % 100 === 0) {
-                console.log(`   📈 Parsed ${this.objectCount} ${this.arrayName}`);
+                logger.info(`   📈 Parsed ${this.objectCount} ${this.arrayName}`);
               }
             } catch (e) {
-              console.warn(`Warning: Could not parse object in ${this.arrayName}:`, e);
+              logger.warn(`Warning: Could not parse object in ${this.arrayName}:`, e);
             }
             this.currentObject = '';
           }
@@ -103,7 +104,7 @@ class StreamingJSONParser extends Transform {
         if (char === ']' && this.objectDepth === 0) {
           this.inArray = false;
           this.arrayName = '';
-          console.log(`✅ Completed parsing ${this.objectCount} ${this.arrayName}`);
+          logger.info(`✅ Completed parsing ${this.objectCount} ${this.arrayName}`);
         }
       }
 
@@ -132,8 +133,8 @@ export async function streamingImportProcessedData(
   const startTime = Date.now();
   const { batchSize = 500, skipExisting = true, enableProgress = true } = options;
 
-  console.log(`🌊 Starting streaming import from: ${filePath}`);
-  console.log(`   📦 Batch size: ${batchSize}`);
+  logger.info(`🌊 Starting streaming import from: ${filePath}`);
+  logger.info(`   📦 Batch size: ${batchSize}`);
 
   const result: StreamingImportResult = {
     success: false,
@@ -149,7 +150,7 @@ export async function streamingImportProcessedData(
     }
 
     const stats = fs.statSync(filePath);
-    console.log(`📊 File size: ${(stats.size / (1024 * 1024)).toFixed(2)} MB`);
+    logger.info(`📊 File size: ${(stats.size / (1024 * 1024)).toFixed(2)} MB`);
 
     // Create category ID mapping for reference integrity
     const categoryIdMap = new Map<string, string>();
@@ -236,11 +237,11 @@ export async function streamingImportProcessedData(
     result.success = true;
     result.duration = Date.now() - startTime;
 
-    console.log(`\n✅ Streaming import completed in ${(result.duration / 1000).toFixed(2)}s:`);
-    console.log(`   📂 ${result.imported.categories} categories imported`);
-    console.log(`   📋 ${result.imported.subcategories} subcategories imported`);
-    console.log(`   📄 ${result.imported.terms} terms imported`);
-    console.log(`   ❌ ${result.errors.length} errors`);
+    logger.info(`\n✅ Streaming import completed in ${(result.duration / 1000).toFixed(2)}s:`);
+    logger.info(`   📂 ${result.imported.categories} categories imported`);
+    logger.info(`   📋 ${result.imported.subcategories} subcategories imported`);
+    logger.info(`   📄 ${result.imported.terms} terms imported`);
+    logger.info(`   ❌ ${result.errors.length} errors`);
 
     return result;
   } catch (error) {
@@ -249,7 +250,7 @@ export async function streamingImportProcessedData(
     const errorMessage = error instanceof Error ? error.message : String(error);
     result.errors.push(errorMessage);
 
-    console.error(`❌ Streaming import failed: ${errorMessage}`);
+    logger.error(`❌ Streaming import failed: ${errorMessage}`);
     return result;
   }
 }
@@ -265,7 +266,7 @@ async function processCategoriesBatch(
   let count = 0;
   const errors: string[] = [];
 
-  console.log(`   🔄 Processing ${batch.length} categories...`);
+  logger.info(`   🔄 Processing ${batch.length} categories...`);
 
   for (const category of batch) {
     try {
@@ -313,7 +314,7 @@ async function processSubcategoriesBatch(
   let count = 0;
   const errors: string[] = [];
 
-  console.log(`   🔄 Processing ${batch.length} subcategories...`);
+  logger.info(`   🔄 Processing ${batch.length} subcategories...`);
 
   for (const subcategory of batch) {
     try {
@@ -368,7 +369,7 @@ async function processTermsBatch(
   let count = 0;
   const errors: string[] = [];
 
-  console.log(`   🔄 Processing ${batch.length} terms...`);
+  logger.info(`   🔄 Processing ${batch.length} terms...`);
 
   for (const term of batch) {
     try {
@@ -406,7 +407,7 @@ async function processTermsBatch(
             });
           } catch (_subError) {
             // Log but don't fail the entire term import
-            console.warn(
+            logger.warn(
               `Warning: Could not link term ${term.name} to subcategory ${subcategoryId}`
             );
           }
@@ -451,8 +452,8 @@ export async function streamingImportLatestProcessedFile(
   }
 
   const latestFile = processedFiles[0];
-  console.log(`📁 Using latest processed file: ${latestFile.name}`);
-  console.log(`📊 File size: ${(latestFile.stats.size / (1024 * 1024)).toFixed(2)} MB`);
+  logger.info(`📁 Using latest processed file: ${latestFile.name}`);
+  logger.info(`📊 File size: ${(latestFile.stats.size / (1024 * 1024)).toFixed(2)} MB`);
 
   return await streamingImportProcessedData(latestFile.path, options);
 }

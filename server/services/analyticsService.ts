@@ -7,6 +7,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '../db';
 import { getLastNDaysRange } from '../utils/dateHelpers';
 
+import logger from '../utils/logger';
 export interface SearchAnalytics {
   query: string;
   results_count: number;
@@ -91,7 +92,7 @@ export class AnalyticsService {
         await this.flushSearchAnalytics();
       }
     } catch (error) {
-      console.error('Failed to track search:', error);
+      logger.error('Failed to track search:', error);
     }
   }
 
@@ -125,7 +126,7 @@ export class AnalyticsService {
         await this.flushPageViewAnalytics();
       }
     } catch (error) {
-      console.error('Failed to track page view:', error);
+      logger.error('Failed to track page view:', error);
     }
   }
 
@@ -156,7 +157,7 @@ export class AnalyticsService {
         await this.flushPerformanceAnalytics();
       }
     } catch (error) {
-      console.error('Failed to track performance:', error);
+      logger.error('Failed to track performance:', error);
     }
   }
 
@@ -185,7 +186,7 @@ export class AnalyticsService {
         await this.flushUserInteractionAnalytics();
       }
     } catch (error) {
-      console.error('Failed to track user interaction:', error);
+      logger.error('Failed to track user interaction:', error);
     }
   }
 
@@ -293,7 +294,7 @@ export class AnalyticsService {
         generated_at: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('Failed to get dashboard data:', error);
+      logger.error('Failed to get dashboard data:', error);
       throw error;
     }
   }
@@ -340,7 +341,7 @@ export class AnalyticsService {
         generated_at: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('Failed to get search insights:', error);
+      logger.error('Failed to get search insights:', error);
       throw error;
     }
   }
@@ -384,7 +385,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      console.error('Failed to flush search analytics:', error);
+      logger.error('Failed to flush search analytics:', error);
     }
   }
 
@@ -423,7 +424,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      console.error('Failed to flush page view analytics:', error);
+      logger.error('Failed to flush page view analytics:', error);
     }
   }
 
@@ -459,7 +460,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      console.error('Failed to flush performance metrics:', error);
+      logger.error('Failed to flush performance metrics:', error);
     }
   }
 
@@ -496,7 +497,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      console.error('Failed to flush user interaction analytics:', error);
+      logger.error('Failed to flush user interaction analytics:', error);
     }
   }
 }

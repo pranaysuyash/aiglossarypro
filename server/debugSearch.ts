@@ -6,19 +6,20 @@ import { desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { categories, terms } from '../shared/schema';
 import { db } from './db';
 
+import logger from './utils/logger';
 async function debugSearchPerformance() {
   const query = 'machine';
-  console.log(`🔍 Debugging search performance for query: "${query}"`);
+  logger.info(`🔍 Debugging search performance for query: "${query}"`);
 
   // Test 1: Simple count query
-  console.log('\n1. Testing simple count query...');
+  logger.info('\n1. Testing simple count query...');
   const startCount = Date.now();
   const countResult = await db.select({ count: sql<number>`count(*)` }).from(terms);
   const countTime = Date.now() - startCount;
-  console.log(`✓ Count query: ${countTime}ms (${countResult[0]?.count} total terms)`);
+  logger.info(`✓ Count query: ${countTime}ms (${countResult[0]?.count} total terms)`);
 
   // Test 2: Simple name search
-  console.log('\n2. Testing simple name search...');
+  logger.info('\n2. Testing simple name search...');
   const startNameSearch = Date.now();
   const nameResults = await db
     .select({ id: terms.id, name: terms.name })
@@ -26,10 +27,10 @@ async function debugSearchPerformance() {
     .where(ilike(terms.name, `%${query}%`))
     .limit(10);
   const nameSearchTime = Date.now() - startNameSearch;
-  console.log(`✓ Name search: ${nameSearchTime}ms (${nameResults.length} results)`);
+  logger.info(`✓ Name search: ${nameSearchTime}ms (${nameResults.length} results)`);
 
   // Test 3: Search with category join
-  console.log('\n3. Testing search with category join...');
+  logger.info('\n3. Testing search with category join...');
   const startJoinSearch = Date.now();
   const joinResults = await db
     .select({
@@ -42,10 +43,10 @@ async function debugSearchPerformance() {
     .where(ilike(terms.name, `%${query}%`))
     .limit(10);
   const joinSearchTime = Date.now() - startJoinSearch;
-  console.log(`✓ Join search: ${joinSearchTime}ms (${joinResults.length} results)`);
+  logger.info(`✓ Join search: ${joinSearchTime}ms (${joinResults.length} results)`);
 
   // Test 4: Full search with all fields
-  console.log('\n4. Testing full search with all fields...');
+  logger.info('\n4. Testing full search with all fields...');
   const startFullSearch = Date.now();
   const fullResults = await db
     .select({
@@ -67,10 +68,10 @@ async function debugSearchPerformance() {
     .orderBy(desc(terms.viewCount))
     .limit(20);
   const fullSearchTime = Date.now() - startFullSearch;
-  console.log(`✓ Full search: ${fullSearchTime}ms (${fullResults.length} results)`);
+  logger.info(`✓ Full search: ${fullSearchTime}ms (${fullResults.length} results)`);
 
   // Test 5: Check index usage
-  console.log('\n5. Checking database indexes...');
+  logger.info('\n5. Checking database indexes...');
   try {
     const indexCheck = await db.execute(sql`
       SELECT schemaname, tablename, indexname, indexdef 
@@ -78,19 +79,19 @@ async function debugSearchPerformance() {
       WHERE tablename = 'terms' 
       ORDER BY indexname
     `);
-    console.log(`✓ Found ${indexCheck.rows?.length || 0} indexes on terms table`);
+    logger.info(`✓ Found ${indexCheck.rows?.length || 0} indexes on terms table`);
     indexCheck.rows?.forEach((row: any) => {
-      console.log(`  - ${row.indexname}: ${row.indexdef}`);
+      logger.info(`  - ${row.indexname}: ${row.indexdef}`);
     });
   } catch (error) {
-    console.warn(
+    logger.warn(
       '⚠ Could not check indexes:',
       error instanceof Error ? error.message : 'Unknown error'
     );
   }
 
   // Test 6: Database statistics
-  console.log('\n6. Checking table statistics...');
+  logger.info('\n6. Checking table statistics...');
   try {
     const stats = await db.execute(sql`
       SELECT 
@@ -108,32 +109,32 @@ async function debugSearchPerformance() {
       FROM pg_stat_user_tables 
       WHERE tablename IN ('terms', 'categories')
     `);
-    console.log(`✓ Table statistics:`);
+    logger.info(`✓ Table statistics:`);
     stats.rows?.forEach((row: any) => {
-      console.log(
+      logger.info(
         `  - ${row.tablename}: ${row.live_tuples} live tuples, last analyzed: ${row.last_autoanalyze || 'never'}`
       );
     });
   } catch (error) {
-    console.warn(
+    logger.warn(
       '⚠ Could not check table statistics:',
       error instanceof Error ? error.message : 'Unknown error'
     );
   }
 
-  console.log('\n🎯 Performance Summary:');
-  console.log(`  - Count query: ${countTime}ms`);
-  console.log(`  - Name search: ${nameSearchTime}ms`);
-  console.log(`  - Join search: ${joinSearchTime}ms`);
-  console.log(`  - Full search: ${fullSearchTime}ms`);
+  logger.info('\n🎯 Performance Summary:');
+  logger.info(`  - Count query: ${countTime}ms`);
+  logger.info(`  - Name search: ${nameSearchTime}ms`);
+  logger.info(`  - Join search: ${joinSearchTime}ms`);
+  logger.info(`  - Full search: ${fullSearchTime}ms`);
 
   if (fullSearchTime > 1000) {
-    console.log('\n🚨 Performance Issue Detected:');
-    console.log('  The full search is taking over 1 second. Potential causes:');
-    console.log('  1. Missing or ineffective database indexes');
-    console.log('  2. Large result set processing');
-    console.log('  3. Complex text search operations');
-    console.log('  4. Database needs optimization (VACUUM, ANALYZE)');
+    logger.info('\n🚨 Performance Issue Detected:');
+    logger.info('  The full search is taking over 1 second. Potential causes:');
+    logger.info('  1. Missing or ineffective database indexes');
+    logger.info('  2. Large result set processing');
+    logger.info('  3. Complex text search operations');
+    logger.info('  4. Database needs optimization (VACUUM, ANALYZE)');
   }
 }
 
@@ -141,11 +142,11 @@ async function debugSearchPerformance() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   debugSearchPerformance()
     .then(() => {
-      console.log('\n✅ Debug completed');
+      logger.info('\n✅ Debug completed');
       process.exit(0);
     })
     .catch(error => {
-      console.error('❌ Debug failed:', error);
+      logger.error('❌ Debug failed:', error);
       process.exit(1);
     });
 }

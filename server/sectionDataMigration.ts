@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { db } from './db';
 
+import logger from './utils/logger';
 // The 42 standardized sections identified from the Excel analysis
 export const STANDARD_SECTIONS = [
   { name: 'Introduction', order: 1 },
@@ -49,11 +50,11 @@ export const STANDARD_SECTIONS = [
 
 export async function migrateSectionData() {
   try {
-    console.log('Starting section data migration...');
+    logger.info('Starting section data migration...');
 
     // Get all existing terms
     const terms = await db.execute(sql`SELECT id, name FROM enhanced_terms`);
-    console.log(`Found ${terms.rows.length} terms to migrate`);
+    logger.info(`Found ${terms.rows.length} terms to migrate`);
 
     let totalSectionsCreated = 0;
 
@@ -62,7 +63,7 @@ export async function migrateSectionData() {
       const termId = term.id as string;
       const termName = term.name as string;
 
-      console.log(`Creating sections for term: ${termName} (ID: ${termId})`);
+      logger.info(`Creating sections for term: ${termName} (ID: ${termId})`);
 
       // Insert all sections for this term
       for (const section of STANDARD_SECTIONS) {
@@ -74,7 +75,7 @@ export async function migrateSectionData() {
           `);
           totalSectionsCreated++;
         } catch (error) {
-          console.error(`Error creating section ${section.name} for term ${termName}:`, error);
+          logger.error(`Error creating section ${section.name} for term ${termName}:`, error);
         }
       }
 
@@ -82,10 +83,10 @@ export async function migrateSectionData() {
       await createBasicSectionItems(termId, term);
     }
 
-    console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
+    logger.info(`Migration completed! Created ${totalSectionsCreated} sections total.`);
     return { success: true, sectionsCreated: totalSectionsCreated };
   } catch (error) {
-    console.error('Section data migration failed:', error);
+    logger.error('Section data migration failed:', error);
     throw error;
   }
 }
@@ -188,7 +189,7 @@ async function createBasicSectionItems(termId: string, _term: any) {
       }
     }
   } catch (error) {
-    console.error(`Error creating section items for term ${termId}:`, error);
+    logger.error(`Error creating section items for term ${termId}:`, error);
   }
 }
 
@@ -196,11 +197,11 @@ async function createBasicSectionItems(termId: string, _term: any) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   migrateSectionData()
     .then(() => {
-      console.log('Migration completed successfully');
+      logger.info('Migration completed successfully');
       process.exit(0);
     })
     .catch(error => {
-      console.error('Migration failed:', error);
+      logger.error('Migration failed:', error);
       process.exit(1);
     });
 }

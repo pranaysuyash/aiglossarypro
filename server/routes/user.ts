@@ -8,6 +8,7 @@ import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log as logger } from '../utils/logger';
 
+import logger from '../utils/logger';
 // Extended request interfaces for parsed middleware data
 interface RequestWithPagination extends Request {
   pagination: {
@@ -599,7 +600,7 @@ export function registerUserRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error fetching daily usage:', error);
+      logger.error('Error fetching daily usage:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch daily usage statistics',

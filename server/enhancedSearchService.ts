@@ -7,6 +7,7 @@ import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { categories, terms } from '../shared/schema';
 import { db } from './db';
 
+import logger from './utils/logger';
 export interface SearchOptions {
   query: string;
   page?: number;
@@ -169,7 +170,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
       query,
     };
   } catch (error) {
-    console.error('Enhanced search error:', error);
+    logger.error('Enhanced search error:', error);
     throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -217,7 +218,7 @@ export async function getPopularTerms(limit = 10): Promise<SearchResult[]> {
       updatedAt: result.updatedAt || new Date(),
     }));
   } catch (error) {
-    console.error('Get popular terms error:', error);
+    logger.error('Get popular terms error:', error);
     return [];
   }
 }
@@ -240,7 +241,7 @@ export async function getSearchSuggestions(query: string, limit = 5): Promise<st
 
     return (results as any[]).map((result: any) => result.name);
   } catch (error) {
-    console.error('Get search suggestions error:', error);
+    logger.error('Get search suggestions error:', error);
     return [];
   }
 }

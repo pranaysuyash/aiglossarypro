@@ -8,6 +8,7 @@ import { eq } from 'drizzle-orm';
 import { categories, subcategories, termSubcategories, terms } from '../shared/schema';
 import { db } from './db';
 
+import logger from './utils/logger';
 interface OptimizedImportOptions {
   batchSize?: number;
   bulkInsertSize?: number; // Number of records to insert in a single SQL operation
@@ -52,11 +53,11 @@ export class OptimizedBatchImporter {
    */
   async importFromFile(filePath: string): Promise<ImportResult> {
     const startTime = Date.now();
-    console.log(`🚀 Starting optimized import from: ${filePath}`);
-    console.log(`⚙️  Configuration:`);
-    console.log(`   📦 Batch size: ${this.options.batchSize}`);
-    console.log(`   💾 Bulk insert size: ${this.options.bulkInsertSize}`);
-    console.log(`   🔄 Use transactions: ${this.options.useTransactions}`);
+    logger.info(`🚀 Starting optimized import from: ${filePath}`);
+    logger.info(`⚙️  Configuration:`);
+    logger.info(`   📦 Batch size: ${this.options.batchSize}`);
+    logger.info(`   💾 Bulk insert size: ${this.options.bulkInsertSize}`);
+    logger.info(`   🔄 Use transactions: ${this.options.useTransactions}`);
 
     const result: ImportResult = {
       success: false,
@@ -79,21 +80,21 @@ export class OptimizedBatchImporter {
       // Stream-based JSON parsing for large files
       const data = await this.loadDataStreaming(filePath);
 
-      console.log(`📊 Dataset overview:`);
-      console.log(`   📂 ${data.categories?.length || 0} categories`);
-      console.log(`   📋 ${data.subcategories?.length || 0} subcategories`);
-      console.log(`   📄 ${data.terms?.length || 0} terms`);
+      logger.info(`📊 Dataset overview:`);
+      logger.info(`   📂 ${data.categories?.length || 0} categories`);
+      logger.info(`   📋 ${data.subcategories?.length || 0} subcategories`);
+      logger.info(`   📄 ${data.terms?.length || 0} terms`);
 
       // Memory usage check
       const initialMemory = process.memoryUsage();
-      console.log(`💾 Initial memory usage: ${Math.round(initialMemory.heapUsed / 1024 / 1024)}MB`);
+      logger.info(`💾 Initial memory usage: ${Math.round(initialMemory.heapUsed / 1024 / 1024)}MB`);
 
       // Create category ID mapping for reference integrity
       const categoryIdMap = new Map<string, string>();
 
       // Import categories with bulk operations
       if (data.categories && data.categories.length > 0) {
-        console.log(`\n📂 Importing categories with bulk inserts...`);
+        logger.info(`\n📂 Importing categories with bulk inserts...`);
         const categoryStart = Date.now();
         result.imported.categories = await this.bulkImportCategories(
           data.categories,
@@ -102,7 +103,7 @@ export class OptimizedBatchImporter {
         const categoryDuration = Date.now() - categoryStart;
         result.performance.categoriesPerSecond =
           result.imported.categories / (categoryDuration / 1000);
-        console.log(
+        logger.info(
           `✅ Categories imported: ${result.imported.categories} (${result.performance.categoriesPerSecond.toFixed(1)}/sec)`
         );
       }
@@ -110,18 +111,18 @@ export class OptimizedBatchImporter {
       // Import subcategories with optimizations
       const subcategoryIdMap = new Map<string, string>();
       if (data.subcategories && data.subcategories.length > 0) {
-        console.log(`\n📋 Importing subcategories...`);
+        logger.info(`\n📋 Importing subcategories...`);
         result.imported.subcategories = await this.bulkImportSubcategories(
           data.subcategories,
           categoryIdMap,
           subcategoryIdMap
         );
-        console.log(`✅ Subcategories imported: ${result.imported.subcategories}`);
+        logger.info(`✅ Subcategories imported: ${result.imported.subcategories}`);
       }
 
       // Import terms with optimized batch processing
       if (data.terms && data.terms.length > 0) {
-        console.log(`\n📄 Importing terms with optimized batching...`);
+        logger.info(`\n📄 Importing terms with optimized batching...`);
         const termsStart = Date.now();
         result.imported.terms = await this.bulkImportTerms(
           data.terms,
@@ -130,7 +131,7 @@ export class OptimizedBatchImporter {
         );
         const termsDuration = Date.now() - termsStart;
         result.performance.termsPerSecond = result.imported.terms / (termsDuration / 1000);
-        console.log(
+        logger.info(
           `✅ Terms imported: ${result.imported.terms} (${result.performance.termsPerSecond.toFixed(1)}/sec)`
         );
       }
@@ -139,17 +140,17 @@ export class OptimizedBatchImporter {
       result.duration = Date.now() - startTime;
       result.performance.memoryUsage = process.memoryUsage();
 
-      console.log(`\n🎉 Import completed successfully!`);
-      console.log(`⏱️  Total duration: ${(result.duration / 1000).toFixed(2)}s`);
-      console.log(`📈 Performance summary:`);
-      console.log(`   📂 Categories: ${result.performance.categoriesPerSecond.toFixed(1)}/sec`);
-      console.log(`   📄 Terms: ${result.performance.termsPerSecond.toFixed(1)}/sec`);
-      console.log(
+      logger.info(`\n🎉 Import completed successfully!`);
+      logger.info(`⏱️  Total duration: ${(result.duration / 1000).toFixed(2)}s`);
+      logger.info(`📈 Performance summary:`);
+      logger.info(`   📂 Categories: ${result.performance.categoriesPerSecond.toFixed(1)}/sec`);
+      logger.info(`   📄 Terms: ${result.performance.termsPerSecond.toFixed(1)}/sec`);
+      logger.info(
         `💾 Memory usage: ${Math.round(result.performance.memoryUsage.heapUsed / 1024 / 1024)}MB`
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('❌ Import failed:', errorMessage);
+      logger.error('❌ Import failed:', errorMessage);
       result.errors.push(errorMessage);
       result.duration = Date.now() - startTime;
     }
@@ -166,10 +167,10 @@ export class OptimizedBatchImporter {
     const stats = fs.statSync(filePath);
     const fileSizeMB = stats.size / 1024 / 1024;
 
-    console.log(`📁 File size: ${fileSizeMB.toFixed(1)}MB`);
+    logger.info(`📁 File size: ${fileSizeMB.toFixed(1)}MB`);
 
     if (fileSizeMB > 100) {
-      console.log(`⚠️  Large file detected. Consider using streaming parser for files > 100MB`);
+      logger.info(`⚠️  Large file detected. Consider using streaming parser for files > 100MB`);
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -193,7 +194,7 @@ export class OptimizedBatchImporter {
       // Prepare valid categories for bulk insert
       for (const category of batch) {
         if (!category.name || !category.slug) {
-          console.warn(`⚠️  Skipping invalid category:`, category);
+          logger.warn(`⚠️  Skipping invalid category:`, category);
           continue;
         }
 
@@ -266,7 +267,7 @@ export class OptimizedBatchImporter {
       }
 
       if (this.options.enableProgress && i % (batchSize * 10) === 0) {
-        console.log(
+        logger.info(
           `📂 Categories progress: ${i}/${categoriesData.length} (${((i / categoriesData.length) * 100).toFixed(1)}%)`
         );
       }
@@ -292,13 +293,13 @@ export class OptimizedBatchImporter {
 
       for (const subcategory of batch) {
         if (!subcategory.name || !subcategory.slug || !subcategory.categorySlug) {
-          console.warn(`⚠️  Skipping invalid subcategory:`, subcategory);
+          logger.warn(`⚠️  Skipping invalid subcategory:`, subcategory);
           continue;
         }
 
         const categoryId = categoryIdMap.get(subcategory.categorySlug);
         if (!categoryId) {
-          console.warn(
+          logger.warn(
             `⚠️  Category not found for subcategory: ${subcategory.name} (${subcategory.categorySlug})`
           );
           continue;
@@ -369,7 +370,7 @@ export class OptimizedBatchImporter {
       }
 
       if (this.options.enableProgress && i % (batchSize * 10) === 0) {
-        console.log(
+        logger.info(
           `📋 Subcategories progress: ${i}/${subcategoriesData.length} (${((i / subcategoriesData.length) * 100).toFixed(1)}%)`
         );
       }
@@ -396,7 +397,7 @@ export class OptimizedBatchImporter {
 
       for (const term of batch) {
         if (!term.name) {
-          console.warn(`⚠️  Skipping invalid term:`, term);
+          logger.warn(`⚠️  Skipping invalid term:`, term);
           continue;
         }
 
@@ -474,20 +475,20 @@ export class OptimizedBatchImporter {
       }
 
       if (this.options.enableProgress && i % (batchSize * 5) === 0) {
-        console.log(
+        logger.info(
           `📄 Terms progress: ${i}/${termsData.length} (${((i / termsData.length) * 100).toFixed(1)}%)`
         );
 
         // Memory monitoring during large imports
         const currentMemory = process.memoryUsage();
-        console.log(`💾 Current memory: ${Math.round(currentMemory.heapUsed / 1024 / 1024)}MB`);
+        logger.info(`💾 Current memory: ${Math.round(currentMemory.heapUsed / 1024 / 1024)}MB`);
 
         // Force garbage collection if memory usage is high
         if (currentMemory.heapUsed > 500 * 1024 * 1024) {
           // 500MB
           if (global.gc) {
             global.gc();
-            console.log(`🗑️  Garbage collection triggered`);
+            logger.info(`🗑️  Garbage collection triggered`);
           }
         }
       }

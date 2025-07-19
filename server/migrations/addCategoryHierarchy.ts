@@ -16,6 +16,7 @@
 import { sql } from 'drizzle-orm';
 import { db } from '../db';
 
+import logger from '../utils/logger';
 interface CategoryHierarchy {
   name: string;
   parent?: string;
@@ -116,11 +117,11 @@ const CATEGORY_HIERARCHY: CategoryHierarchy[] = [
 ];
 
 export async function addCategoryHierarchy(): Promise<void> {
-  console.log('🔄 Adding category hierarchy structure...');
+  logger.info('🔄 Adding category hierarchy structure...');
 
   try {
     // Step 1: Add new columns to categories table
-    console.log('📊 Adding hierarchy columns to categories table...');
+    logger.info('📊 Adding hierarchy columns to categories table...');
 
     await db.execute(sql`
       ALTER TABLE categories 
@@ -135,7 +136,7 @@ export async function addCategoryHierarchy(): Promise<void> {
     `);
 
     // Step 2: Create indexes for performance
-    console.log('⚡ Creating performance indexes...');
+    logger.info('⚡ Creating performance indexes...');
 
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS categories_parent_id_idx ON categories(parent_id);
@@ -146,7 +147,7 @@ export async function addCategoryHierarchy(): Promise<void> {
     `);
 
     // Step 3: Insert/update categories with hierarchy
-    console.log('🏗️  Building category hierarchy...');
+    logger.info('🏗️  Building category hierarchy...');
 
     // First pass: Insert top-level categories
     const categoryMap = new Map<string, string>();
@@ -171,10 +172,10 @@ export async function addCategoryHierarchy(): Promise<void> {
         const categoryId = (result.rows[0] as any)?.id;
         if (categoryId) {
           categoryMap.set(category.name, categoryId);
-          console.log(`✅ Top-level category: ${category.name}`);
+          logger.info(`✅ Top-level category: ${category.name}`);
         }
       } catch (error) {
-        console.warn(`⚠️  Failed to process top-level category ${category.name}:`, error);
+        logger.warn(`⚠️  Failed to process top-level category ${category.name}:`, error);
       }
     }
 
@@ -183,7 +184,7 @@ export async function addCategoryHierarchy(): Promise<void> {
       try {
         const parentId = categoryMap.get(category.parent!);
         if (!parentId) {
-          console.warn(`⚠️  Parent category not found: ${category.parent}`);
+          logger.warn(`⚠️  Parent category not found: ${category.parent}`);
           continue;
         }
 
@@ -206,15 +207,15 @@ export async function addCategoryHierarchy(): Promise<void> {
         const categoryId = (result.rows[0] as any)?.id;
         if (categoryId) {
           categoryMap.set(category.name, categoryId);
-          console.log(`✅ Subcategory: ${category.parent} > ${category.name}`);
+          logger.info(`✅ Subcategory: ${category.parent} > ${category.name}`);
         }
       } catch (error) {
-        console.warn(`⚠️  Failed to process subcategory ${category.name}:`, error);
+        logger.warn(`⚠️  Failed to process subcategory ${category.name}:`, error);
       }
     }
 
     // Step 4: Update term counts for all categories
-    console.log('📊 Updating term counts...');
+    logger.info('📊 Updating term counts...');
 
     await db.execute(sql`
       UPDATE categories 
@@ -226,7 +227,7 @@ export async function addCategoryHierarchy(): Promise<void> {
     `);
 
     // Step 5: Create recursive function for getting category trees
-    console.log('🌳 Creating category tree functions...');
+    logger.info('🌳 Creating category tree functions...');
 
     await db.execute(sql`
       CREATE OR REPLACE FUNCTION get_category_tree(category_id UUID DEFAULT NULL)
@@ -286,31 +287,31 @@ export async function addCategoryHierarchy(): Promise<void> {
 
     const summary = stats.rows[0] as any;
 
-    console.log('\n🎉 Category hierarchy migration completed!');
-    console.log('=====================================');
-    console.log(`📊 Total categories: ${summary.total_categories}`);
-    console.log(`🏠 Root categories: ${summary.root_categories}`);
-    console.log(`📁 Subcategories: ${summary.subcategories}`);
-    console.log(`⭐ Featured categories: ${summary.featured_categories}`);
+    logger.info('\n🎉 Category hierarchy migration completed!');
+    logger.info('=====================================');
+    logger.info(`📊 Total categories: ${summary.total_categories}`);
+    logger.info(`🏠 Root categories: ${summary.root_categories}`);
+    logger.info(`📁 Subcategories: ${summary.subcategories}`);
+    logger.info(`⭐ Featured categories: ${summary.featured_categories}`);
 
-    console.log('\n🔧 New Features Available:');
-    console.log('• Hierarchical navigation (Parent > Child)');
-    console.log('• Breadcrumb navigation with paths');
-    console.log('• Featured category highlighting');
-    console.log('• Icon and color theming support');
-    console.log('• Automatic term counting');
-    console.log('• Performance-optimized queries');
+    logger.info('\n🔧 New Features Available:');
+    logger.info('• Hierarchical navigation (Parent > Child)');
+    logger.info('• Breadcrumb navigation with paths');
+    logger.info('• Featured category highlighting');
+    logger.info('• Icon and color theming support');
+    logger.info('• Automatic term counting');
+    logger.info('• Performance-optimized queries');
 
-    console.log('\n📊 Example queries:');
-    console.log('• Get full category tree: SELECT * FROM get_category_tree()');
-    console.log(
+    logger.info('\n📊 Example queries:');
+    logger.info('• Get full category tree: SELECT * FROM get_category_tree()');
+    logger.info(
       "• Get AI subcategories: SELECT * FROM get_category_tree((SELECT id FROM categories WHERE name = 'Artificial Intelligence'))"
     );
-    console.log(
+    logger.info(
       '• Get featured categories: SELECT * FROM categories WHERE is_featured = true ORDER BY display_order'
     );
   } catch (error) {
-    console.error('💥 Category hierarchy migration failed:', error);
+    logger.error('💥 Category hierarchy migration failed:', error);
     throw error;
   }
 }
@@ -319,11 +320,11 @@ export async function addCategoryHierarchy(): Promise<void> {
 if (import.meta.url === `file://${process.argv[1]}`) {
   addCategoryHierarchy()
     .then(() => {
-      console.log('\n✅ Category hierarchy migration completed successfully');
+      logger.info('\n✅ Category hierarchy migration completed successfully');
       process.exit(0);
     })
     .catch(error => {
-      console.error('\n💥 Migration failed:', error);
+      logger.error('\n💥 Migration failed:', error);
       process.exit(1);
     });
 }

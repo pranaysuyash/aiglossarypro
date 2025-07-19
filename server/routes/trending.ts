@@ -11,6 +11,7 @@ import { db } from '../db';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 
+import logger from '../utils/logger';
 interface TrendingTerm {
   id: string;
   name: string;
@@ -319,7 +320,7 @@ export function registerTrendingRoutes(app: Express): void {
         cacheStatus: 'hit',
       });
     } catch (error) {
-      console.error('Get trending terms error:', error);
+      logger.error('Get trending terms error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -341,7 +342,7 @@ export function registerTrendingRoutes(app: Express): void {
         timeRange,
       });
     } catch (error) {
-      console.error('Get trending analytics error:', error);
+      logger.error('Get trending analytics error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -392,7 +393,7 @@ export function registerTrendingRoutes(app: Express): void {
         timeRange,
       });
     } catch (error) {
-      console.error('Get trending categories error:', error);
+      logger.error('Get trending categories error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -432,7 +433,7 @@ export function registerTrendingRoutes(app: Express): void {
           message: 'Interaction recorded successfully',
         });
       } catch (error) {
-        console.error('Record trending interaction error:', error);
+        logger.error('Record trending interaction error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }

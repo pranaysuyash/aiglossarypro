@@ -10,6 +10,7 @@ import { categories, terms } from '../shared/schema';
 import { db } from './db';
 import { cached } from './middleware/queryCache';
 
+import logger from './utils/logger';
 interface SearchStrategy {
   name: string;
   condition: any;
@@ -262,7 +263,7 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<an
       30 * 1000 // 30 seconds cache
     );
   } catch (error) {
-    console.error('Adaptive search error:', error);
+    logger.error('Adaptive search error:', error);
     throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -280,14 +281,14 @@ export async function preWarmSearchCache(): Promise<void> {
     'algorithm',
   ];
 
-  console.log('Pre-warming search cache...');
+  logger.info('Pre-warming search cache...');
 
   for (const query of commonQueries) {
     try {
       await adaptiveSearch({ query, limit: 20 });
-      console.log(`✓ Cached: ${query}`);
+      logger.info(`✓ Cached: ${query}`);
     } catch (error) {
-      console.error(`✗ Failed to cache ${query}:`, error);
+      logger.error(`✗ Failed to cache ${query}:`, error);
     }
   }
 }

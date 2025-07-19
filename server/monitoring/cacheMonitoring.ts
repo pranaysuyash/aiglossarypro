@@ -12,6 +12,7 @@ import { metricsCollector } from '../cache/CacheMetrics';
 import { db } from '../db';
 import { getCacheStats, queryCache, searchCache, userCache } from '../middleware/queryCache';
 
+import logger from '../utils/logger';
 export interface CacheAlert {
   level: 'warning' | 'error' | 'critical';
   type: string;
@@ -51,7 +52,7 @@ export class CacheMonitoringService extends EventEmitter {
     // Run health checks every minute
     this.healthCheckInterval = setInterval(() => {
       this.runHealthChecks().catch(error => {
-        console.error('Error running cache health checks:', error);
+        logger.error('Error running cache health checks:', error);
       });
     }, 60000);
 
@@ -239,24 +240,24 @@ export class CacheMonitoringService extends EventEmitter {
   }
 
   private handleCriticalAlert(alert: CacheAlert): void {
-    console.error(`CRITICAL CACHE ALERT: ${alert.message}`);
+    logger.error(`CRITICAL CACHE ALERT: ${alert.message}`);
 
     switch (alert.type) {
       case 'Cache Hit Rate':
         // Trigger cache warming
-        console.log('Triggering emergency cache warming...');
+        logger.info('Triggering emergency cache warming...');
         this.emit('action', { type: 'warm-cache', reason: alert.message });
         break;
 
       case 'Cache Memory Usage':
         // Clear cold entries
-        console.log('Clearing cold cache entries...');
+        logger.info('Clearing cold cache entries...');
         this.emit('action', { type: 'clear-cold-entries', reason: alert.message });
         break;
 
       case 'Cache Eviction Rate':
         // Increase cache size temporarily
-        console.log('Recommending cache size increase...');
+        logger.info('Recommending cache size increase...');
         this.emit('action', { type: 'increase-cache-size', reason: alert.message });
         break;
     }
@@ -397,14 +398,14 @@ export function setupCacheMonitoring(app: any): void {
 
   // Set up alert handlers
   cacheMonitor.on('alert', (alert: CacheAlert) => {
-    console.warn(`Cache Alert [${alert.level}]: ${alert.message}`);
+    logger.warn(`Cache Alert [${alert.level}]: ${alert.message}`);
 
     // Here you can integrate with external monitoring services
     // e.g., send to Datadog, New Relic, PagerDuty, etc.
   });
 
   cacheMonitor.on('action', (action: any) => {
-    console.log(`Cache Action: ${action.type} - ${action.reason}`);
+    logger.info(`Cache Action: ${action.type} - ${action.reason}`);
 
     // Implement automated responses
     switch (action.type) {

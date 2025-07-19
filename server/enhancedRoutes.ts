@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
+import logger from './utils/logger';
 // import { processExcelUpload } from './dataTransformationPipeline'; // File removed
 import { enhancedStorage } from './enhancedTermsStorage';
 import { mockIsAuthenticated } from './middleware/dev/mockAuth';
@@ -106,11 +107,11 @@ export function registerEnhancedRoutes(app: Express): void {
           });
         }
 
-        console.log(`Processing enhanced Excel upload: ${req.file.originalname}`);
+        logger.info(`Processing enhanced Excel upload: ${req.file.originalname}`);
 
         // Process the Excel file through the enhanced pipeline
         // const result = await processExcelUpload(req.file.buffer); // Function removed
-        console.log('⚠️  Excel upload functionality has been disabled');
+        logger.info('⚠️  Excel upload functionality has been disabled');
 
         res.json({
           success: false,
@@ -121,7 +122,7 @@ export function registerEnhancedRoutes(app: Express): void {
           total: 0,
         });
       } catch (error) {
-        console.error('Error processing enhanced Excel upload:', error);
+        logger.error('Error processing enhanced Excel upload:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to process Excel file',
@@ -154,7 +155,7 @@ export function registerEnhancedRoutes(app: Express): void {
         const stats = await enhancedStorage.getProcessingStats();
         res.json(stats);
       } catch (error) {
-        console.error('Error fetching processing status:', error);
+        logger.error('Error fetching processing status:', error);
         res.status(500).json({ message: 'Failed to fetch processing status' });
       }
     }
@@ -193,7 +194,7 @@ export function registerEnhancedRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error fetching enhanced terms:', error);
+      logger.error('Error fetching enhanced terms:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch enhanced terms',
@@ -225,7 +226,7 @@ export function registerEnhancedRoutes(app: Express): void {
 
       res.json(term);
     } catch (error) {
-      console.error(`Error fetching enhanced term ${req.params.identifier}:`, error);
+      logger.error(`Error fetching enhanced term ${req.params.identifier}:`, error);
       res.status(500).json({ message: 'Failed to fetch term' });
     }
   });
@@ -242,7 +243,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const sections = await enhancedStorage.getTermSectionsByType(id, displayType, userId);
       res.json(sections);
     } catch (error) {
-      console.error(`Error fetching sections for term ${req.params.id}:`, error);
+      logger.error(`Error fetching sections for term ${req.params.id}:`, error);
       res.status(500).json({ message: 'Failed to fetch sections' });
     }
   });
@@ -270,7 +271,7 @@ export function registerEnhancedRoutes(app: Express): void {
         });
       }
 
-      console.error('Error in enhanced search:', error);
+      logger.error('Error in enhanced search:', error);
       res.status(500).json({ message: 'Search failed' });
     }
   });
@@ -294,7 +295,7 @@ export function registerEnhancedRoutes(app: Express): void {
         });
       }
 
-      console.error('Error in advanced filtering:', error);
+      logger.error('Error in advanced filtering:', error);
       res.status(500).json({ message: 'Filtering failed' });
     }
   });
@@ -308,7 +309,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const facets = await enhancedStorage.getSearchFacets();
       res.json(facets);
     } catch (error) {
-      console.error('Error fetching search facets:', error);
+      logger.error('Error fetching search facets:', error);
       res.status(500).json({ message: 'Failed to fetch facets' });
     }
   });
@@ -329,7 +330,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const suggestions = await enhancedStorage.getAutocompleteSuggestions(query, limit);
       res.json(suggestions);
     } catch (error) {
-      console.error('Error fetching suggestions:', error);
+      logger.error('Error fetching suggestions:', error);
       res.status(500).json({ message: 'Failed to fetch suggestions' });
     }
   });
@@ -348,7 +349,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const elements = await enhancedStorage.getInteractiveElements(termId);
       res.json(elements);
     } catch (error) {
-      console.error(`Error fetching interactive elements for term ${req.params.id}:`, error);
+      logger.error(`Error fetching interactive elements for term ${req.params.id}:`, error);
       res.status(500).json({ message: 'Failed to fetch interactive elements' });
     }
   });
@@ -366,7 +367,7 @@ export function registerEnhancedRoutes(app: Express): void {
       await enhancedStorage.updateInteractiveElementState(elementId, state, userId);
       res.json({ success: true });
     } catch (error) {
-      console.error(`Error updating interactive element state ${req.params.id}:`, error);
+      logger.error(`Error updating interactive element state ${req.params.id}:`, error);
       res.status(500).json({ message: 'Failed to update element state' });
     }
   });
@@ -385,7 +386,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const preferences = await enhancedStorage.getUserPreferences(userId);
       res.json(preferences);
     } catch (error) {
-      console.error('Error fetching user preferences:', error);
+      logger.error('Error fetching user preferences:', error);
       res.status(500).json({ message: 'Failed to fetch user preferences' });
     }
   });
@@ -409,7 +410,7 @@ export function registerEnhancedRoutes(app: Express): void {
         });
       }
 
-      console.error('Error updating user preferences:', error);
+      logger.error('Error updating user preferences:', error);
       res.status(500).json({ message: 'Failed to update preferences' });
     }
   });
@@ -426,7 +427,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const recommendations = await enhancedStorage.getPersonalizedRecommendations(userId, limit);
       res.json(recommendations);
     } catch (error) {
-      console.error('Error fetching personalized recommendations:', error);
+      logger.error('Error fetching personalized recommendations:', error);
       res.status(500).json({ message: 'Failed to fetch recommendations' });
     }
   });
@@ -456,7 +457,7 @@ export function registerEnhancedRoutes(app: Express): void {
         const analytics = await enhancedStorage.getTermAnalytics(termId);
         res.json(analytics);
       } catch (error) {
-        console.error(`Error fetching analytics for term ${req.params.id}:`, error);
+        logger.error(`Error fetching analytics for term ${req.params.id}:`, error);
         res.status(500).json({ message: 'Failed to fetch analytics' });
       }
     }
@@ -481,7 +482,7 @@ export function registerEnhancedRoutes(app: Express): void {
         const overview = await enhancedStorage.getAnalyticsOverview();
         res.json(overview);
       } catch (error) {
-        console.error('Error fetching analytics overview:', error);
+        logger.error('Error fetching analytics overview:', error);
         res.status(500).json({ message: 'Failed to fetch analytics overview' });
       }
     }
@@ -499,7 +500,7 @@ export function registerEnhancedRoutes(app: Express): void {
       await enhancedStorage.recordInteraction(termId, sectionName, interactionType, data, userId);
       res.json({ success: true });
     } catch (error) {
-      console.error('Error recording interaction:', error);
+      logger.error('Error recording interaction:', error);
       res.status(500).json({ message: 'Failed to record interaction' });
     }
   });
@@ -524,7 +525,7 @@ export function registerEnhancedRoutes(app: Express): void {
       await enhancedStorage.submitRating(termId, sectionName, rating, feedback, userId);
       res.json({ success: true });
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      logger.error('Error submitting rating:', error);
       res.status(500).json({ message: 'Failed to submit rating' });
     }
   });
@@ -545,7 +546,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const report = await enhancedStorage.getQualityReport();
       res.json(report);
     } catch (error) {
-      console.error('Error fetching quality report:', error);
+      logger.error('Error fetching quality report:', error);
       res.status(500).json({ message: 'Failed to fetch quality report' });
     }
   });
@@ -564,7 +565,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const relationships = await enhancedStorage.getTermRelationships(termId);
       res.json(relationships);
     } catch (error) {
-      console.error(`Error fetching relationships for term ${req.params.id}:`, error);
+      logger.error(`Error fetching relationships for term ${req.params.id}:`, error);
       res.status(500).json({ message: 'Failed to fetch term relationships' });
     }
   });
@@ -581,7 +582,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const learningPath = await enhancedStorage.getLearningPath(termId, userId);
       res.json(learningPath);
     } catch (error) {
-      console.error(`Error fetching learning path for term ${req.params.id}:`, error);
+      logger.error(`Error fetching learning path for term ${req.params.id}:`, error);
       res.status(500).json({ message: 'Failed to fetch learning path' });
     }
   });
@@ -606,7 +607,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const schemaInfo = await enhancedStorage.getSchemaInfo();
       res.json(schemaInfo);
     } catch (error) {
-      console.error('Error fetching schema info:', error);
+      logger.error('Error fetching schema info:', error);
       res.status(500).json({ message: 'Failed to fetch schema info' });
     }
   });
@@ -624,7 +625,7 @@ export function registerEnhancedRoutes(app: Express): void {
         ...health,
       });
     } catch (error) {
-      console.error('Error in health check:', error);
+      logger.error('Error in health check:', error);
       res.status(500).json({
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -674,7 +675,7 @@ export function registerEnhancedRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error fetching trending terms:', error);
+      logger.error('Error fetching trending terms:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch trending terms',
@@ -682,5 +683,5 @@ export function registerEnhancedRoutes(app: Express): void {
     }
   });
 
-  console.log('✅ Enhanced API routes registered successfully');
+  logger.info('✅ Enhanced API routes registered successfully');
 }

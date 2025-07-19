@@ -36,6 +36,7 @@ import {
 } from './middleware/queryCache';
 import { log } from './utils/logger';
 
+import logger from './utils/logger';
 // Interface for storage operations (same as original)
 export interface IStorage {
   // User operations
@@ -974,7 +975,7 @@ export class OptimizedStorage implements IStorage {
       async () => {
         // Check if we need term count to avoid schema mismatch
         const needsTermCount = fields.includes('termCount') || includeStats;
-        console.log('[DEBUG] getCategoriesOptimized called with:', {
+        logger.info('[DEBUG] getCategoriesOptimized called with:', {
           fields,
           needsTermCount,
           includeStats,
@@ -1014,13 +1015,13 @@ export class OptimizedStorage implements IStorage {
           const result = await query.orderBy(categories.name).limit(limit).offset(offset);
           return result;
         } catch (queryError) {
-          console.error('[OptimizedStorage] getCategoriesOptimized query failed:', queryError);
+          logger.error('[OptimizedStorage] getCategoriesOptimized query failed:', queryError);
 
           // Check if it's a schema mismatch error (uuid vs integer)
           const errorMessage =
             queryError instanceof Error ? queryError.message : String(queryError);
           if (errorMessage.includes('uuid') && errorMessage.includes('integer')) {
-            console.warn(
+            logger.warn(
               '[OptimizedStorage] Schema mismatch detected: categories.id (integer) vs terms.category_id (uuid)'
             );
 
@@ -1042,10 +1043,10 @@ export class OptimizedStorage implements IStorage {
                 .orderBy(categories.name)
                 .limit(limit)
                 .offset(offset);
-              console.log('[OptimizedStorage] Using fallback query without joins');
+              logger.info('[OptimizedStorage] Using fallback query without joins');
               return fallbackResult;
             } catch (fallbackError) {
-              console.error('[OptimizedStorage] Fallback query also failed:', fallbackError);
+              logger.error('[OptimizedStorage] Fallback query also failed:', fallbackError);
               return [];
             }
           }
@@ -1075,7 +1076,7 @@ export class OptimizedStorage implements IStorage {
           const result = await query;
           return result[0]?.count || 0;
         } catch (queryError) {
-          console.error('[OptimizedStorage] getCategoriesCount query failed:', queryError);
+          logger.error('[OptimizedStorage] getCategoriesCount query failed:', queryError);
           // Return 0 for empty database or schema mismatch
           return 0;
         }
@@ -1097,7 +1098,7 @@ export class OptimizedStorage implements IStorage {
       await clearCache();
       return { success: successCount, failed: 0 };
     } catch (error) {
-      console.error('Bulk insert failed:', error);
+      logger.error('Bulk insert failed:', error);
       // If the bulk insert fails, we can fall back to individual inserts to salvage what we can.
       let success = 0;
       let failed = 0;
@@ -1106,7 +1107,7 @@ export class OptimizedStorage implements IStorage {
           await db.insert(terms).values(termData).onConflictDoNothing();
           success++;
         } catch (individualError) {
-          console.error('Individual insert failed:', individualError);
+          logger.error('Individual insert failed:', individualError);
           failed++;
         }
       }
@@ -1131,7 +1132,7 @@ export class OptimizedStorage implements IStorage {
     try {
       return await this.getTermsOptimized(options);
     } catch (error) {
-      console.error('Error getting terms:', error);
+      logger.error('Error getting terms:', error);
       throw error;
     }
   }
@@ -1764,11 +1765,11 @@ export class OptimizedStorage implements IStorage {
       await clearCache();
       tablesCleared.push('queryCache');
 
-      console.log(`[OptimizedStorage] Successfully cleared ${tablesCleared.length} tables`);
+      logger.info(`[OptimizedStorage] Successfully cleared ${tablesCleared.length} tables`);
 
       return { tablesCleared };
     } catch (error) {
-      console.error('[OptimizedStorage] clearAllData error:', error);
+      logger.error('[OptimizedStorage] clearAllData error:', error);
       throw new Error(
         `Failed to clear data: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -1787,7 +1788,7 @@ export class OptimizedStorage implements IStorage {
     const operations: string[] = [];
 
     try {
-      console.log('[OptimizedStorage] Starting comprehensive database reindexing...');
+      logger.info('[OptimizedStorage] Starting comprehensive database reindexing...');
       operations.push('Database reindexing started');
 
       // 1. Enable required extensions
@@ -1899,7 +1900,7 @@ export class OptimizedStorage implements IStorage {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      console.log(`[OptimizedStorage] Database reindexing completed in ${duration}ms`);
+      logger.info(`[OptimizedStorage] Database reindexing completed in ${duration}ms`);
 
       return {
         success: true,
@@ -1911,7 +1912,7 @@ export class OptimizedStorage implements IStorage {
       };
     } catch (error) {
       const endTime = Date.now();
-      console.error('[OptimizedStorage] reindexDatabase error:', error);
+      logger.error('[OptimizedStorage] reindexDatabase error:', error);
 
       return {
         success: false,
@@ -2010,7 +2011,7 @@ export class OptimizedStorage implements IStorage {
             systemHealth,
           };
         } catch (error) {
-          console.error('[OptimizedStorage] getAdminStats error:', error);
+          logger.error('[OptimizedStorage] getAdminStats error:', error);
 
           // Return default stats on error
           return {
@@ -2043,7 +2044,7 @@ export class OptimizedStorage implements IStorage {
     const operations: string[] = [];
 
     try {
-      console.log('[OptimizedStorage] Starting database cleanup...');
+      logger.info('[OptimizedStorage] Starting database cleanup...');
       operations.push('Database cleanup started');
 
       // 1. Clean up orphaned records
@@ -2107,7 +2108,7 @@ export class OptimizedStorage implements IStorage {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      console.log(`[OptimizedStorage] Database cleanup completed in ${duration}ms`);
+      logger.info(`[OptimizedStorage] Database cleanup completed in ${duration}ms`);
 
       return {
         success: true,
@@ -2119,7 +2120,7 @@ export class OptimizedStorage implements IStorage {
       };
     } catch (error) {
       const endTime = Date.now();
-      console.error('[OptimizedStorage] cleanupDatabase error:', error);
+      logger.error('[OptimizedStorage] cleanupDatabase error:', error);
 
       return {
         success: false,
@@ -2147,7 +2148,7 @@ export class OptimizedStorage implements IStorage {
     const operations: string[] = [];
 
     try {
-      console.log('[OptimizedStorage] Starting database vacuum...');
+      logger.info('[OptimizedStorage] Starting database vacuum...');
       operations.push('Database vacuum started');
 
       // 1. Vacuum main tables
@@ -2194,7 +2195,7 @@ export class OptimizedStorage implements IStorage {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      console.log(`[OptimizedStorage] Database vacuum completed in ${duration}ms`);
+      logger.info(`[OptimizedStorage] Database vacuum completed in ${duration}ms`);
 
       return {
         success: true,
@@ -2206,7 +2207,7 @@ export class OptimizedStorage implements IStorage {
       };
     } catch (error) {
       const endTime = Date.now();
-      console.error('[OptimizedStorage] vacuumDatabase error:', error);
+      logger.error('[OptimizedStorage] vacuumDatabase error:', error);
 
       return {
         success: false,
@@ -2251,7 +2252,7 @@ export class OptimizedStorage implements IStorage {
 
           return pendingFeedback.rows || [];
         } catch (error) {
-          console.error('[OptimizedStorage] getPendingContent error:', error);
+          logger.error('[OptimizedStorage] getPendingContent error:', error);
           return [];
         }
       },
@@ -2276,7 +2277,7 @@ export class OptimizedStorage implements IStorage {
       await clearCache();
 
       if (result.rows && result.rows.length > 0) {
-        console.log(`[OptimizedStorage] Content approved: ${id}`);
+        logger.info(`[OptimizedStorage] Content approved: ${id}`);
         return {
           success: true,
           id,
@@ -2287,7 +2288,7 @@ export class OptimizedStorage implements IStorage {
         throw new Error('Content not found');
       
     } catch (error) {
-      console.error('[OptimizedStorage] approveContent error:', error);
+      logger.error('[OptimizedStorage] approveContent error:', error);
       throw new Error(
         `Failed to approve content: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2311,7 +2312,7 @@ export class OptimizedStorage implements IStorage {
       await clearCache();
 
       if (result.rows && result.rows.length > 0) {
-        console.log(`[OptimizedStorage] Content rejected: ${id}`);
+        logger.info(`[OptimizedStorage] Content rejected: ${id}`);
         return {
           success: true,
           id,
@@ -2322,7 +2323,7 @@ export class OptimizedStorage implements IStorage {
         throw new Error('Content not found');
       
     } catch (error) {
-      console.error('[OptimizedStorage] rejectContent error:', error);
+      logger.error('[OptimizedStorage] rejectContent error:', error);
       throw new Error(
         `Failed to reject content: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2368,7 +2369,7 @@ export class OptimizedStorage implements IStorage {
         return results;
       
     } catch (error) {
-      console.error('[OptimizedStorage] getCategoryStats error:', error);
+      logger.error('[OptimizedStorage] getCategoryStats error:', error);
       throw new Error(
         `Failed to get category stats: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2609,17 +2610,17 @@ export class OptimizedStorage implements IStorage {
 
   async initializeFeedbackSchema(): Promise<void> {
     // Placeholder implementation - would need feedback table schema
-    console.log('Feedback schema initialization placeholder');
+    logger.info('Feedback schema initialization placeholder');
   }
 
   async createFeedbackIndexes(): Promise<void> {
     // Placeholder implementation - would need feedback table schema
-    console.log('Feedback indexes creation placeholder');
+    logger.info('Feedback indexes creation placeholder');
   }
 
   async updateTermSection(termId: string, sectionId: string, data: any): Promise<void> {
     // Placeholder implementation - would need enhanced term sections
-    console.log('Term section update placeholder:', { termId, sectionId, data });
+    logger.info('Term section update placeholder:', { termId, sectionId, data });
   }
 
   async trackTermView(userId: string, termId: string, _sectionId?: string): Promise<void> {
@@ -2628,7 +2629,7 @@ export class OptimizedStorage implements IStorage {
 
   async trackSectionCompletion(userId: string, termId: string, sectionId: string): Promise<void> {
     // Placeholder implementation - would need section completion tracking
-    console.log('Section completion tracking placeholder:', { userId, termId, sectionId });
+    logger.info('Section completion tracking placeholder:', { userId, termId, sectionId });
   }
 
   async getUserSectionProgress(userId: string, _options?: any): Promise<any[]> {
@@ -2719,7 +2720,7 @@ export class OptimizedStorage implements IStorage {
 
       return results.map(r => ({ ...r, termCount: 0 }));
     } catch (error) {
-      console.error('Error in getSubcategoriesOptimized:', error);
+      logger.error('Error in getSubcategoriesOptimized:', error);
       throw error;
     }
   }
@@ -2747,7 +2748,7 @@ export class OptimizedStorage implements IStorage {
       const result = await query;
       return result[0]?.count || 0;
     } catch (error) {
-      console.error('Error in getSubcategoriesCount:', error);
+      logger.error('Error in getSubcategoriesCount:', error);
       return 0;
     }
   }
@@ -2848,7 +2849,7 @@ export class OptimizedStorage implements IStorage {
 
           return sections;
         } catch (error) {
-          console.error('[OptimizedStorage] Error fetching term sections:', error);
+          logger.error('[OptimizedStorage] Error fetching term sections:', error);
           return [];
         }
       },
@@ -2871,7 +2872,7 @@ export class OptimizedStorage implements IStorage {
 
           return section || null;
         } catch (error) {
-          console.error('[OptimizedStorage] Error fetching section by ID:', error);
+          logger.error('[OptimizedStorage] Error fetching section by ID:', error);
           return null;
         }
       },
@@ -2927,7 +2928,7 @@ export class OptimizedStorage implements IStorage {
             hasPrevPage: page > 1,
           };
         } catch (error) {
-          console.error('[OptimizedStorage] Error fetching content gallery:', error);
+          logger.error('[OptimizedStorage] Error fetching content gallery:', error);
           return {
             sectionName,
             items: [],
@@ -3056,7 +3057,7 @@ export class OptimizedStorage implements IStorage {
             totalPages: Math.ceil(totalCount / limit),
           };
         } catch (error) {
-          console.error('[OptimizedStorage] Error searching section content:', error);
+          logger.error('[OptimizedStorage] Error searching section content:', error);
           return {
             data: [],
             total: 0,

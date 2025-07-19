@@ -5,12 +5,13 @@
 
 import type { Express, Request, Response } from 'express';
 
+import logger from '../utils/logger';
 export function registerFirebaseAuthRoutesDebug(app: Express): void {
-  console.log('🔧 Registering Firebase Auth Routes (Debug Version)...');
+  logger.info('🔧 Registering Firebase Auth Routes (Debug Version)...');
 
   // Test route to verify the auth routes are working
   app.get('/api/auth/test', (req: Request, res: Response) => {
-    console.log('✅ Test route hit');
+    logger.info('✅ Test route hit');
     res.json({
       success: true,
       message: 'Firebase auth routes are working',
@@ -20,7 +21,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
 
   // Check authentication providers
   app.get('/api/auth/providers', (req: Request, res: Response) => {
-    console.log('🔍 Providers route hit');
+    logger.info('🔍 Providers route hit');
 
     const firebaseConfigured = !!(
       process.env.FIREBASE_PROJECT_ID &&
@@ -46,7 +47,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
 
   // Authentication check route
   app.get('/api/auth/check', (req: Request, res: Response) => {
-    console.log('🔍 Auth check route hit');
+    logger.info('🔍 Auth check route hit');
 
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ')
@@ -77,8 +78,8 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
 
   // Firebase login route (simplified)
   app.post('/api/auth/firebase/login', (req: Request, res: Response) => {
-    console.log('🔍 Firebase login route hit');
-    console.log('Request body:', req.body);
+    logger.info('🔍 Firebase login route hit');
+    logger.info('Request body:', req.body);
 
     const { idToken } = req.body;
 
@@ -99,7 +100,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
 
   // Standard login route
   app.post('/api/auth/login', (req: Request, res: Response) => {
-    console.log('🔍 Standard login route hit');
+    logger.info('🔍 Standard login route hit');
     res.json({
       success: false,
       message: 'Please use Firebase authentication',
@@ -107,5 +108,5 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
     });
   });
 
-  console.log('✅ Firebase Auth Routes (Debug Version) registered');
+  logger.info('✅ Firebase Auth Routes (Debug Version) registered');
 }

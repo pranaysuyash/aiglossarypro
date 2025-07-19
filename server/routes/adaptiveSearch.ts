@@ -8,6 +8,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { type AdaptiveSearchOptions, adaptiveSearch } from '../adaptiveSearchService';
 import { paginationSchema, searchQuerySchema } from '../middleware/security';
 
+import logger from '../utils/logger';
 /**
  * Register adaptive search routes
  */
@@ -73,7 +74,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
           });
         }
 
-        console.log('Adaptive search query:', {
+        logger.info('Adaptive search query:', {
           query: query as string,
           page: pageNum,
           limit: limitNum,
@@ -135,7 +136,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
 
         res.json(response);
       } catch (error) {
-        console.error('Error in adaptive search:', error);
+        logger.error('Error in adaptive search:', error);
         res.status(500).json({
           success: false,
           error: 'Adaptive search failed',
@@ -194,7 +195,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
 
       res.json(suggestions);
     } catch (error) {
-      console.error('Error fetching adaptive search suggestions:', error);
+      logger.error('Error fetching adaptive search suggestions:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch suggestions',
@@ -248,7 +249,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
         data: relatedConcepts,
       });
     } catch (error) {
-      console.error('Error fetching related concepts:', error);
+      logger.error('Error fetching related concepts:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch related concepts',
@@ -286,7 +287,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
         data: analytics,
       });
     } catch (error) {
-      console.error('Error generating search analytics:', error);
+      logger.error('Error generating search analytics:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to generate analytics',

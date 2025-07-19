@@ -6,11 +6,12 @@
 import type { Express } from 'express';
 import { authenticate, requireAdmin, setupSimpleAuth } from '../auth/simpleAuth';
 
+import logger from '../utils/logger';
 /**
  * Register simple authentication routes
  */
 export function registerSimpleAuthRoutes(app: Express): void {
-  console.log('🔐 Setting up simple auth routes...');
+  logger.info('🔐 Setting up simple auth routes...');
 
   // Setup auth endpoints (login, callback, logout, etc.)
   setupSimpleAuth(app);
@@ -33,5 +34,5 @@ export function registerSimpleAuthRoutes(app: Express): void {
     });
   });
 
-  console.log('✅ Simple auth routes registered');
+  logger.info('✅ Simple auth routes registered');
 }

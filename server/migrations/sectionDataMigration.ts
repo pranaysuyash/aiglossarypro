@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { enhancedTerms, sections } from '../../shared/enhancedSchema';
 import { db } from '../db';
 
+import logger from '../utils/logger';
 // Load standardized sections from external configuration
 function loadStandardSections() {
   try {
@@ -11,7 +12,7 @@ function loadStandardSections() {
     const configData = readFileSync(configPath, 'utf-8');
     return JSON.parse(configData) as Array<{ name: string; order: number }>;
   } catch (error) {
-    console.error('Failed to load standard sections configuration:', error);
+    logger.error('Failed to load standard sections configuration:', error);
     throw new Error('Standard sections configuration file not found or invalid');
   }
 }
@@ -19,7 +20,7 @@ function loadStandardSections() {
 export const STANDARD_SECTIONS = loadStandardSections();
 
 export async function migrateSectionData() {
-  console.log('Starting section data migration...');
+  logger.info('Starting section data migration...');
 
   return await db.transaction(async tx => {
     try {
@@ -30,10 +31,10 @@ export async function migrateSectionData() {
           name: enhancedTerms.name,
         })
         .from(enhancedTerms);
-      console.log(`Found ${termsResult.length} terms to migrate`);
+      logger.info(`Found ${termsResult.length} terms to migrate`);
 
       if (termsResult.length === 0) {
-        console.log('No terms found for migration');
+        logger.info('No terms found for migration');
         return { success: true, sectionsCreated: 0 };
       }
 
@@ -50,7 +51,7 @@ export async function migrateSectionData() {
       }
 
       // Perform bulk insert for sections using Drizzle query builder
-      console.log(`Inserting ${sectionsToInsert.length} sections...`);
+      logger.info(`Inserting ${sectionsToInsert.length} sections...`);
 
       // Split into chunks to avoid parameter limits
       const chunkSize = 1000;
@@ -65,21 +66,21 @@ export async function migrateSectionData() {
           .onConflictDoNothing({ target: [sections.termId, sections.name] });
 
         totalSectionsCreated += chunk.length;
-        console.log(
+        logger.info(
           `Processed ${Math.min(i + chunkSize, sectionsToInsert.length)}/${sectionsToInsert.length} sections`
         );
       }
 
       // Create basic section items for each term
-      console.log('Creating basic section items...');
+      logger.info('Creating basic section items...');
       for (const term of termsResult) {
         await createBasicSectionItems(tx, term.id);
       }
 
-      console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
+      logger.info(`Migration completed! Created ${totalSectionsCreated} sections total.`);
       return { success: true, sectionsCreated: totalSectionsCreated };
     } catch (error) {
-      console.error('Section data migration failed:', error);
+      logger.error('Section data migration failed:', error);
       throw error;
     }
   });
@@ -188,7 +189,7 @@ async function createBasicSectionItems(tx: any, termId: string) {
       await tx.insert(sectionItems).values(itemsToInsert).onConflictDoNothing();
     }
   } catch (error) {
-    console.error(`Error creating section items for term ${termId}:`, error);
+    logger.error(`Error creating section items for term ${termId}:`, error);
   }
 }
 

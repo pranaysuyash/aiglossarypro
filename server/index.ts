@@ -1,22 +1,23 @@
 import dotenv from 'dotenv';
 
+import logger from './utils/logger';
 dotenv.config();
 
-console.log('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
-console.log('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
-console.log(
+logger.info('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
+logger.info('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
+logger.info(
   'FIREBASE_PRIVATE_KEY_BASE64:',
   process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set'
 );
 
 // Debug: Check Firebase environment variables at server startup
-console.log('🔍 Server Startup - Firebase Environment Check:');
-console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');
-console.log(
+logger.info('🔍 Server Startup - Firebase Environment Check:');
+logger.info('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');
+logger.info(
   '- FIREBASE_CLIENT_EMAIL:',
   process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing'
 );
-console.log(
+logger.info(
   '- FIREBASE_PRIVATE_KEY_BASE64:',
   process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing'
 );
@@ -25,7 +26,7 @@ const firebaseEnabled = !!(
   process.env.FIREBASE_CLIENT_EMAIL &&
   (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64)
 );
-console.log('- Firebase Auth Enabled:', firebaseEnabled ? '✅ TRUE' : '❌ FALSE');
+logger.info('- Firebase Auth Enabled:', firebaseEnabled ? '✅ TRUE' : '❌ FALSE');
 
 // Initialize error monitoring first
 import {

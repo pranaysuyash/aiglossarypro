@@ -2,8 +2,9 @@ import { categories, terms } from '@shared/enhancedSchema';
 import { eq } from 'drizzle-orm';
 import { db } from './db';
 
+import logger from './utils/logger';
 async function quickSeed() {
-  console.log('🌱 Starting quick seed...');
+  logger.info('🌱 Starting quick seed...');
 
   // Sample terms data
   const sampleTerms = [
@@ -139,7 +140,7 @@ async function quickSeed() {
       // Find the category ID
       const categoryId = categoryMap.get(termData.categoryName);
       if (!categoryId) {
-        console.warn(
+        logger.warn(
           `Category "${termData.categoryName}" not found, skipping term "${termData.name}"`
         );
         continue;
@@ -153,7 +154,7 @@ async function quickSeed() {
         .limit(1);
 
       if (existingTerm.length > 0) {
-        console.log(`Term "${termData.name}" already exists, skipping...`);
+        logger.info(`Term "${termData.name}" already exists, skipping...`);
         continue;
       }
 
@@ -172,20 +173,20 @@ async function quickSeed() {
         })
         .returning();
 
-      console.log(`✅ Added term: ${termData.name}`);
+      logger.info(`✅ Added term: ${termData.name}`);
     }
 
-    console.log('🎉 Quick seed completed successfully!');
+    logger.info('🎉 Quick seed completed successfully!');
 
     // Show summary
     const termCount = await db.select().from(terms);
     const categoryCount = await db.select().from(categories);
 
-    console.log(`📊 Database summary:`);
-    console.log(`   - Total terms: ${termCount.length}`);
-    console.log(`   - Total categories: ${categoryCount.length}`);
+    logger.info(`📊 Database summary:`);
+    logger.info(`   - Total terms: ${termCount.length}`);
+    logger.info(`   - Total categories: ${categoryCount.length}`);
   } catch (error) {
-    console.error('❌ Error during seeding:', error);
+    logger.error('❌ Error during seeding:', error);
     throw error;
   }
 }
@@ -195,7 +196,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   quickSeed()
     .then(() => process.exit(0))
     .catch(error => {
-      console.error(error);
+      logger.error(error);
       process.exit(1);
     });
 }

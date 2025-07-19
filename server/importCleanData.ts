@@ -2,26 +2,27 @@ import fs from 'node:fs';
 import { categories, subcategories, termSubcategories, terms } from '@shared/enhancedSchema';
 import { db } from './db';
 
+import logger from './utils/logger';
 async function importCleanData() {
   try {
-    console.log('🧹 Starting clean data import...');
+    logger.info('🧹 Starting clean data import...');
 
     // Read the processed data
     const cleanData = JSON.parse(fs.readFileSync('temp/final_output.json', 'utf8'));
 
-    console.log(
+    logger.info(
       `📊 Data to import: ${cleanData.categories.length} categories, ${cleanData.subcategories.length} subcategories, ${cleanData.terms.length} terms`
     );
 
     // Clear existing data
-    console.log('🗑️  Clearing existing data...');
+    logger.info('🗑️  Clearing existing data...');
     await db.delete(termSubcategories);
     await db.delete(terms);
     await db.delete(subcategories);
     await db.delete(categories);
 
     // Import categories
-    console.log('📁 Importing categories...');
+    logger.info('📁 Importing categories...');
     const imported = { categories: 0, subcategories: 0, terms: 0 };
 
     for (const category of cleanData.categories) {
@@ -32,12 +33,12 @@ async function importCleanData() {
         });
         imported.categories++;
       } catch (e) {
-        console.warn(`⚠️  Error importing category ${category.name}: ${e}`);
+        logger.warn(`⚠️  Error importing category ${category.name}: ${e}`);
       }
     }
 
     // Import subcategories
-    console.log('📂 Importing subcategories...');
+    logger.info('📂 Importing subcategories...');
     for (const subcategory of cleanData.subcategories) {
       try {
         await db.insert(subcategories).values({
@@ -47,12 +48,12 @@ async function importCleanData() {
         });
         imported.subcategories++;
       } catch (e) {
-        console.warn(`⚠️  Error importing subcategory ${subcategory.name}: ${e}`);
+        logger.warn(`⚠️  Error importing subcategory ${subcategory.name}: ${e}`);
       }
     }
 
     // Import terms
-    console.log('📝 Importing terms...');
+    logger.info('📝 Importing terms...');
     for (const term of cleanData.terms) {
       try {
         await db.insert(terms).values({
@@ -79,15 +80,15 @@ async function importCleanData() {
           }
         }
       } catch (e) {
-        console.warn(`⚠️  Error importing term ${term.name}: ${e}`);
+        logger.warn(`⚠️  Error importing term ${term.name}: ${e}`);
       }
     }
 
-    console.log(
+    logger.info(
       `✅ Import completed: ${imported.categories} categories, ${imported.subcategories} subcategories, ${imported.terms} terms`
     );
   } catch (error) {
-    console.error('❌ Error importing clean data:', error);
+    logger.error('❌ Error importing clean data:', error);
     throw error;
   }
 }
@@ -96,11 +97,11 @@ async function importCleanData() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   importCleanData()
     .then(() => {
-      console.log('🎉 Clean data import successful!');
+      logger.info('🎉 Clean data import successful!');
       process.exit(0);
     })
     .catch(error => {
-      console.error('💥 Clean data import failed:', error);
+      logger.error('💥 Clean data import failed:', error);
       process.exit(1);
     });
 }

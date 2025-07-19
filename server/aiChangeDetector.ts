@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { cacheManager } from './cacheManager';
 
+import logger from './utils/logger';
 interface ChangeAnalysis {
   hasSignificantChanges: boolean;
   changeScore: number; // 0-100, higher means more significant changes
@@ -70,7 +71,7 @@ export class AIChangeDetector {
       try {
         return await this.performAIAnalysis(cacheInfo, newDataSample);
       } catch (error) {
-        console.warn('AI analysis failed, falling back to basic checks:', error);
+        logger.warn('AI analysis failed, falling back to basic checks:', error);
       }
     }
 
@@ -148,10 +149,10 @@ Consider minor changes:
 
     try {
       const analysis = JSON.parse(content);
-      console.log('🤖 AI Change Analysis:', analysis);
+      logger.info('🤖 AI Change Analysis:', analysis);
       return analysis;
     } catch (error) {
-      console.error('Failed to parse AI response:', content);
+      logger.error('Failed to parse AI response:', content);
       throw error;
     }
   }
@@ -198,7 +199,7 @@ Consider minor changes:
       `Categories: ${categoriesDiff > 0 ? '+' : ''}${categoriesDiff}, ` +
       `Subcategories: ${subcategoriesDiff > 0 ? '+' : ''}${subcategoriesDiff}`;
 
-    console.log('📊 Basic Change Analysis:', {
+    logger.info('📊 Basic Change Analysis:', {
       hasSignificantChanges,
       changeScore: Math.round(changeScore),
       changeDescription,

@@ -14,6 +14,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import archiver from 'archiver';
 
+import logger from './utils/logger';
 export interface S3FileMetadata {
   key: string;
   size: number;
@@ -76,12 +77,12 @@ class OptimizedS3Client {
         lastError = error as Error;
 
         if (attempt === maxRetries) {
-          console.error(`${operationName} failed after ${maxRetries} attempts:`, lastError);
+          logger.error(`${operationName} failed after ${maxRetries} attempts:`, lastError);
           throw lastError;
         }
 
         const delay = Math.min(1000 * 2 ** (attempt - 1), 30000); // Max 30s delay
-        console.warn(
+        logger.warn(
           `${operationName} attempt ${attempt} failed, retrying in ${delay}ms:`,
           lastError.message
         );
@@ -584,7 +585,7 @@ class OptimizedS3Client {
           archive.append(response.Body as any, { name: fileName });
         }
       } catch (error) {
-        console.warn(`Failed to add file ${fileKey} to archive:`, error);
+        logger.warn(`Failed to add file ${fileKey} to archive:`, error);
       }
     }
 

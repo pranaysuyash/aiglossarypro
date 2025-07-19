@@ -1,4 +1,21 @@
-import { AlertCircle, CheckCircle, Edit, Loader2, Mail, RefreshCw, Trash2, User, UserPlus, XCircle, } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Calendar,
+  CheckCircle, 
+  Crown,
+  Edit, 
+  Loader2, 
+  Mail, 
+  MoreVertical,
+  RefreshCw, 
+  Settings,
+  Shield,
+  Trash2, 
+  User, 
+  UserPlus, 
+  Users,
+  XCircle 
+} from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../../hooks/use-toast';
 import { Badge } from '../ui/badge';
@@ -35,11 +52,13 @@ interface TeamInvite {
   status: 'pending' | 'accepted' | 'expired';
 }
 
-function TeamManagementDashboard() {
+export function TeamManagementDashboard() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'members' | 'invites' | 'settings'>('members');
   const [newInviteEmail, setNewInviteEmail] = useState('');
   const [newInviteRole, setNewInviteRole] = useState<'admin' | 'member'>('member');
+  const [isConfirmRemoveOpen, setIsConfirmRemoveOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
 
   // Mock data - would come from API
   const [teamMembers] = useState<TeamMember[]>([
@@ -105,11 +124,7 @@ function TeamManagementDashboard() {
     setNewInviteEmail('');
   };
 
-  const handleRemoveMember = async (member: TeamMember) => {
-    if (!member) {return;}
-    setIsConfirmRemoveOpen(true);
-    setMemberToRemove(member);
-  };
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
     // Would make API call here
     toast({
       title: 'Member Removed',
@@ -123,6 +138,14 @@ function TeamManagementDashboard() {
     toast({
       title: 'Invitation Revoked',
       description: `Invitation to ${invite.email} has been revoked.`,
+    });
+  };
+
+  const handleRevokeInvite = async (inviteId: string, inviteEmail: string) => {
+    // Would make API call here
+    toast({
+      title: 'Invitation Revoked',
+      description: `Invitation to ${inviteEmail} has been revoked.`,
     });
   };
 
@@ -505,5 +528,3 @@ function TeamManagementDashboard() {
     </div>
   );
 }
-
-export default TeamManagementDashboard;

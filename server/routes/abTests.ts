@@ -12,6 +12,7 @@ import { authenticateToken } from '../middleware/adminAuth';
 import { validateRequest } from '../middleware/validateRequest';
 import { calculateStatisticalSignificance, determineWinner } from '../utils/statistics';
 
+import logger from '../utils/logger';
 const router = Router();
 
 // Schema for A/B test data sync
@@ -118,7 +119,7 @@ router.post('/sync', validateRequest(abTestSyncSchema), async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Error syncing A/B test data:', error);
+    logger.error('Error syncing A/B test data:', error);
     res.status(500).json({ error: 'Failed to sync A/B test data' });
   }
 });
@@ -195,7 +196,7 @@ router.get('/results/:testId', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error fetching A/B test results:', error);
+    logger.error('Error fetching A/B test results:', error);
     res.status(500).json({ error: 'Failed to fetch test results' });
   }
 });
@@ -209,7 +210,7 @@ router.get('/active', authenticateToken, async (_req, res) => {
       data: tests,
     });
   } catch (error) {
-    console.error('Error fetching active tests:', error);
+    logger.error('Error fetching active tests:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch active tests',
@@ -241,7 +242,7 @@ router.post('/create', authenticateToken, validateRequest(createABTestSchema), a
 
     res.json(test);
   } catch (error) {
-    console.error('Error creating A/B test:', error);
+    logger.error('Error creating A/B test:', error);
     res.status(500).json({ error: 'Failed to create A/B test' });
   }
 });
@@ -276,7 +277,7 @@ router.post('/end/:testId', authenticateToken, async (req, res) => {
 
     res.json(test);
   } catch (error) {
-    console.error('Error ending A/B test:', error);
+    logger.error('Error ending A/B test:', error);
     res.status(500).json({ error: 'Failed to end A/B test' });
   }
 });
@@ -293,7 +294,7 @@ router.get('/history', authenticateToken, async (_req, res) => {
 
     res.json(tests);
   } catch (error) {
-    console.error('Error fetching test history:', error);
+    logger.error('Error fetching test history:', error);
     res.status(500).json({ error: 'Failed to fetch test history' });
   }
 });

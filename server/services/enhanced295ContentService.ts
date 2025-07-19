@@ -11,6 +11,7 @@ import {
   estimatePromptCost
 } from './promptTriplets295';
 
+import logger from '../utils/logger';
 interface ContentGenerationOptions {
   mode: 'generate-only' | 'generate-evaluate' | 'full-pipeline';
   qualityThreshold: number;
@@ -203,7 +204,7 @@ class Enhanced295ContentService {
       return finalResult;
 
     } catch (error) {
-      console.error('Error generating single term content:', error);
+      logger.error('Error generating single term content:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -342,7 +343,7 @@ class Enhanced295ContentService {
       }
 
     } catch (error) {
-      console.error('Error in background processing:', error);
+      logger.error('Error in background processing:', error);
       if (this.currentProcessing) {
         this.currentProcessing.status = 'failed';
         this.currentProcessing.errors.push({
@@ -636,7 +637,7 @@ class Enhanced295ContentService {
         }
       });
     } catch (error) {
-      console.error('Error saving content to database:', error);
+      logger.error('Error saving content to database:', error);
     }
   }
 

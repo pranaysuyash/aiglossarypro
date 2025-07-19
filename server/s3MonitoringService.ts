@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import logger from './utils/logger';
 export interface S3OperationLog {
   id: string;
   timestamp: Date;
@@ -119,7 +120,7 @@ class S3MonitoringService {
           .filter(log => log !== null) as S3OperationLog[];
       }
     } catch (error) {
-      console.error('Error loading existing logs:', error);
+      logger.error('Error loading existing logs:', error);
     }
   }
 
@@ -250,7 +251,7 @@ class S3MonitoringService {
       const logLine = `${JSON.stringify(log)}\n`;
       fs.appendFileSync(this.logFilePath, logLine);
     } catch (error) {
-      console.error('Error writing log to file:', error);
+      logger.error('Error writing log to file:', error);
     }
   }
 
@@ -506,7 +507,7 @@ class S3MonitoringService {
     alert.actions.forEach(action => {
       switch (action) {
         case 'log':
-          console.warn(`[S3 ALERT] ${alert.name}: ${message}`);
+          logger.warn(`[S3 ALERT] ${alert.name}: ${message}`);
           break;
         case 'webhook':
           if (alert.webhookUrl) {
@@ -542,7 +543,7 @@ class S3MonitoringService {
         }),
       });
     } catch (error) {
-      console.error('Failed to send webhook alert:', error);
+      logger.error('Failed to send webhook alert:', error);
     }
   }
 
@@ -553,7 +554,7 @@ class S3MonitoringService {
     _log: S3OperationLog
   ) {
     // Email functionality would be implemented based on your email service
-    console.log(`Would send email alert to ${recipients.join(', ')}: ${message}`);
+    logger.info(`Would send email alert to ${recipients.join(', ')}: ${message}`);
   }
 
   private formatBytes(bytes: number): string {

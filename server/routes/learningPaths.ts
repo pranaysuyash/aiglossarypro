@@ -28,6 +28,7 @@ import {
   learningPathsQuerySchema,
 } from '../validation/learningPaths';
 
+import logger from '../utils/logger';
 export function registerLearningPathsRoutes(app: Express): void {
   /**
    * Get all learning paths with filtering and pagination
@@ -110,7 +111,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           },
         });
       } catch (error) {
-        console.error('Get learning paths error:', error);
+        logger.error('Get learning paths error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -183,7 +184,7 @@ export function registerLearningPathsRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Get learning path error:', error);
+      logger.error('Get learning path error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -264,7 +265,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Learning path created successfully',
         });
       } catch (error) {
-        console.error('Create learning path error:', error);
+        logger.error('Create learning path error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -378,7 +379,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Learning path started successfully',
         });
       } catch (error) {
-        console.error('Start learning path error:', error);
+        logger.error('Start learning path error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to start learning path',
@@ -485,7 +486,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Step completed successfully',
         });
       } catch (error) {
-        console.error('Complete step error:', error);
+        logger.error('Complete step error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to complete step',
@@ -539,7 +540,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           data: progress,
         });
       } catch (error) {
-        console.error('Get user progress error:', error);
+        logger.error('Get user progress error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch user progress',
@@ -601,7 +602,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           },
         });
       } catch (error) {
-        console.error('Get recommended paths error:', error);
+        logger.error('Get recommended paths error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -625,7 +626,7 @@ export function registerLearningPathsRoutes(app: Express): void {
         message: 'Trending learning paths from the last 30 days',
       });
     } catch (error) {
-      console.error('Get trending paths error:', error);
+      logger.error('Get trending paths error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -705,7 +706,7 @@ export function registerLearningPathsRoutes(app: Express): void {
         message: 'Learning path updated successfully',
       });
     } catch (error) {
-      console.error('Update learning path error:', error);
+      logger.error('Update learning path error:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to update learning path',
@@ -781,7 +782,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Learning path deleted successfully',
         });
       } catch (error) {
-        console.error('Delete learning path error:', error);
+        logger.error('Delete learning path error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to delete learning path',
@@ -862,7 +863,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Step added successfully',
         });
       } catch (error) {
-        console.error('Add step error:', error);
+        logger.error('Add step error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to add step',
@@ -951,7 +952,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Step updated successfully',
         });
       } catch (error) {
-        console.error('Update step error:', error);
+        logger.error('Update step error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to update step',
@@ -1026,7 +1027,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Step deleted successfully',
         });
       } catch (error) {
-        console.error('Delete step error:', error);
+        logger.error('Delete step error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to delete step',
@@ -1100,7 +1101,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           message: 'Steps reordered successfully',
         });
       } catch (error) {
-        console.error('Reorder steps error:', error);
+        logger.error('Reorder steps error:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to reorder steps',

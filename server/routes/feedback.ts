@@ -10,13 +10,14 @@ import { mockRequireAdmin } from '../middleware/dev/mockAuth';
 import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
 import type { AuthenticatedRequest } from '../types/express';
 
+import logger from '../utils/logger';
 // TODO: Phase 2 - Move table creation to storage layer migration
 // Feedback table should be created via Drizzle schema and migrations
 // For now, commenting out direct table creation
 
 const initializeFeedbackStorage = async () => {
   // TODO: Phase 2 - Add initializeFeedbackSchema() to enhancedStorage
-  console.log('⚠️ Feedback schema initialization moved to Phase 2 storage layer');
+  logger.info('⚠️ Feedback schema initialization moved to Phase 2 storage layer');
 };
 
 // Initialize feedback storage

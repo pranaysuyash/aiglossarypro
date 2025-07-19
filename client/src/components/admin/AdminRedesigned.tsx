@@ -24,6 +24,7 @@ import CodeExamplesManagement from './CodeExamplesManagement';
 import ContentManagementTools from './ContentManagementTools';
 import ContentOverview from './ContentOverview';
 import LearningPathsManagement from './LearningPathsManagement';
+import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 
 export default function AdminRedesigned() {
   const { isAuthenticated } = useAuth();
@@ -122,7 +123,7 @@ export default function AdminRedesigned() {
 
       // Analytics & Monitoring
       case 'analytics-performance':
-        return <GenerationStatsDashboard />;
+        return <PerformanceAnalyticsDashboard />;
       case 'analytics-costs':
         return (
           <div className="bg-white rounded-lg border p-8 text-center">
@@ -141,6 +142,8 @@ export default function AdminRedesigned() {
         );
       case 'analytics-advanced':
         return <AdvancedAnalyticsDashboard />;
+      case 'analytics-system':
+        return <PerformanceAnalyticsDashboard />;
 
       // Administration
       case 'admin-users':

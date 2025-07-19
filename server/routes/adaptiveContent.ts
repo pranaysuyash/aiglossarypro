@@ -9,6 +9,7 @@ import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { adaptiveContentService } from '../services/adaptiveContentService';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 
+import logger from '../utils/logger';
 // Validation schemas
 const adaptiveRecommendationsSchema = z.object({
   count: z.coerce.number().min(1).max(50).optional().default(10),
@@ -103,7 +104,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
           data: patterns,
         });
       } catch (error) {
-        console.error('Get learning patterns error:', error);
+        logger.error('Get learning patterns error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -209,7 +210,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
           );
         }
 
-        console.error('Get adaptive recommendations error:', error);
+        logger.error('Get adaptive recommendations error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -305,7 +306,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
           data: organization,
         });
       } catch (error) {
-        console.error('Get content organization error:', error);
+        logger.error('Get content organization error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -405,7 +406,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
           data: insights,
         });
       } catch (error) {
-        console.error('Get learning insights error:', error);
+        logger.error('Get learning insights error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -494,7 +495,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
         );
       }
 
-      console.error('Process adaptive feedback error:', error);
+      logger.error('Process adaptive feedback error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }

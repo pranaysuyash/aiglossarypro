@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 /**
  * Redis Configuration for Enhanced Storage
  *
@@ -179,7 +180,7 @@ const createRedisClient = (): RedisClient => {
     !process.env.REDIS_URL &&
     process.env.REDIS_ENABLED !== 'true'
   ) {
-    console.log('[Redis] Using mock Redis client for development');
+    logger.info('[Redis] Using mock Redis client for development');
     return new MockRedisClient();
   }
 
@@ -189,7 +190,7 @@ const createRedisClient = (): RedisClient => {
       // Use dynamic import instead of require for ESM compatibility
       import('ioredis')
         .then(({ default: Redis }) => {
-          console.log('[Redis] Initializing real Redis client');
+          logger.info('[Redis] Initializing real Redis client');
 
           const configToUse =
             process.env.NODE_ENV === 'production' ? productionRedisConfig : redisConfig;
@@ -208,43 +209,43 @@ const createRedisClient = (): RedisClient => {
 
           // Add connection event listeners
           client.on('connect', () => {
-            console.log('[Redis] Connected to Redis server');
+            logger.info('[Redis] Connected to Redis server');
           });
 
           client.on('ready', () => {
-            console.log('[Redis] Redis client ready');
+            logger.info('[Redis] Redis client ready');
           });
 
           client.on('error', error => {
-            console.error('[Redis] Redis client error:', error);
+            logger.error('[Redis] Redis client error:', error);
           });
 
           client.on('close', () => {
-            console.log('[Redis] Redis connection closed');
+            logger.info('[Redis] Redis connection closed');
           });
 
           client.on('reconnecting', () => {
-            console.log('[Redis] Redis reconnecting...');
+            logger.info('[Redis] Redis reconnecting...');
           });
 
           // Replace the global client with the real one
           redisClient = new ProductionRedisClient(client);
         })
         .catch(error => {
-          console.error('[Redis] Failed to dynamically import ioredis:', error);
+          logger.error('[Redis] Failed to dynamically import ioredis:', error);
         });
 
       // Return mock client for immediate use, will be replaced by real client
-      console.log('[Redis] Starting with mock client, will upgrade to real Redis when available');
+      logger.info('[Redis] Starting with mock client, will upgrade to real Redis when available');
       return new MockRedisClient();
     } catch (error) {
-      console.error('[Redis] Failed to initialize Redis client:', error);
-      console.warn('[Redis] Falling back to mock Redis client');
+      logger.error('[Redis] Failed to initialize Redis client:', error);
+      logger.warn('[Redis] Falling back to mock Redis client');
       return new MockRedisClient();
     }
   }
 
-  console.log('[Redis] Using mock Redis client as fallback');
+  logger.info('[Redis] Using mock Redis client as fallback');
   return new MockRedisClient();
 };
 
@@ -279,7 +280,7 @@ export class RedisCache {
 
       return JSON.parse(value) as T;
     } catch (error) {
-      console.error('[RedisCache] Get error:', error);
+      logger.error('[RedisCache] Get error:', error);
       return null;
     }
   }
@@ -289,7 +290,7 @@ export class RedisCache {
       const serialized = JSON.stringify(value);
       await redisClient.set(this.getKey(key), serialized, ttl);
     } catch (error) {
-      console.error('[RedisCache] Set error:', error);
+      logger.error('[RedisCache] Set error:', error);
       // Don't throw - caching failures should be non-fatal
     }
   }
@@ -340,24 +341,24 @@ export class RedisCache {
           this.startBackgroundRevalidation(key, revalidateFn, options);
         }
 
-        console.log(`[RedisCache] Serving stale data for key: ${key}`);
+        logger.info(`[RedisCache] Serving stale data for key: ${key}`);
         return staleEntry.data;
       }
 
       // No cached data available, fetch fresh
-      console.log(`[RedisCache] No cached data for key: ${key}, fetching fresh`);
+      logger.info(`[RedisCache] No cached data for key: ${key}, fetching fresh`);
       const freshData = await revalidateFn();
       await this.setStaleWhileRevalidate(key, freshData, options);
 
       return freshData;
     } catch (error) {
-      console.error('[RedisCache] Stale-while-revalidate error:', error);
+      logger.error('[RedisCache] Stale-while-revalidate error:', error);
 
       // Fallback: try to execute revalidate function
       try {
         return await revalidateFn();
       } catch (revalidateError) {
-        console.error('[RedisCache] Revalidate function failed:', revalidateError);
+        logger.error('[RedisCache] Revalidate function failed:', revalidateError);
         return null;
       }
     }
@@ -375,12 +376,12 @@ export class RedisCache {
 
     const revalidationPromise = (async () => {
       try {
-        console.log(`[RedisCache] Starting background revalidation for key: ${key}`);
+        logger.info(`[RedisCache] Starting background revalidation for key: ${key}`);
         const freshData = await revalidateFn();
         await this.setStaleWhileRevalidate(key, freshData, options);
-        console.log(`[RedisCache] Background revalidation completed for key: ${key}`);
+        logger.info(`[RedisCache] Background revalidation completed for key: ${key}`);
       } catch (error) {
-        console.error(`[RedisCache] Background revalidation failed for key: ${key}`, error);
+        logger.error(`[RedisCache] Background revalidation failed for key: ${key}`, error);
       } finally {
         this.revalidationJobs.delete(key);
       }
@@ -412,7 +413,7 @@ export class RedisCache {
       // Set stale cache with longer TTL
       await redisClient.set(staleKey, serialized, options.staleTtl);
     } catch (error) {
-      console.error('[RedisCache] Set stale-while-revalidate error:', error);
+      logger.error('[RedisCache] Set stale-while-revalidate error:', error);
     }
   }
 
@@ -420,7 +421,7 @@ export class RedisCache {
     try {
       await redisClient.del(this.getKey(key));
     } catch (error) {
-      console.error('[RedisCache] Delete error:', error);
+      logger.error('[RedisCache] Delete error:', error);
     }
   }
 
@@ -428,7 +429,7 @@ export class RedisCache {
     try {
       return await redisClient.exists(this.getKey(key));
     } catch (error) {
-      console.error('[RedisCache] Exists error:', error);
+      logger.error('[RedisCache] Exists error:', error);
       return false;
     }
   }
@@ -437,9 +438,9 @@ export class RedisCache {
     try {
       // For mock client, this is a no-op
       // For real Redis, you'd use SCAN + DEL pattern
-      console.log(`[RedisCache] Invalidating pattern: ${pattern}`);
+      logger.info(`[RedisCache] Invalidating pattern: ${pattern}`);
     } catch (error) {
-      console.error('[RedisCache] Invalidate pattern error:', error);
+      logger.error('[RedisCache] Invalidate pattern error:', error);
     }
   }
 
@@ -447,7 +448,7 @@ export class RedisCache {
     try {
       await redisClient.flushdb();
     } catch (error) {
-      console.error('[RedisCache] Clear error:', error);
+      logger.error('[RedisCache] Clear error:', error);
     }
   }
 

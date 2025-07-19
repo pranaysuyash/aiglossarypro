@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
+import logger from '../utils/logger';
 interface PerformanceMetrics {
   slowQueries: Array<{
     method: string;
@@ -50,12 +51,12 @@ export function performanceMiddleware(req: Request, res: Response, next: NextFun
         metrics.slowQueries.shift();
       }
 
-      console.warn(`🐌 Slow query detected: ${req.method} ${req.path} - ${duration}ms`);
+      logger.warn(`🐌 Slow query detected: ${req.method} ${req.path} - ${duration}ms`);
     }
 
     // Log API requests
     if (req.path.startsWith('/api')) {
-      console.log(`📊 ${req.method} ${req.path} - ${duration}ms`);
+      logger.info(`📊 ${req.method} ${req.path} - ${duration}ms`);
     }
   });
 

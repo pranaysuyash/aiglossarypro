@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 
+import logger from './utils/logger';
 // Load environment variables
 dotenv.config();
 
@@ -104,7 +105,7 @@ function validateEnvironment(): EnvironmentConfig {
   const hasS3Bucket = config.S3_BUCKET_NAME;
 
   if ((hasS3Keys && !hasS3Bucket) || (!hasS3Keys && hasS3Bucket)) {
-    console.warn(
+    logger.warn(
       'Warning: Incomplete S3 configuration detected. Ensure all S3 variables are set for full functionality.'
     );
   }
@@ -113,14 +114,14 @@ function validateEnvironment(): EnvironmentConfig {
   const hasSimpleAuth = config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID);
 
   if (config.NODE_ENV === 'production' && !hasSimpleAuth) {
-    console.warn(
+    logger.warn(
       'Warning: No authentication configured. Set up JWT_SECRET with Google/GitHub OAuth.'
     );
   }
 
   if (errors.length > 0) {
-    console.error('Environment validation failed:');
-    errors.forEach(error => console.error(`  - ${error}`));
+    logger.error('Environment validation failed:');
+    errors.forEach(error => logger.error(`  - ${error}`));
     throw new Error(`Environment validation failed: ${errors.join(', ')}`);
   }
 
@@ -223,31 +224,31 @@ function redactSensitiveInfo(value: string): string {
 
 // Log configuration status (without sensitive data)
 export function logConfigStatus() {
-  console.log('🔧 Environment Configuration Status:');
-  console.log(`  - Node Environment: ${config.NODE_ENV}`);
-  console.log(`  - Server Port: ${config.PORT}`);
-  console.log(`  - Database: ${config.DATABASE_URL ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`  - Session Secret: ${config.SESSION_SECRET ? '✅ Configured' : '❌ Missing'}`);
+  logger.info('🔧 Environment Configuration Status:');
+  logger.info(`  - Node Environment: ${config.NODE_ENV}`);
+  logger.info(`  - Server Port: ${config.PORT}`);
+  logger.info(`  - Database: ${config.DATABASE_URL ? '✅ Configured' : '❌ Missing'}`);
+  logger.info(`  - Session Secret: ${config.SESSION_SECRET ? '✅ Configured' : '❌ Missing'}`);
 
   if (features.s3Enabled) {
-    console.log(`  - S3 Integration: ✅ Enabled`);
-    console.log(`    - Region: ${config.AWS_REGION}`);
-    console.log(`    - Bucket: ${config.S3_BUCKET_NAME}`);
-    console.log(`    - Access Key: ${redactSensitiveInfo(config.AWS_ACCESS_KEY_ID || '')}`);
+    logger.info(`  - S3 Integration: ✅ Enabled`);
+    logger.info(`    - Region: ${config.AWS_REGION}`);
+    logger.info(`    - Bucket: ${config.S3_BUCKET_NAME}`);
+    logger.info(`    - Access Key: ${redactSensitiveInfo(config.AWS_ACCESS_KEY_ID || '')}`);
   } else {
-    console.log(`  - S3 Integration: ⚠️  Disabled`);
+    logger.info(`  - S3 Integration: ⚠️  Disabled`);
   }
 
-  console.log(`  - OpenAI Integration: ${features.openaiEnabled ? '✅ Enabled' : '⚠️  Disabled'}`);
+  logger.info(`  - OpenAI Integration: ${features.openaiEnabled ? '✅ Enabled' : '⚠️  Disabled'}`);
   if (features.openaiEnabled) {
-    console.log(`    - API Key: ${redactSensitiveInfo(config.OPENAI_API_KEY || '')}`);
+    logger.info(`    - API Key: ${redactSensitiveInfo(config.OPENAI_API_KEY || '')}`);
   }
 
-  console.log(
+  logger.info(
     `  - Google Drive Integration: ${features.googleDriveEnabled ? '✅ Enabled' : '⚠️  Disabled'}`
   );
 
-  console.log('');
+  logger.info('');
 }
 
 // Security helper to check if any sensitive data might be logged

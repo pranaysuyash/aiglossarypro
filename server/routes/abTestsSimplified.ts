@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 
+import logger from '../utils/logger';
 const router = Router();
 
 // Simple A/B test configuration (in-memory for now)
@@ -49,7 +50,7 @@ router.get('/config/:testId', async (req, res) => {
       data: config,
     });
   } catch (error) {
-    console.error('Error fetching test config:', error);
+    logger.error('Error fetching test config:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch test configuration',
@@ -63,7 +64,7 @@ router.post('/track', async (req, res) => {
     const validatedData = eventTrackingSchema.parse(req.body);
 
     // For now, just log the event
-    console.log('A/B Test Event:', {
+    logger.info('A/B Test Event:', {
       timestamp: new Date().toISOString(),
       ...validatedData,
     });
@@ -81,7 +82,7 @@ router.post('/track', async (req, res) => {
       });
     }
 
-    console.error('Error tracking event:', error);
+    logger.error('Error tracking event:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to track event',
@@ -119,7 +120,7 @@ router.get('/results/:testId', async (req, res) => {
       data: mockResults,
     });
   } catch (error) {
-    console.error('Error fetching results:', error);
+    logger.error('Error fetching results:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch test results',

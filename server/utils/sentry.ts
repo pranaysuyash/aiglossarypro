@@ -1,12 +1,13 @@
 import * as Sentry from '@sentry/node';
 import type { NextFunction, Request, Response } from 'express';
 
+import logger from './logger';
 // Initialize Sentry for server-side error tracking
 export const initSentry = () => {
   if (process.env.NODE_ENV !== 'production') {
     // Skip Sentry in development unless explicitly enabled
     if (!process.env.SENTRY_DSN_DEV) {
-      console.log('Sentry disabled in development environment');
+      logger.info('Sentry disabled in development environment');
       return;
     }
   }
@@ -14,7 +15,7 @@ export const initSentry = () => {
   const dsn = process.env.SENTRY_DSN || process.env.SENTRY_DSN_DEV;
 
   if (!dsn) {
-    console.warn('Sentry DSN not configured - error monitoring disabled');
+    logger.warn('Sentry DSN not configured - error monitoring disabled');
     return;
   }
 
@@ -73,7 +74,7 @@ export const initSentry = () => {
     },
   });
 
-  console.log(`Sentry initialized for ${process.env.NODE_ENV} environment`);
+  logger.info(`Sentry initialized for ${process.env.NODE_ENV} environment`);
 };
 
 // Helper functions for common error scenarios

@@ -4,6 +4,7 @@ import { cacheManager } from '../cacheManager';
 import { requireAdmin } from '../middleware/adminAuth';
 import { TIME_CONSTANTS } from '../utils/constants';
 
+import logger from '../utils/logger';
 const router = express.Router();
 
 /**
@@ -33,7 +34,7 @@ router.get('/status', requireAdmin, async (_req, res) => {
 
     res.json({ success: true, data: status });
   } catch (error) {
-    console.error('Error getting cache status:', error);
+    logger.error('Error getting cache status:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get cache status',
@@ -58,7 +59,7 @@ router.delete('/:fileName', requireAdmin, async (req, res) => {
       message: `Cache cleared for ${fileName}`,
     });
   } catch (error) {
-    console.error('Error clearing cache:', error);
+    logger.error('Error clearing cache:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to clear cache',
@@ -79,7 +80,7 @@ router.delete('/', requireAdmin, async (_req, res) => {
       message: 'All cache cleared successfully',
     });
   } catch (error) {
-    console.error('Error clearing all cache:', error);
+    logger.error('Error clearing all cache:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to clear all cache',

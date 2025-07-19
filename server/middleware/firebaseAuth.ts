@@ -8,6 +8,7 @@ import type { AuthenticatedRequest } from '../../shared/types';
 import { setCustomUserClaims, verifyFirebaseToken } from '../config/firebase';
 import { optimizedStorage as storage } from '../optimizedStorage';
 
+import logger from '../utils/logger';
 /**
  * Verify Firebase ID token and attach user to request
  */
@@ -69,7 +70,7 @@ export async function authenticateFirebaseToken(
 
     next();
   } catch (error) {
-    console.error('Firebase auth error:', error);
+    logger.error('Firebase auth error:', error);
     res.status(500).json({
       success: false,
       message: 'Authentication failed',
@@ -119,7 +120,7 @@ export async function requireFirebaseAdmin(
 
     next();
   } catch (error) {
-    console.error('Admin check error:', error);
+    logger.error('Admin check error:', error);
     res.status(500).json({
       success: false,
       message: 'Authorization check failed',
@@ -163,7 +164,7 @@ export async function optionalFirebaseAuth(
     next();
   } catch (error) {
     // Continue without auth on error
-    console.error('Optional auth error:', error);
+    logger.error('Optional auth error:', error);
     next();
   }
 }

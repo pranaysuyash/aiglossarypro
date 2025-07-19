@@ -10,6 +10,7 @@ import {
 import { features, getS3Config } from './config';
 import { getS3MonitoringService } from './s3MonitoringService';
 
+import logger from './utils/logger';
 // S3 client configuration
 let s3Client: S3Client | null = null;
 
@@ -17,7 +18,7 @@ let s3Client: S3Client | null = null;
 export function initS3Client() {
   // Check if S3 is enabled
   if (!features.s3Enabled) {
-    console.warn('⚠️  S3 functionality disabled: Missing AWS credentials or bucket configuration');
+    logger.warn('⚠️  S3 functionality disabled: Missing AWS credentials or bucket configuration');
     return null;
   }
 
@@ -28,9 +29,9 @@ export function initS3Client() {
         region: s3Config.region,
         credentials: s3Config.credentials,
       });
-      console.log(`✅ S3 client initialized with region: ${s3Config.region}`);
+      logger.info(`✅ S3 client initialized with region: ${s3Config.region}`);
     } catch (error) {
-      console.error('❌ Failed to initialize S3 client:', error);
+      logger.error('❌ Failed to initialize S3 client:', error);
       return null;
     }
   }
@@ -99,7 +100,7 @@ export async function listFiles(bucketName: string, prefix = '') {
       undefined,
       error instanceof Error ? error.message : 'Unknown error'
     );
-    console.error('Error listing files from S3:', error);
+    logger.error('Error listing files from S3:', error);
     throw error;
   }
 }
@@ -143,14 +144,14 @@ export async function downloadFileFromS3(bucketName: string, key: string, destin
         .on('error', (err: Error) => {
           const duration = Date.now() - startTime;
           monitoringService.logOperationComplete(logId, 'error', duration, undefined, err.message);
-          console.error('Error writing file:', err);
+          logger.error('Error writing file:', err);
           reject(err);
         })
         .on('close', () => {
           const duration = Date.now() - startTime;
           const stats = fs.statSync(destinationPath);
           monitoringService.logOperationComplete(logId, 'success', duration, stats.size);
-          console.log(`File downloaded successfully to ${destinationPath}`);
+          logger.info(`File downloaded successfully to ${destinationPath}`);
           resolve(destinationPath);
         });
     });
@@ -163,7 +164,7 @@ export async function downloadFileFromS3(bucketName: string, key: string, destin
       undefined,
       error instanceof Error ? error.message : 'Unknown error'
     );
-    console.error('Error downloading file from S3:', error);
+    logger.error('Error downloading file from S3:', error);
     throw error;
   }
 }
@@ -198,7 +199,7 @@ export async function uploadFileToS3(bucketName: string, key: string, filePath: 
     const response = await s3.send(command);
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'success', duration, fileContent.length);
-    console.log(`File uploaded successfully to s3://${bucketName}/${key}`);
+    logger.info(`File uploaded successfully to s3://${bucketName}/${key}`);
 
     return response;
   } catch (error) {
@@ -210,7 +211,7 @@ export async function uploadFileToS3(bucketName: string, key: string, filePath: 
       undefined,
       error instanceof Error ? error.message : 'Unknown error'
     );
-    console.error('Error uploading file to S3:', error);
+    logger.error('Error uploading file to S3:', error);
     throw error;
   }
 }
@@ -234,7 +235,7 @@ export async function deleteFileFromS3(bucketName: string, key: string) {
     const response = await s3.send(command);
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'success', duration);
-    console.log(`File deleted successfully: s3://${bucketName}/${key}`);
+    logger.info(`File deleted successfully: s3://${bucketName}/${key}`);
 
     return response;
   } catch (error) {
@@ -246,7 +247,7 @@ export async function deleteFileFromS3(bucketName: string, key: string) {
       undefined,
       error instanceof Error ? error.message : 'Unknown error'
     );
-    console.error('Error deleting file from S3:', error);
+    logger.error('Error deleting file from S3:', error);
     throw error;
   }
 }
@@ -272,7 +273,7 @@ export async function getFileSizeFromS3(bucketName: string, key: string): Promis
     const file = response.Contents.find(item => item.Key === key);
     return file?.Size || 0;
   } catch (error) {
-    console.error('Error getting file size from S3:', error);
+    logger.error('Error getting file size from S3:', error);
     throw error;
   }
 }

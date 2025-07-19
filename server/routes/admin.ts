@@ -10,6 +10,7 @@ import { log as logger } from '../utils/logger';
 import enhancedContentGenerationRoutes from './admin/enhancedContentGeneration';
 import templateManagementRoutes from './admin/templateManagement';
 
+import logger from '../utils/logger';
 const router = express.Router();
 
 /**
@@ -98,7 +99,7 @@ export function registerAdminRoutes(app: Express): void {
 
         res.json(response);
       } catch (error) {
-        console.error('Error fetching admin stats:', error);
+        logger.error('Error fetching admin stats:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch admin statistics',
@@ -197,7 +198,7 @@ export function registerAdminRoutes(app: Express): void {
           data: result,
         });
       } catch (error) {
-        console.error('Error clearing data:', error);
+        logger.error('Error clearing data:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to clear data',
@@ -292,7 +293,7 @@ export function registerAdminRoutes(app: Express): void {
           data: health,
         });
       } catch (error) {
-        console.error('Error checking system health:', error);
+        logger.error('Error checking system health:', error);
         res.status(500).json({
           success: false,
           message: 'Health check failed',
@@ -334,7 +335,7 @@ export function registerAdminRoutes(app: Express): void {
           data: result,
         });
       } catch (error) {
-        console.error(`Error performing maintenance operation:`, error);
+        logger.error(`Error performing maintenance operation:`, error);
         res.status(500).json({
           success: false,
           message: 'Maintenance operation failed',
@@ -382,7 +383,7 @@ export function registerAdminRoutes(app: Express): void {
           hasMore: endIndex < filteredUsers.length,
         });
       } catch (error) {
-        console.error('Error fetching users:', error);
+        logger.error('Error fetching users:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch users',
@@ -405,7 +406,7 @@ export function registerAdminRoutes(app: Express): void {
           data: pendingContent,
         });
       } catch (error) {
-        console.error('Error fetching pending content:', error);
+        logger.error('Error fetching pending content:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch pending content',
@@ -429,7 +430,7 @@ export function registerAdminRoutes(app: Express): void {
           data: result,
         });
       } catch (error) {
-        console.error('Error approving content:', error);
+        logger.error('Error approving content:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to approve content',
@@ -455,7 +456,7 @@ export function registerAdminRoutes(app: Express): void {
           data: result,
         });
       } catch (error) {
-        console.error('Error rejecting content:', error);
+        logger.error('Error rejecting content:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to reject content',
@@ -486,7 +487,7 @@ export function registerAdminRoutes(app: Express): void {
 
       res.json({ success: true, data: status });
     } catch (error) {
-      console.error('Error getting cache status:', error);
+      logger.error('Error getting cache status:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get cache status',
@@ -508,7 +509,7 @@ export function registerAdminRoutes(app: Express): void {
         message: `Cache cleared for ${fileName}`,
       });
     } catch (error) {
-      console.error('Error clearing cache:', error);
+      logger.error('Error clearing cache:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to clear cache',
@@ -526,7 +527,7 @@ export function registerAdminRoutes(app: Express): void {
         message: 'All cache cleared successfully',
       });
     } catch (error) {
-      console.error('Error clearing all cache:', error);
+      logger.error('Error clearing all cache:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to clear all cache',
@@ -552,7 +553,7 @@ export function registerAdminRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error configuring scheduled reprocessing:', error);
+      logger.error('Error configuring scheduled reprocessing:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to configure scheduled reprocessing',
@@ -677,7 +678,7 @@ Respond with JSON only.`
               });
               
             } catch (termError) {
-              console.error(`Error categorizing term ${term.id}:`, termError);
+              logger.error(`Error categorizing term ${term.id}:`, termError);
               errors.push({
                 termId: term.id,
                 termName: term.name,
@@ -692,7 +693,7 @@ Respond with JSON only.`
           }
           */
           } catch (batchError) {
-            console.error(`Error processing batch ${i}-${i + 5}:`, batchError);
+            logger.error(`Error processing batch ${i}-${i + 5}:`, batchError);
             batch.forEach(termId => {
               errors.push({
                 termId,
@@ -710,7 +711,7 @@ Respond with JSON only.`
           errors,
         });
       } catch (error) {
-        console.error('Batch categorization error:', error);
+        logger.error('Batch categorization error:', error);
         res.status(500).json({
           message: 'Batch categorization failed',
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -829,7 +830,7 @@ Provide an enhanced definition following the guidelines above.`
           await new Promise(resolve => setTimeout(resolve, 500));
           */
           } catch (termError) {
-            console.error(`Error enhancing definition for term ${termId}:`, termError);
+            logger.error(`Error enhancing definition for term ${termId}:`, termError);
             errors.push({
               termId,
               error: termError instanceof Error ? termError.message : 'Unknown error',
@@ -851,7 +852,7 @@ Provide an enhanced definition following the guidelines above.`
           },
         });
       } catch (error) {
-        console.error('Batch definition enhancement error:', error);
+        logger.error('Batch definition enhancement error:', error);
         res.status(500).json({
           message: 'Batch definition enhancement failed',
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -880,7 +881,7 @@ Provide an enhanced definition following the guidelines above.`
           message: 'Batch operations are processed synchronously',
         });
       } catch (error) {
-        console.error('Error fetching batch operation status:', error);
+        logger.error('Error fetching batch operation status:', error);
         res.status(500).json({ message: 'Failed to fetch operation status' });
       }
     }
@@ -919,7 +920,7 @@ Provide an enhanced definition following the guidelines above.`
           data: dashboardMetrics,
         });
       } catch (error) {
-        console.error('Error fetching dashboard metrics:', error);
+        logger.error('Error fetching dashboard metrics:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch dashboard metrics',
@@ -948,7 +949,7 @@ Provide an enhanced definition following the guidelines above.`
           data: trendData,
         });
       } catch (error) {
-        console.error('Error fetching dashboard trends:', error);
+        logger.error('Error fetching dashboard trends:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch dashboard trends',
@@ -979,7 +980,7 @@ Provide an enhanced definition following the guidelines above.`
           data: qualityData,
         });
       } catch (error) {
-        console.error('Error fetching quality distribution:', error);
+        logger.error('Error fetching quality distribution:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch quality distribution',
@@ -1054,7 +1055,7 @@ Provide an enhanced definition following the guidelines above.`
           hasMore: endIndex < filteredTerms.length,
         });
       } catch (error) {
-        console.error('Error fetching admin terms:', error);
+        logger.error('Error fetching admin terms:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch terms',
@@ -1084,7 +1085,7 @@ Provide an enhanced definition following the guidelines above.`
           data: categoryNames,
         });
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        logger.error('Error fetching categories:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch categories',
@@ -1117,7 +1118,7 @@ Provide an enhanced definition following the guidelines above.`
           data: result,
         });
       } catch (error) {
-        console.error('Error bulk verifying terms:', error);
+        logger.error('Error bulk verifying terms:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to verify terms',
@@ -1149,7 +1150,7 @@ Provide an enhanced definition following the guidelines above.`
           data: result,
         });
       } catch (error) {
-        console.error('Error bulk flagging terms:', error);
+        logger.error('Error bulk flagging terms:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to flag terms',
@@ -1181,7 +1182,7 @@ Provide an enhanced definition following the guidelines above.`
           data: result,
         });
       } catch (error) {
-        console.error('Error bulk deleting terms:', error);
+        logger.error('Error bulk deleting terms:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to delete terms',
@@ -1219,7 +1220,7 @@ Provide an enhanced definition following the guidelines above.`
           data: result,
         });
       } catch (error) {
-        console.error('Error running bulk quality check:', error);
+        logger.error('Error running bulk quality check:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to run quality check',
@@ -1306,7 +1307,7 @@ Provide an enhanced definition following the guidelines above.`
           data: contentStats,
         });
       } catch (error) {
-        console.error('Error fetching content stats:', error);
+        logger.error('Error fetching content stats:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch content statistics',
@@ -1394,7 +1395,7 @@ Provide an enhanced definition following the guidelines above.`
           data: operation,
         });
       } catch (error) {
-        console.error('Error starting bulk operation:', error);
+        logger.error('Error starting bulk operation:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to start bulk operation',
@@ -1426,7 +1427,7 @@ Provide an enhanced definition following the guidelines above.`
           data: operation,
         });
       } catch (error) {
-        console.error('Error fetching operation status:', error);
+        logger.error('Error fetching operation status:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to fetch operation status',
@@ -1529,7 +1530,7 @@ Provide an enhanced definition following the guidelines above.`
           },
         });
       } catch (error) {
-        console.error('Error validating content:', error);
+        logger.error('Error validating content:', error);
         res.status(500).json({
           success: false,
           message: 'Failed to validate content',

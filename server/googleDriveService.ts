@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { Readable } from 'node:stream';
 import { google } from 'googleapis';
 
+import logger from './utils/logger';
 // Note: Excel processing functionality has been removed
 // import { parseExcelFile, importToDatabase } from './excelParser';
 
@@ -108,7 +109,7 @@ export async function downloadFile(
   const drive = getDriveClient(auth, credentials);
 
   return new Promise((resolve, reject) => {
-    console.log(`Downloading file ${fileId} to ${destinationPath}`);
+    logger.info(`Downloading file ${fileId} to ${destinationPath}`);
 
     // Ensure directory exists
     const dir = path.dirname(destinationPath);
@@ -126,17 +127,17 @@ export async function downloadFile(
 
         stream
           .on('end', () => {
-            console.log('File downloaded successfully');
+            logger.info('File downloaded successfully');
             resolve(destinationPath);
           })
           .on('error', err => {
-            console.error('Error downloading file:', err);
+            logger.error('Error downloading file:', err);
             reject(err);
           })
           .pipe(dest);
       })
       .catch(error => {
-        console.error('Error getting file:', error);
+        logger.error('Error getting file:', error);
         reject(error);
       });
   });
@@ -152,7 +153,7 @@ export async function processExcelFromDrive(
   _fileId: string
 ): Promise<any> {
   try {
-    console.log('⚠️  Excel processing functionality has been removed');
+    logger.info('⚠️  Excel processing functionality has been removed');
     throw new Error('Excel processing functionality has been removed');
 
     // Download to temporary file
@@ -176,7 +177,7 @@ export async function processExcelFromDrive(
 
     // return result;
   } catch (error) {
-    console.error('Error processing Excel from Drive:', error);
+    logger.error('Error processing Excel from Drive:', error);
     throw error;
   }
 }
@@ -199,12 +200,12 @@ export async function streamExcelFromDrive(
   });
 
   const fileSize = parseInt(fileMetadata.data.size as string, 10);
-  console.log(`File size: ${fileSize} bytes (${Math.round(fileSize / 1024 / 1024)} MB)`);
+  logger.info(`File size: ${fileSize} bytes (${Math.round(fileSize / 1024 / 1024)} MB)`);
 
   // If file is too large, we should process it in chunks or use another strategy
   if (fileSize > 100 * 1024 * 1024) {
     // 100MB
-    console.log(
+    logger.info(
       'File is too large for direct processing, downloading to temporary file for streaming'
     );
 
@@ -220,11 +221,11 @@ export async function streamExcelFromDrive(
     // Use the excelStreamer to process the large file
     // const { streamExcelFile } = require('./excelStreamer');
     // const result = await streamExcelFile(tempFile, 500); // Process 500 rows at a time
-    console.log('⚠️  Excel streaming functionality has been removed');
+    logger.info('⚠️  Excel streaming functionality has been removed');
     throw new Error('Excel streaming functionality has been removed');
   } else {
     // For smaller files, process directly
-    console.log('⚠️  Excel processing functionality has been removed');
+    logger.info('⚠️  Excel processing functionality has been removed');
     throw new Error('Excel processing functionality has been removed');
     // return await processExcelFromDrive(auth, credentials, fileId);
   }

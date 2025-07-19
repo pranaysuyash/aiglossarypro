@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { NodeCache } from 'node-cache';
 
+import logger from '../utils/logger';
 // Initialize response cache
 const responseCache = new NodeCache({
   stdTTL: 300, // 5 minutes default
@@ -198,7 +199,7 @@ export function performanceMonitoringMiddleware(req: Request, res: Response, nex
 
     // Log slow requests
     if (duration > 1000) {
-      console.warn(`Slow request: ${req.method} ${req.path} took ${duration}ms`);
+      logger.warn(`Slow request: ${req.method} ${req.path} took ${duration}ms`);
     }
 
     // Set response time header

@@ -15,6 +15,7 @@ import { endOfDay, format, formatDistanceToNow, startOfDay, subDays } from 'date
 import { and, desc, eq, gte, ilike, isNull, lte, not, sql } from 'drizzle-orm';
 import { db } from './db';
 
+import logger from './utils/logger';
 // Interface for storage operations
 export interface IStorage {
   // User operations
@@ -1021,7 +1022,7 @@ export class DatabaseStorage implements IStorage {
 
             isFavorite = !!favorite;
           } catch (favoriteError) {
-            console.warn(`Could not check favorite status for term ${relTerm.id}:`, favoriteError);
+            logger.warn(`Could not check favorite status for term ${relTerm.id}:`, favoriteError);
             isFavorite = false;
           }
         }
@@ -1037,7 +1038,7 @@ export class DatabaseStorage implements IStorage {
             .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
             .where(eq(termSubcategories.termId, relTerm.id));
         } catch (subcatError) {
-          console.warn(`Could not fetch subcategories for term ${relTerm.id}:`, subcatError);
+          logger.warn(`Could not fetch subcategories for term ${relTerm.id}:`, subcatError);
           termSubcats = [];
         }
 
@@ -1050,7 +1051,7 @@ export class DatabaseStorage implements IStorage {
 
       return result;
     } catch (error) {
-      console.error('Error in getRecommendedTermsForTerm:', error);
+      logger.error('Error in getRecommendedTermsForTerm:', error);
       throw error;
     }
   }
@@ -1718,7 +1719,7 @@ export class DatabaseStorage implements IStorage {
       await db.execute(sql`REINDEX`);
       return { success: true, message: 'Database reindexed successfully' };
     } catch (error) {
-      console.error('Error reindexing database:', error);
+      logger.error('Error reindexing database:', error);
       return { success: false, message: 'Failed to reindex database' };
     }
   }
@@ -1742,7 +1743,7 @@ export class DatabaseStorage implements IStorage {
 
       return { success: true, message: 'Database cleaned up successfully' };
     } catch (error) {
-      console.error('Error cleaning up database:', error);
+      logger.error('Error cleaning up database:', error);
       return { success: false, message: 'Failed to clean up database' };
     }
   }
@@ -1753,7 +1754,7 @@ export class DatabaseStorage implements IStorage {
       await db.execute(sql`VACUUM`);
       return { success: true, message: 'Database vacuumed successfully' };
     } catch (error) {
-      console.error('Error vacuuming database:', error);
+      logger.error('Error vacuuming database:', error);
       return { success: false, message: 'Failed to vacuum database' };
     }
   }
@@ -1798,7 +1799,7 @@ export class DatabaseStorage implements IStorage {
 
       return sectionsResult.rows;
     } catch (error) {
-      console.error('Error fetching term sections:', error);
+      logger.error('Error fetching term sections:', error);
       return [];
     }
   }
@@ -1809,7 +1810,7 @@ export class DatabaseStorage implements IStorage {
       // that tracks which sections of each term the user has completed
       return [];
     } catch (error) {
-      console.error('Error fetching user progress for term:', error);
+      logger.error('Error fetching user progress for term:', error);
       return [];
     }
   }
@@ -1833,7 +1834,7 @@ export class DatabaseStorage implements IStorage {
 
       return sectionResult.rows[0] || null;
     } catch (error) {
-      console.error('Error fetching section by ID:', error);
+      logger.error('Error fetching section by ID:', error);
       return null;
     }
   }
@@ -1860,7 +1861,7 @@ export class DatabaseStorage implements IStorage {
 
       return itemsResult.rows;
     } catch (error) {
-      console.error('Error fetching section items:', error);
+      logger.error('Error fetching section items:', error);
       return [];
     }
   }
@@ -1872,7 +1873,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserProgress(userId: string, updates: any): Promise<void> {
     // This is a placeholder - you would need to implement progress updates
-    console.log('Progress update placeholder:', { userId, updates });
+    logger.info('Progress update placeholder:', { userId, updates });
   }
 
   async getUserProgressSummary(userId: string): Promise<any> {
@@ -1964,7 +1965,7 @@ export class DatabaseStorage implements IStorage {
         totalPages: Math.ceil(Number(countResult.rows[0]?.total || 0) / limit),
       };
     } catch (error) {
-      console.error('Error searching section content:', error);
+      logger.error('Error searching section content:', error);
       return {
         results: [],
         totalResults: 0,
@@ -2030,7 +2031,7 @@ export class DatabaseStorage implements IStorage {
         lastUpdated: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('Error fetching section analytics:', error);
+      logger.error('Error fetching section analytics:', error);
       return {
         overview: {
           totalSections: 0,

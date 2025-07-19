@@ -9,6 +9,7 @@ import { and, eq } from 'drizzle-orm';
 import { categories, subcategories, termSubcategories, terms } from '../shared/schema';
 import { db } from './db';
 
+import logger from './utils/logger';
 interface ImportOptions {
   batchSize?: number;
   skipExisting?: boolean;
@@ -36,8 +37,8 @@ export async function batchedImportProcessedData(
   const startTime = Date.now();
   const { batchSize = 500, skipExisting = true, enableProgress = true } = options;
 
-  console.log(`🚀 Starting batched import from: ${filePath}`);
-  console.log(`   📦 Batch size: ${batchSize}`);
+  logger.info(`🚀 Starting batched import from: ${filePath}`);
+  logger.info(`   📦 Batch size: ${batchSize}`);
 
   const result: ImportResult = {
     success: false,
@@ -56,17 +57,17 @@ export async function batchedImportProcessedData(
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const data = JSON.parse(fileContent);
 
-    console.log(`📊 Dataset overview:`);
-    console.log(`   📂 ${data.categories?.length || 0} categories`);
-    console.log(`   📋 ${data.subcategories?.length || 0} subcategories`);
-    console.log(`   📄 ${data.terms?.length || 0} terms`);
+    logger.info(`📊 Dataset overview:`);
+    logger.info(`   📂 ${data.categories?.length || 0} categories`);
+    logger.info(`   📋 ${data.subcategories?.length || 0} subcategories`);
+    logger.info(`   📄 ${data.terms?.length || 0} terms`);
 
     // Create category ID mapping for reference integrity
     const categoryIdMap = new Map<string, string>();
 
     // Import categories first
     if (data.categories && data.categories.length > 0) {
-      console.log(`\n📂 Importing categories...`);
+      logger.info(`\n📂 Importing categories...`);
       const categoryResult = await importCategoriesInBatches(
         data.categories,
         batchSize,
@@ -79,7 +80,7 @@ export async function batchedImportProcessedData(
 
     // Import subcategories with proper category references
     if (data.subcategories && data.subcategories.length > 0) {
-      console.log(`\n📋 Importing subcategories...`);
+      logger.info(`\n📋 Importing subcategories...`);
       const subcategoryResult = await importSubcategoriesInBatches(
         data.subcategories,
         batchSize,
@@ -92,7 +93,7 @@ export async function batchedImportProcessedData(
 
     // Import terms
     if (data.terms && data.terms.length > 0) {
-      console.log(`\n📄 Importing terms...`);
+      logger.info(`\n📄 Importing terms...`);
       const termsResult = await importTermsInBatches(data.terms, batchSize, skipExisting);
       result.imported.terms = termsResult.imported;
       result.errors.push(...termsResult.errors);
@@ -101,11 +102,11 @@ export async function batchedImportProcessedData(
     result.success = true;
     result.duration = Date.now() - startTime;
 
-    console.log(`\n✅ Batched import completed in ${(result.duration / 1000).toFixed(2)}s:`);
-    console.log(`   📂 ${result.imported.categories} categories imported`);
-    console.log(`   📋 ${result.imported.subcategories} subcategories imported`);
-    console.log(`   📄 ${result.imported.terms} terms imported`);
-    console.log(`   ❌ ${result.errors.length} errors`);
+    logger.info(`\n✅ Batched import completed in ${(result.duration / 1000).toFixed(2)}s:`);
+    logger.info(`   📂 ${result.imported.categories} categories imported`);
+    logger.info(`   📋 ${result.imported.subcategories} subcategories imported`);
+    logger.info(`   📄 ${result.imported.terms} terms imported`);
+    logger.info(`   ❌ ${result.errors.length} errors`);
 
     return result;
   } catch (error) {
@@ -114,7 +115,7 @@ export async function batchedImportProcessedData(
     const errorMessage = error instanceof Error ? error.message : String(error);
     result.errors.push(errorMessage);
 
-    console.error(`❌ Batched import failed: ${errorMessage}`);
+    logger.error(`❌ Batched import failed: ${errorMessage}`);
     return result;
   }
 }
@@ -136,7 +137,7 @@ async function importCategoriesInBatches(
     const batchNumber = Math.floor(i / batchSize) + 1;
     const totalBatches = Math.ceil(categoriesData.length / batchSize);
 
-    console.log(
+    logger.info(
       `   🔄 Processing categories batch ${batchNumber}/${totalBatches} (${batch.length} items)`
     );
 
@@ -195,7 +196,7 @@ async function importSubcategoriesInBatches(
     const batchNumber = Math.floor(i / batchSize) + 1;
     const totalBatches = Math.ceil(subcategoriesData.length / batchSize);
 
-    console.log(
+    logger.info(
       `   🔄 Processing subcategories batch ${batchNumber}/${totalBatches} (${batch.length} items)`
     );
 
@@ -259,7 +260,7 @@ async function importTermsInBatches(
     const batchNumber = Math.floor(i / batchSize) + 1;
     const totalBatches = Math.ceil(termsData.length / batchSize);
 
-    console.log(
+    logger.info(
       `   🔄 Processing terms batch ${batchNumber}/${totalBatches} (${batch.length} items)`
     );
 
@@ -299,7 +300,7 @@ async function importTermsInBatches(
               });
             } catch (_subError) {
               // Log but don't fail the entire term import
-              console.warn(
+              logger.warn(
                 `Warning: Could not link term ${term.name} to subcategory ${subcategoryId}`
               );
             }
@@ -345,8 +346,8 @@ export async function importLatestProcessedFile(
   }
 
   const latestFile = processedFiles[0];
-  console.log(`📁 Using latest processed file: ${latestFile.name}`);
-  console.log(`📊 File size: ${(latestFile.stats.size / (1024 * 1024)).toFixed(2)} MB`);
+  logger.info(`📁 Using latest processed file: ${latestFile.name}`);
+  logger.info(`📊 File size: ${(latestFile.stats.size / (1024 * 1024)).toFixed(2)} MB`);
 
   return await batchedImportProcessedData(latestFile.path, options);
 }

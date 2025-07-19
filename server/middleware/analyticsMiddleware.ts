@@ -8,6 +8,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { analyticsService } from '../services/analyticsService';
 import { ErrorCategory, errorLogger } from './errorHandler';
 
+import logger from '../utils/logger';
 // Extend Request interface to include analytics data
 declare global {
   namespace Express {
@@ -200,13 +201,13 @@ export function systemHealthMiddleware() {
         const memoryThreshold = isDevelopment ? 95 : 90; // Higher threshold in dev
 
         if (healthMetrics.memory_usage_percent > memoryThreshold) {
-          console.warn(
+          logger.warn(
             `High memory usage: ${healthMetrics.memory_usage_percent}% (Node heap: ${healthMetrics.heap_used_mb}MB)`
           );
         }
 
         if (healthMetrics.load_average_1m > os.cpus().length * 2) {
-          console.warn(`High system load: ${healthMetrics.load_average_1m}`);
+          logger.warn(`High system load: ${healthMetrics.load_average_1m}`);
         }
       });
     }
@@ -222,8 +223,8 @@ export async function initializeAnalytics(): Promise<void> {
   try {
     // The analytics service will create tables on first flush
     // This is a placeholder for any initialization logic
-    console.log('📊 Analytics middleware initialized');
+    logger.info('📊 Analytics middleware initialized');
   } catch (error) {
-    console.error('Failed to initialize analytics:', error);
+    logger.error('Failed to initialize analytics:', error);
   }
 }

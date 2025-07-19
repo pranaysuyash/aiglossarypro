@@ -14,6 +14,7 @@ import { db } from '../../db';
 import { requireAdmin } from '../../middleware/adminAuth';
 import { requireAuth } from '../../middleware/auth';
 
+import logger from '../../utils/logger';
 const router = Router();
 
 // Apply authentication and admin middleware to all routes
@@ -185,7 +186,7 @@ router.get('/', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching people:', error);
+    logger.error('Error fetching people:', error);
     res.status(500).json({
       error: 'Failed to fetch people',
       details: error instanceof Error ? error.message : 'Unknown error',
@@ -255,7 +256,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(newPerson);
   } catch (error) {
-    console.error('Error creating person:', error);
+    logger.error('Error creating person:', error);
 
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -351,7 +352,7 @@ router.get('/:id', async (req, res) => {
       linkedTerms,
     });
   } catch (error) {
-    console.error('Error fetching person:', error);
+    logger.error('Error fetching person:', error);
 
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -438,7 +439,7 @@ router.put('/:id', async (req, res) => {
 
     res.json(updatedPerson);
   } catch (error) {
-    console.error('Error updating person:', error);
+    logger.error('Error updating person:', error);
 
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -488,7 +489,7 @@ router.delete('/:id', async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
-    console.error('Error deleting person:', error);
+    logger.error('Error deleting person:', error);
 
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -593,7 +594,7 @@ router.post('/:id/link-terms', async (req, res) => {
       links: createdLinks,
     });
   } catch (error) {
-    console.error('Error creating person-term links:', error);
+    logger.error('Error creating person-term links:', error);
 
     if (error instanceof z.ZodError) {
       return res.status(400).json({

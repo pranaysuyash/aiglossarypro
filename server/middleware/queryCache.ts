@@ -8,6 +8,7 @@
 import { metricsCollector } from '../cache/CacheMetrics';
 import { TIME_CONSTANTS } from '../utils/constants';
 
+import logger from '../utils/logger';
 interface QueryCacheOptions {
   maxItems?: number;
   defaultTtlMs?: number;
@@ -237,7 +238,7 @@ export async function cached<T>(
     return result;
   } catch (error) {
     // Log the error and re-throw it for the caller to handle
-    console.error(`[QueryCache] Query failed for key: ${key}`, error);
+    logger.error(`[QueryCache] Query failed for key: ${key}`, error);
     throw error;
   }
 }
@@ -303,7 +304,7 @@ export const CacheWarming = {
     const { terms, categories } = await import('../../shared/schema');
     const { desc, eq } = await import('drizzle-orm');
 
-    console.log('🔥 Warming popular terms cache...');
+    logger.info('🔥 Warming popular terms cache...');
 
     const popularTerms = await db
       .select({
@@ -323,7 +324,7 @@ export const CacheWarming = {
       popularTerms,
       (30 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR) / 2
     ); // 30 minutes
-    console.log(`✅ Cached ${popularTerms.length} popular terms`);
+    logger.info(`✅ Cached ${popularTerms.length} popular terms`);
   },
 
   async warmCategoryTree() {
@@ -331,7 +332,7 @@ export const CacheWarming = {
     const { categories, terms } = await import('../../shared/schema');
     const { eq, sql } = await import('drizzle-orm');
 
-    console.log('🔥 Warming category tree cache...');
+    logger.info('🔥 Warming category tree cache...');
 
     // Warm basic categories
     const categoryTree = await db
@@ -347,7 +348,7 @@ export const CacheWarming = {
       .orderBy(categories.name);
 
     queryCache.set(CacheKeys.categoryTree(), categoryTree, TIME_CONSTANTS.MILLISECONDS_IN_HOUR); // 1 hour
-    console.log(`✅ Cached ${categoryTree.length} categories`);
+    logger.info(`✅ Cached ${categoryTree.length} categories`);
 
     // Warm paginated categories for common page sizes
     for (const limit of [10, 20, 50]) {
@@ -358,7 +359,7 @@ export const CacheWarming = {
         (30 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR) / 2
       );
     }
-    console.log('✅ Warmed paginated category caches');
+    logger.info('✅ Warmed paginated category caches');
   },
 
   async warmFrequentTermQueries() {
@@ -366,7 +367,7 @@ export const CacheWarming = {
     const { terms, categories } = await import('../../shared/schema');
     const { desc, eq, sql } = await import('drizzle-orm');
 
-    console.log('🔥 Warming frequent term queries...');
+    logger.info('🔥 Warming frequent term queries...');
 
     // Warm featured terms with different field combinations
     const featuredFields = [
@@ -399,11 +400,11 @@ export const CacheWarming = {
       );
     }
 
-    console.log('✅ Warmed featured terms with different field combinations');
+    logger.info('✅ Warmed featured terms with different field combinations');
   },
 
   async warmAll() {
-    console.log('🔥 Starting comprehensive cache warming...');
+    logger.info('🔥 Starting comprehensive cache warming...');
     const startTime = Date.now();
 
     try {
@@ -414,9 +415,9 @@ export const CacheWarming = {
       ]);
 
       const duration = Date.now() - startTime;
-      console.log(`✅ Cache warming completed in ${duration}ms`);
+      logger.info(`✅ Cache warming completed in ${duration}ms`);
     } catch (error) {
-      console.error('❌ Cache warming failed:', error);
+      logger.error('❌ Cache warming failed:', error);
     }
   },
 };
@@ -443,7 +444,7 @@ setInterval(
       // Cleanup expired entries
       const cleaned = queryCache.cleanup();
       if (cleaned > 0) {
-        console.log(`🧹 Cleaned ${cleaned} expired cache entries`);
+        logger.info(`🧹 Cleaned ${cleaned} expired cache entries`);
       }
 
       // Cleanup other cache instances
@@ -451,7 +452,7 @@ setInterval(
       const searchCleaned = searchCache.cleanup();
 
       if (userCleaned > 0 || searchCleaned > 0) {
-        console.log(
+        logger.info(
           `🧹 Cleaned ${userCleaned} user cache entries, ${searchCleaned} search cache entries`
         );
       }
@@ -465,7 +466,7 @@ setInterval(
   () => {
     if (process.env.NODE_ENV === 'production') {
       CacheWarming.warmAll().catch(error => {
-        console.error('Cache warming failed:', error);
+        logger.error('Cache warming failed:', error);
       });
     }
   },
@@ -476,7 +477,7 @@ setInterval(
 setTimeout(() => {
   if (process.env.NODE_ENV === 'production') {
     CacheWarming.warmAll().catch(error => {
-      console.error('Initial cache warming failed:', error);
+      logger.error('Initial cache warming failed:', error);
     });
   }
 }, 30000); // 30 seconds after startup

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import fetch from 'node-fetch';
 
+import logger from '../utils/logger';
 interface CDNMetrics {
   timestamp: string;
   provider: string;
@@ -78,7 +79,7 @@ export class CDNMonitoringService {
       try {
         await this.runHealthChecks();
       } catch (error) {
-        console.error('Health check failed:', error);
+        logger.error('Health check failed:', error);
       }
     }, 30000);
 
@@ -87,7 +88,7 @@ export class CDNMonitoringService {
       try {
         await this.collectMetrics();
       } catch (error) {
-        console.error('Metrics collection failed:', error);
+        logger.error('Metrics collection failed:', error);
       }
     }, 300000);
 
@@ -96,7 +97,7 @@ export class CDNMonitoringService {
       try {
         await this.checkAlerts();
       } catch (error) {
-        console.error('Alert checking failed:', error);
+        logger.error('Alert checking failed:', error);
       }
     }, 60000);
   }
@@ -215,7 +216,7 @@ export class CDNMonitoringService {
         status: this.determineHealthStatus(analytics),
       };
     } catch (error) {
-      console.error('Failed to collect Cloudflare metrics:', error);
+      logger.error('Failed to collect Cloudflare metrics:', error);
       return this.getErrorMetrics('cloudflare');
     }
   }
@@ -236,7 +237,7 @@ export class CDNMonitoringService {
         status: 'healthy',
       };
     } catch (error) {
-      console.error('Failed to collect CloudFront metrics:', error);
+      logger.error('Failed to collect CloudFront metrics:', error);
       return this.getErrorMetrics('cloudfront');
     }
   }
@@ -322,7 +323,7 @@ export class CDNMonitoringService {
   private async sendAlerts(alerts: string[], metrics: CDNMetrics): Promise<void> {
     const alertMessage = `CDN Alert for ${metrics.provider}:\n${alerts.join('\n')}`;
 
-    console.warn('[CDN ALERT]', alertMessage);
+    logger.warn('[CDN ALERT]', alertMessage);
 
     // Send to external monitoring services
     await this.sendToExternalServices(alertMessage, metrics);
@@ -344,7 +345,7 @@ export class CDNMonitoringService {
           }),
         });
       } catch (error) {
-        console.error('Failed to send Slack alert:', error);
+        logger.error('Failed to send Slack alert:', error);
       }
     }
 
@@ -358,7 +359,7 @@ export class CDNMonitoringService {
           }),
         });
       } catch (error) {
-        console.error('Failed to send Discord alert:', error);
+        logger.error('Failed to send Discord alert:', error);
       }
     }
   }
@@ -439,7 +440,7 @@ export class CDNMonitoringService {
 
       // Log performance metrics
       if (process.env.CDN_VERBOSE_LOGGING === 'true') {
-        console.log(
+        logger.info(
           `[CDN Monitor] ${req.method} ${req.url} - ${res.statusCode} - ${responseTime}ms`
         );
       }

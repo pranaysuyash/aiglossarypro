@@ -1,14 +1,15 @@
 import { sql } from 'drizzle-orm';
 import { db } from './db';
 
+import logger from './utils/logger';
 export async function migrateTermsToEnhanced() {
   try {
-    console.log('Starting migration from terms to enhanced_terms...');
+    logger.info('Starting migration from terms to enhanced_terms...');
 
     // Check if enhanced_terms table is empty
     const enhancedCount = await db.execute(sql`SELECT COUNT(*) as count FROM enhanced_terms`);
     if (parseInt(enhancedCount.rows[0].count as string) > 0) {
-      console.log('Enhanced_terms table already has data. Skipping migration.');
+      logger.info('Enhanced_terms table already has data. Skipping migration.');
       return { success: true, migrated: 0 };
     }
 
@@ -20,7 +21,7 @@ export async function migrateTermsToEnhanced() {
       FROM terms
     `);
 
-    console.log(`Found ${terms.rows.length} terms to migrate`);
+    logger.info(`Found ${terms.rows.length} terms to migrate`);
 
     let migratedCount = 0;
 
@@ -147,17 +148,17 @@ export async function migrateTermsToEnhanced() {
         migratedCount++;
 
         if (migratedCount % 50 === 0) {
-          console.log(`Migrated ${migratedCount} terms...`);
+          logger.info(`Migrated ${migratedCount} terms...`);
         }
       } catch (error) {
-        console.error(`Error migrating term ${term.name}:`, error);
+        logger.error(`Error migrating term ${term.name}:`, error);
       }
     }
 
-    console.log(`Migration completed! Migrated ${migratedCount} terms to enhanced_terms.`);
+    logger.info(`Migration completed! Migrated ${migratedCount} terms to enhanced_terms.`);
     return { success: true, migrated: migratedCount };
   } catch (error) {
-    console.error('Terms to enhanced migration failed:', error);
+    logger.error('Terms to enhanced migration failed:', error);
     throw error;
   }
 }
@@ -166,11 +167,11 @@ export async function migrateTermsToEnhanced() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   migrateTermsToEnhanced()
     .then(result => {
-      console.log('Migration completed successfully:', result);
+      logger.info('Migration completed successfully:', result);
       process.exit(0);
     })
     .catch(error => {
-      console.error('Migration failed:', error);
+      logger.error('Migration failed:', error);
       process.exit(1);
     });
 }

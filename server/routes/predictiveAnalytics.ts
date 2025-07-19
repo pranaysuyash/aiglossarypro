@@ -9,6 +9,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { predictiveAnalyticsService } from '../services/predictiveAnalyticsService';
 
+import logger from '../utils/logger';
 const router = express.Router();
 
 // Validation schemas
@@ -169,7 +170,7 @@ router.get(
 
       res.json(response);
     } catch (error) {
-      console.error('Error predicting learning outcomes:', error);
+      logger.error('Error predicting learning outcomes:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to predict learning outcomes',
@@ -271,7 +272,7 @@ router.get(
         data: profile,
       });
     } catch (error) {
-      console.error('Error generating learning profile:', error);
+      logger.error('Error generating learning profile:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to generate learning profile',
@@ -399,7 +400,7 @@ router.get(
         data: insights,
       });
     } catch (error) {
-      console.error('Error generating predictive insights:', error);
+      logger.error('Error generating predictive insights:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to generate predictive insights',
@@ -499,7 +500,7 @@ router.get(
         data: recommendations,
       });
     } catch (error) {
-      console.error('Error generating recommendations:', error);
+      logger.error('Error generating recommendations:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to generate recommendations',
@@ -581,7 +582,7 @@ router.get(
         data: insights.progressMilestones,
       });
     } catch (error) {
-      console.error('Error generating milestones:', error);
+      logger.error('Error generating milestones:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to generate milestones',
@@ -692,7 +693,7 @@ router.post(
 
             return { userId, data: userResults };
           } catch (error) {
-            console.error(`Error analyzing user ${userId}:`, error);
+            logger.error(`Error analyzing user ${userId}:`, error);
             return {
               userId,
               error: error instanceof Error ? error.message : 'Analysis failed',
@@ -711,7 +712,7 @@ router.post(
         data: results,
       });
     } catch (error) {
-      console.error('Error in batch analysis:', error);
+      logger.error('Error in batch analysis:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to perform batch analysis',

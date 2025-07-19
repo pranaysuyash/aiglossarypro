@@ -1,8 +1,9 @@
 import { categories, subcategories, termSubcategories, terms } from '../shared/enhancedSchema';
 import { db } from './db';
 
+import logger from './utils/logger';
 async function seed() {
-  console.log('Starting database seeding...');
+  logger.info('Starting database seeding...');
 
   // Insert categories
   const aiCategory = await db
@@ -31,7 +32,7 @@ async function seed() {
     })
     .returning();
 
-  console.log('Categories created:', aiCategory.length + mlCategory.length + dlCategory.length);
+  logger.info('Categories created:', aiCategory.length + mlCategory.length + dlCategory.length);
 
   // Insert subcategories
   const aiSubcategories = await db
@@ -61,7 +62,7 @@ async function seed() {
     ])
     .returning();
 
-  console.log(
+  logger.info(
     'Subcategories created:',
     aiSubcategories.length + mlSubcategories.length + dlSubcategories.length
   );
@@ -148,7 +149,7 @@ async function seed() {
     ])
     .returning();
 
-  console.log('Terms created:', aiTerms.length + mlTerms.length + dlTerms.length);
+  logger.info('Terms created:', aiTerms.length + mlTerms.length + dlTerms.length);
 
   // Connect terms to subcategories
   const termSubcategoryRelations = [];
@@ -173,11 +174,11 @@ async function seed() {
 
   await db.insert(termSubcategories).values(termSubcategoryRelations);
 
-  console.log('Term-subcategory relations created:', termSubcategoryRelations.length);
-  console.log('Database seeding completed successfully!');
+  logger.info('Term-subcategory relations created:', termSubcategoryRelations.length);
+  logger.info('Database seeding completed successfully!');
 }
 
 seed().catch(error => {
-  console.error('Error seeding database:', error);
+  logger.error('Error seeding database:', error);
   process.exit(1);
 });

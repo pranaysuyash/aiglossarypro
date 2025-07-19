@@ -17,6 +17,7 @@ import { db } from '../db';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 
+import logger from '../utils/logger';
 export function registerCodeExamplesRoutes(app: Express): void {
   /**
    * Get code examples for a specific term
@@ -97,7 +98,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Get code examples error:', error);
+      logger.error('Get code examples error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -198,7 +199,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Get all code examples error:', error);
+      logger.error('Get all code examples error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -223,7 +224,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         data: example[0],
       });
     } catch (error) {
-      console.error('Get code example error:', error);
+      logger.error('Get code example error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -289,7 +290,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         message: 'Code example created successfully',
       });
     } catch (error) {
-      console.error('Create code example error:', error);
+      logger.error('Create code example error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -347,7 +348,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         message: 'Code example updated successfully',
       });
     } catch (error) {
-      console.error('Update code example error:', error);
+      logger.error('Update code example error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -453,7 +454,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
               : `Vote ${vote} recorded successfully`,
         });
       } catch (error) {
-        console.error('Vote code example error:', error);
+        logger.error('Vote code example error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -514,7 +515,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
           message: 'Code execution recorded successfully',
         });
       } catch (error) {
-        console.error('Record code run error:', error);
+        logger.error('Record code run error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -558,7 +559,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
           data: runs,
         });
       } catch (error) {
-        console.error('Get code runs error:', error);
+        logger.error('Get code runs error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -600,7 +601,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         message: 'Code example deleted successfully',
       });
     } catch (error) {
-      console.error('Delete code example error:', error);
+      logger.error('Delete code example error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }

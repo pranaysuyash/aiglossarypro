@@ -2,6 +2,7 @@ import type { Express } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config';
 
+import logger from '../utils/logger';
 /**
  * Set up Swagger UI for API documentation
  */
@@ -80,5 +81,5 @@ export function setupSwagger(app: Express): void {
     res.redirect('/api/docs');
   });
 
-  console.log('📚 Swagger UI available at /api/docs');
+  logger.info('📚 Swagger UI available at /api/docs');
 }

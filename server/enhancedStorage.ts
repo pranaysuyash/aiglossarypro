@@ -67,6 +67,7 @@ import type {
   UserProgressStats,
 } from './types/storage.types';
 
+import logger from './utils/logger';
 // ===== CORE INTERFACES =====
 
 export interface IEnhancedStorage extends IStorage {
@@ -298,7 +299,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   private logFailedAuth(type: string, userId?: string): void {
-    console.warn(`[SECURITY] Failed ${type} auth attempt`, {
+    logger.warn(`[SECURITY] Failed ${type} auth attempt`, {
       type,
       userId,
       timestamp: new Date().toISOString(),
@@ -480,7 +481,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const cacheKey = 'admin:stats';
       const cached = await enhancedRedisCache.get<AdminStats>(cacheKey);
       if (cached) {
-        console.log('[EnhancedStorage] getAdminStats: Cache hit');
+        logger.info('[EnhancedStorage] getAdminStats: Cache hit');
         return cached;
       }
 
@@ -508,11 +509,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Cache for 5 minutes (admin stats change frequently)
       await enhancedRedisCache.set(cacheKey, stats, 300);
-      console.log('[EnhancedStorage] getAdminStats: Cached result');
+      logger.info('[EnhancedStorage] getAdminStats: Cached result');
 
       return stats;
     } catch (error) {
-      console.error('[EnhancedStorage] getAdminStats error:', error);
+      logger.error('[EnhancedStorage] getAdminStats error:', error);
       throw error;
     }
   }
@@ -525,7 +526,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const cacheKey = 'admin:content_metrics';
       const cached = await enhancedRedisCache.get<ContentMetrics>(cacheKey);
       if (cached) {
-        console.log('[EnhancedStorage] getContentMetrics: Cache hit');
+        logger.info('[EnhancedStorage] getContentMetrics: Cache hit');
         return cached;
       }
 
@@ -548,11 +549,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Cache for 10 minutes (content changes less frequently)
       await enhancedRedisCache.set(cacheKey, metrics, 600);
-      console.log('[EnhancedStorage] getContentMetrics: Cached result');
+      logger.info('[EnhancedStorage] getContentMetrics: Cached result');
 
       return metrics;
     } catch (error) {
-      console.error('[EnhancedStorage] getContentMetrics error:', error);
+      logger.error('[EnhancedStorage] getContentMetrics error:', error);
       throw error;
     }
   }
@@ -563,9 +564,9 @@ export class EnhancedStorage implements IEnhancedStorage {
     try {
       // Clear Redis cache
       await enhancedRedisCache.clear();
-      console.log('[EnhancedStorage] clearCache: All cache cleared');
+      logger.info('[EnhancedStorage] clearCache: All cache cleared');
     } catch (error) {
-      console.error('[EnhancedStorage] clearCache error:', error);
+      logger.error('[EnhancedStorage] clearCache error:', error);
       throw error;
     }
   }
@@ -586,7 +587,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       return baseHealth && termsHealth;
     } catch (error) {
-      console.error('[EnhancedStorage] Database health check failed:', error);
+      logger.error('[EnhancedStorage] Database health check failed:', error);
       return false;
     }
   }
@@ -634,7 +635,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       };
     } catch (error) {
       const responseTime = Date.now() - start;
-      console.error('[EnhancedStorage] S3 health check failed:', error);
+      logger.error('[EnhancedStorage] S3 health check failed:', error);
       return {
         healthy: false,
         message: `S3 health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -683,7 +684,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         }
       }
 
-      console.error('[EnhancedStorage] AI health check failed:', error);
+      logger.error('[EnhancedStorage] AI health check failed:', error);
       return {
         healthy: false,
         message,
@@ -761,7 +762,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Return the 10 most recent activities
       return allActivity.slice(0, 10);
     } catch (error) {
-      console.error('[EnhancedStorage] Error fetching recent activity:', error);
+      logger.error('[EnhancedStorage] Error fetching recent activity:', error);
       return [];
     }
   }
@@ -782,7 +783,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       return baseExists || enhancedExists;
     } catch (error) {
-      console.error('[EnhancedStorage] verifyTermExists error:', error);
+      logger.error('[EnhancedStorage] verifyTermExists error:', error);
       return false;
     }
   }
@@ -801,7 +802,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         const result = await (this.baseStorage as any).clearAllData();
         tablesCleared.push(...(result.tablesCleared || []));
       } else {
-        console.warn('[EnhancedStorage] clearAllData: No clearAllData method in baseStorage');
+        logger.warn('[EnhancedStorage] clearAllData: No clearAllData method in baseStorage');
       }
 
       // Note: This is a critical operation that should:
@@ -811,11 +812,11 @@ export class EnhancedStorage implements IEnhancedStorage {
       // 4. Reset system to initial state
       // Implementation depends on database schema and requirements
 
-      console.log(`[EnhancedStorage] clearAllData: Cleared ${tablesCleared.length} tables`);
+      logger.info(`[EnhancedStorage] clearAllData: Cleared ${tablesCleared.length} tables`);
 
       return { tablesCleared };
     } catch (error) {
-      console.error('[EnhancedStorage] clearAllData error:', error);
+      logger.error('[EnhancedStorage] clearAllData error:', error);
       throw new Error(
         `Failed to clear data: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -833,7 +834,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // For PostgreSQL/Neon, this might involve REINDEX commands
       // For now, simulate the operation
 
-      console.log('[EnhancedStorage] reindexDatabase: Starting database reindex...');
+      logger.info('[EnhancedStorage] reindexDatabase: Starting database reindex...');
       operations.push('REINDEX DATABASE simulation started');
 
       // Simulate some processing time
@@ -851,7 +852,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         message: 'Database reindex simulation completed',
       };
     } catch (error) {
-      console.error('[EnhancedStorage] reindexDatabase error:', error);
+      logger.error('[EnhancedStorage] reindexDatabase error:', error);
       return {
         success: false,
         operation: 'reindex',
@@ -870,7 +871,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const startTime = Date.now();
       const operations: string[] = [];
 
-      console.log('[EnhancedStorage] cleanupDatabase: Starting database cleanup...');
+      logger.info('[EnhancedStorage] cleanupDatabase: Starting database cleanup...');
       operations.push('Database cleanup started');
 
       // Cleanup operations could include:
@@ -893,7 +894,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         message: 'Database cleanup completed successfully',
       };
     } catch (error) {
-      console.error('[EnhancedStorage] cleanupDatabase error:', error);
+      logger.error('[EnhancedStorage] cleanupDatabase error:', error);
       return {
         success: false,
         operation: 'cleanup',
@@ -912,7 +913,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const startTime = Date.now();
       const operations: string[] = [];
 
-      console.log('[EnhancedStorage] vacuumDatabase: Starting database vacuum...');
+      logger.info('[EnhancedStorage] vacuumDatabase: Starting database vacuum...');
       operations.push('VACUUM operation started');
 
       // VACUUM operations for PostgreSQL:
@@ -935,7 +936,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         message: 'Database vacuum completed successfully',
       };
     } catch (error) {
-      console.error('[EnhancedStorage] vacuumDatabase error:', error);
+      logger.error('[EnhancedStorage] vacuumDatabase error:', error);
       return {
         success: false,
         operation: 'vacuum',
@@ -960,7 +961,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // For now, return empty results with proper structure
       const { page = 1, limit = 50 } = options || {};
 
-      console.warn(
+      logger.warn(
         '[EnhancedStorage] getAllUsers: No user listing method available in baseStorage'
       );
 
@@ -972,27 +973,27 @@ export class EnhancedStorage implements IEnhancedStorage {
         hasMore: false,
       };
     } catch (error) {
-      console.error('[EnhancedStorage] getAllUsers error:', error);
+      logger.error('[EnhancedStorage] getAllUsers error:', error);
       throw error;
     }
   }
 
   async getPendingContent(): Promise<PendingContent[]> {
     this.requireAdminAuth();
-    console.log('[EnhancedStorage] getPendingContent called');
+    logger.info('[EnhancedStorage] getPendingContent called');
 
     try {
       // Try to get pending content from enhanced terms storage
       try {
         const pendingItems = await this.baseStorage.getPendingContent?.();
         if (pendingItems && Array.isArray(pendingItems)) {
-          console.log(
+          logger.info(
             `[EnhancedStorage] getPendingContent: Found ${pendingItems.length} pending items from enhanced storage`
           );
           return pendingItems;
         }
       } catch (enhancedError) {
-        console.warn(
+        logger.warn(
           '[EnhancedStorage] Enhanced storage pending content unavailable:',
           enhancedError
         );
@@ -1077,7 +1078,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         }
 
         if (pendingContent.length > 0) {
-          console.log(
+          logger.info(
             `[EnhancedStorage] getPendingContent: Found ${pendingContent.length} items from base storage`
           );
           // Sort by priority and submission date
@@ -1089,12 +1090,12 @@ export class EnhancedStorage implements IEnhancedStorage {
           });
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage pending content unavailable:', baseError);
+        logger.warn('[EnhancedStorage] Base storage pending content unavailable:', baseError);
       }
 
       // Final fallback: Generate mock pending content for development/testing
       try {
-        console.log('[EnhancedStorage] Generating mock pending content for development');
+        logger.info('[EnhancedStorage] Generating mock pending content for development');
 
         const mockPendingContent: PendingContent[] = [
           {
@@ -1146,23 +1147,23 @@ export class EnhancedStorage implements IEnhancedStorage {
           },
         ];
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getPendingContent: Generated ${mockPendingContent.length} mock items`
         );
         return mockPendingContent;
       } catch (mockError) {
-        console.error('[EnhancedStorage] Failed to generate mock content:', mockError);
+        logger.error('[EnhancedStorage] Failed to generate mock content:', mockError);
         return [];
       }
     } catch (error) {
-      console.error('[EnhancedStorage] getPendingContent error:', error);
+      logger.error('[EnhancedStorage] getPendingContent error:', error);
       return [];
     }
   }
 
   async approveContent(id: string): Promise<any> {
     this.requireAdminAuth();
-    console.log(`[EnhancedStorage] approveContent called for ID: ${id}`);
+    logger.info(`[EnhancedStorage] approveContent called for ID: ${id}`);
 
     try {
       // Validate input
@@ -1174,7 +1175,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         const result = await this.baseStorage.approveContent?.(id);
         if (result) {
-          console.log(
+          logger.info(
             `[EnhancedStorage] approveContent: Content ${id} approved via enhanced storage`
           );
           return {
@@ -1186,22 +1187,22 @@ export class EnhancedStorage implements IEnhancedStorage {
           };
         }
       } catch (enhancedError) {
-        console.warn('[EnhancedStorage] Enhanced storage approve unavailable:', enhancedError);
+        logger.warn('[EnhancedStorage] Enhanced storage approve unavailable:', enhancedError);
       }
 
       // Fallback: Try base storage
       try {
         if ('approveContent' in this.baseStorage) {
           const result = await (this.baseStorage as any).approveContent(id);
-          console.log(`[EnhancedStorage] approveContent: Content ${id} approved via base storage`);
+          logger.info(`[EnhancedStorage] approveContent: Content ${id} approved via base storage`);
           return result;
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage approve unavailable:', baseError);
+        logger.warn('[EnhancedStorage] Base storage approve unavailable:', baseError);
       }
 
       // Final fallback: Mock approval for development
-      console.log(`[EnhancedStorage] approveContent: Mock approval for content ${id}`);
+      logger.info(`[EnhancedStorage] approveContent: Mock approval for content ${id}`);
 
       return {
         success: true,
@@ -1215,7 +1216,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         },
       };
     } catch (error) {
-      console.error(`[EnhancedStorage] approveContent error for ID ${id}:`, error);
+      logger.error(`[EnhancedStorage] approveContent error for ID ${id}:`, error);
 
       return {
         success: false,
@@ -1229,7 +1230,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async rejectContent(id: string): Promise<any> {
     this.requireAdminAuth();
-    console.log(`[EnhancedStorage] rejectContent called for ID: ${id}`);
+    logger.info(`[EnhancedStorage] rejectContent called for ID: ${id}`);
 
     try {
       // Validate input
@@ -1241,7 +1242,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         const result = await this.baseStorage.rejectContent?.(id);
         if (result) {
-          console.log(
+          logger.info(
             `[EnhancedStorage] rejectContent: Content ${id} rejected via enhanced storage`
           );
           return {
@@ -1253,22 +1254,22 @@ export class EnhancedStorage implements IEnhancedStorage {
           };
         }
       } catch (enhancedError) {
-        console.warn('[EnhancedStorage] Enhanced storage reject unavailable:', enhancedError);
+        logger.warn('[EnhancedStorage] Enhanced storage reject unavailable:', enhancedError);
       }
 
       // Fallback: Try base storage
       try {
         if ('rejectContent' in this.baseStorage) {
           const result = await (this.baseStorage as any).rejectContent(id);
-          console.log(`[EnhancedStorage] rejectContent: Content ${id} rejected via base storage`);
+          logger.info(`[EnhancedStorage] rejectContent: Content ${id} rejected via base storage`);
           return result;
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage reject unavailable:', baseError);
+        logger.warn('[EnhancedStorage] Base storage reject unavailable:', baseError);
       }
 
       // Final fallback: Mock rejection for development
-      console.log(`[EnhancedStorage] rejectContent: Mock rejection for content ${id}`);
+      logger.info(`[EnhancedStorage] rejectContent: Mock rejection for content ${id}`);
 
       return {
         success: true,
@@ -1282,7 +1283,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         },
       };
     } catch (error) {
-      console.error(`[EnhancedStorage] rejectContent error for ID ${id}:`, error);
+      logger.error(`[EnhancedStorage] rejectContent error for ID ${id}:`, error);
 
       return {
         success: false,
@@ -1295,7 +1296,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async advancedSearch(options: AdvancedSearchOptions): Promise<SearchResult> {
-    console.log('[EnhancedStorage] advancedSearch called with options:', options);
+    logger.info('[EnhancedStorage] advancedSearch called with options:', options);
 
     try {
       // Transform AdvancedSearchOptions to EnhancedSearchParams format
@@ -1338,15 +1339,15 @@ export class EnhancedStorage implements IEnhancedStorage {
         hasMore: searchResponse.pagination.page < searchResponse.pagination.totalPages,
       };
 
-      console.log(`[EnhancedStorage] advancedSearch: Found ${result.total} results`);
+      logger.info(`[EnhancedStorage] advancedSearch: Found ${result.total} results`);
       return result;
     } catch (error) {
-      console.error('[EnhancedStorage] advancedSearch error:', error);
+      logger.error('[EnhancedStorage] advancedSearch error:', error);
 
       // Fallback to basic search if enhanced search fails
       if (options.query) {
         try {
-          console.log('[EnhancedStorage] Falling back to basic search');
+          logger.info('[EnhancedStorage] Falling back to basic search');
           // Use the basic search method that exists
           const basicResults = await this.baseStorage.searchTerms(options.query);
 
@@ -1358,7 +1359,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             hasMore: false,
           };
         } catch (fallbackError) {
-          console.error('[EnhancedStorage] Basic search fallback failed:', fallbackError);
+          logger.error('[EnhancedStorage] Basic search fallback failed:', fallbackError);
         }
       }
 
@@ -1374,7 +1375,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async getPopularSearchTerms(limit: number, timeframe: string): Promise<PopularTerm[]> {
-    console.log(
+    logger.info(
       `[EnhancedStorage] getPopularSearchTerms called: limit=${limit}, timeframe=${timeframe}`
     );
 
@@ -1391,14 +1392,14 @@ export class EnhancedStorage implements IEnhancedStorage {
           lastSearched: new Date(),
         }));
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getPopularSearchTerms: Found ${topTerms.length} popular terms`
         );
         return topTerms;
       }
 
       // Fallback to base storage - just generate mock popular terms
-      console.log('[EnhancedStorage] Generating mock popular terms');
+      logger.info('[EnhancedStorage] Generating mock popular terms');
       const mockTerms = [
         { name: 'Machine Learning', searchCount: 150 },
         { name: 'Neural Network', searchCount: 120 },
@@ -1414,7 +1415,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         lastSearched: new Date(),
       }));
     } catch (error) {
-      console.error('[EnhancedStorage] getPopularSearchTerms error:', error);
+      logger.error('[EnhancedStorage] getPopularSearchTerms error:', error);
 
       // Return empty results if everything fails
       return [];
@@ -1422,7 +1423,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async getSearchFilters(): Promise<SearchFilters> {
-    console.log('[EnhancedStorage] getSearchFilters called');
+    logger.info('[EnhancedStorage] getSearchFilters called');
 
     try {
       // Get available filters from categories and enhanced terms
@@ -1450,10 +1451,10 @@ export class EnhancedStorage implements IEnhancedStorage {
         ],
       };
 
-      console.log(`[EnhancedStorage] getSearchFilters: Found ${categories.length} categories`);
+      logger.info(`[EnhancedStorage] getSearchFilters: Found ${categories.length} categories`);
       return filters;
     } catch (error) {
-      console.error('[EnhancedStorage] getSearchFilters error:', error);
+      logger.error('[EnhancedStorage] getSearchFilters error:', error);
 
       // Return minimal filters on error
       return {
@@ -1467,7 +1468,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async submitTermFeedback(data: TermFeedback): Promise<FeedbackResult> {
     this.requireAuth();
-    console.log('[EnhancedStorage] submitTermFeedback called for term:', data.termId);
+    logger.info('[EnhancedStorage] submitTermFeedback called for term:', data.termId);
 
     try {
       // Validate input data
@@ -1498,7 +1499,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           };
         }
       } catch (termError) {
-        console.warn('[EnhancedStorage] Could not verify term existence:', termError);
+        logger.warn('[EnhancedStorage] Could not verify term existence:', termError);
         // Continue anyway - term might exist in enhanced storage
       }
 
@@ -1527,12 +1528,12 @@ export class EnhancedStorage implements IEnhancedStorage {
           await this.baseStorage.submitFeedback(feedbackRecord);
         } else {
           // Fallback to base storage or in-memory storage
-          console.log('[EnhancedStorage] Using fallback feedback storage');
+          logger.info('[EnhancedStorage] Using fallback feedback storage');
           // In a real implementation, this would store to a database table
           // For now, we'll just log and return success
         }
       } catch (storageError) {
-        console.warn('[EnhancedStorage] Feedback storage failed:', storageError);
+        logger.warn('[EnhancedStorage] Feedback storage failed:', storageError);
         // Continue - we'll still return success for the feedback submission
       }
 
@@ -1542,10 +1543,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           this.context.analytics.trackFeedback(data.category, data.rating, data.termId);
         }
       } catch (analyticsError) {
-        console.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
+        logger.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
       }
 
-      console.log(
+      logger.info(
         `[EnhancedStorage] submitTermFeedback: Successfully submitted feedback ${feedbackId}`
       );
 
@@ -1556,7 +1557,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         timestamp: new Date(),
       };
     } catch (error) {
-      console.error('[EnhancedStorage] submitTermFeedback error:', error);
+      logger.error('[EnhancedStorage] submitTermFeedback error:', error);
 
       return {
         success: false,
@@ -1570,7 +1571,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log('[EnhancedStorage] submitGeneralFeedback called');
+      logger.info('[EnhancedStorage] submitGeneralFeedback called');
 
       // Validate input
       if (!data.type || !data.message) {
@@ -1606,10 +1607,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           await this.baseStorage.storeFeedback(feedbackRecord);
         } else {
           // In-memory storage for development
-          console.log('[EnhancedStorage] Using in-memory feedback storage (dev mode)');
+          logger.info('[EnhancedStorage] Using in-memory feedback storage (dev mode)');
         }
       } catch (storageError) {
-        console.warn('[EnhancedStorage] Feedback storage failed:', storageError);
+        logger.warn('[EnhancedStorage] Feedback storage failed:', storageError);
       }
 
       // Track analytics
@@ -1618,10 +1619,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           this.context.analytics.trackFeedback('general', 0, data.type);
         }
       } catch (analyticsError) {
-        console.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
+        logger.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
       }
 
-      console.log(`[EnhancedStorage] submitGeneralFeedback: Successfully submitted ${feedbackId}`);
+      logger.info(`[EnhancedStorage] submitGeneralFeedback: Successfully submitted ${feedbackId}`);
 
       return {
         success: true,
@@ -1630,7 +1631,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         timestamp: new Date(),
       };
     } catch (error) {
-      console.error('[EnhancedStorage] submitGeneralFeedback error:', error);
+      logger.error('[EnhancedStorage] submitGeneralFeedback error:', error);
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to submit general feedback',
@@ -1646,7 +1647,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAdminAuth();
 
     try {
-      console.log('[EnhancedStorage] getFeedback called with filters:', filters);
+      logger.info('[EnhancedStorage] getFeedback called with filters:', filters);
 
       const limit = pagination.limit || 50;
       const offset = pagination.offset || 0;
@@ -1666,12 +1667,12 @@ export class EnhancedStorage implements IEnhancedStorage {
           totalCount = 100; // Mock total
         }
       } catch (storageError) {
-        console.warn('[EnhancedStorage] Base storage feedback retrieval failed:', storageError);
+        logger.warn('[EnhancedStorage] Base storage feedback retrieval failed:', storageError);
         feedbackItems = this.generateMockFeedback(filters, limit, offset);
         totalCount = feedbackItems.length;
       }
 
-      console.log(`[EnhancedStorage] getFeedback: Retrieved ${feedbackItems.length} items`);
+      logger.info(`[EnhancedStorage] getFeedback: Retrieved ${feedbackItems.length} items`);
 
       return {
         feedback: feedbackItems,
@@ -1682,7 +1683,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         hasMore: offset + feedbackItems.length < totalCount,
       };
     } catch (error) {
-      console.error('[EnhancedStorage] getFeedback error:', error);
+      logger.error('[EnhancedStorage] getFeedback error:', error);
       throw new Error(
         `Failed to get feedback: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -1693,7 +1694,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAdminAuth();
 
     try {
-      console.log('[EnhancedStorage] getFeedbackStats called');
+      logger.info('[EnhancedStorage] getFeedbackStats called');
 
       let stats: FeedbackStatistics;
 
@@ -1743,7 +1744,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           };
         }
       } catch (statsError) {
-        console.warn('[EnhancedStorage] Base storage stats retrieval failed:', statsError);
+        logger.warn('[EnhancedStorage] Base storage stats retrieval failed:', statsError);
         // Return basic stats
         stats = {
           totalFeedback: 0,
@@ -1758,11 +1759,11 @@ export class EnhancedStorage implements IEnhancedStorage {
         };
       }
 
-      console.log(`[EnhancedStorage] getFeedbackStats: Total feedback count: ${stats.total}`);
+      logger.info(`[EnhancedStorage] getFeedbackStats: Total feedback count: ${stats.total}`);
 
       return stats;
     } catch (error) {
-      console.error('[EnhancedStorage] getFeedbackStats error:', error);
+      logger.error('[EnhancedStorage] getFeedbackStats error:', error);
       throw new Error(
         `Failed to get feedback stats: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -1777,7 +1778,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAdminAuth();
 
     try {
-      console.log(`[EnhancedStorage] updateFeedbackStatus called for ${id} with status ${status}`);
+      logger.info(`[EnhancedStorage] updateFeedbackStatus called for ${id} with status ${status}`);
 
       // Validate status
       const validStatuses: FeedbackStatus[] = ['pending', 'reviewed', 'resolved', 'archived'];
@@ -1802,7 +1803,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           };
         }
       } catch (updateError) {
-        console.warn('[EnhancedStorage] Base storage update failed:', updateError);
+        logger.warn('[EnhancedStorage] Base storage update failed:', updateError);
         // Return mock success
         updateResult = {
           id,
@@ -1814,13 +1815,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         };
       }
 
-      console.log(
+      logger.info(
         `[EnhancedStorage] updateFeedbackStatus: Updated ${id} from ${updateResult.previousStatus} to ${status}`
       );
 
       return updateResult;
     } catch (error) {
-      console.error('[EnhancedStorage] updateFeedbackStatus error:', error);
+      logger.error('[EnhancedStorage] updateFeedbackStatus error:', error);
       throw new Error(
         `Failed to update feedback status: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -1831,36 +1832,36 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAdminAuth();
 
     try {
-      console.log('[EnhancedStorage] initializeFeedbackSchema called');
+      logger.info('[EnhancedStorage] initializeFeedbackSchema called');
 
       // Try to initialize schema in base storage
       try {
         if (typeof this.baseStorage.initializeFeedbackSchema === 'function') {
           await this.baseStorage.initializeFeedbackSchema();
-          console.log('[EnhancedStorage] Feedback schema initialized in base storage');
+          logger.info('[EnhancedStorage] Feedback schema initialized in base storage');
         } else {
           // In development, schema is handled by migrations
-          console.log(
+          logger.info(
             '[EnhancedStorage] Feedback schema initialization skipped (handled by migrations)'
           );
         }
       } catch (schemaError) {
-        console.warn('[EnhancedStorage] Schema initialization failed:', schemaError);
+        logger.warn('[EnhancedStorage] Schema initialization failed:', schemaError);
       }
 
       // Ensure feedback indexes exist
       try {
         if (typeof this.baseStorage.createFeedbackIndexes === 'function') {
           await this.baseStorage.createFeedbackIndexes();
-          console.log('[EnhancedStorage] Feedback indexes created');
+          logger.info('[EnhancedStorage] Feedback indexes created');
         }
       } catch (indexError) {
-        console.warn('[EnhancedStorage] Index creation failed:', indexError);
+        logger.warn('[EnhancedStorage] Index creation failed:', indexError);
       }
 
-      console.log('[EnhancedStorage] initializeFeedbackSchema completed');
+      logger.info('[EnhancedStorage] initializeFeedbackSchema completed');
     } catch (error) {
-      console.error('[EnhancedStorage] initializeFeedbackSchema error:', error);
+      logger.error('[EnhancedStorage] initializeFeedbackSchema error:', error);
       throw new Error(
         `Failed to initialize feedback schema: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -1916,7 +1917,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         await this.baseStorage.getCategories();
         healthChecks.optimizedStorage = true;
       } catch (error) {
-        console.error('[EnhancedStorage] OptimizedStorage health check failed:', error);
+        logger.error('[EnhancedStorage] OptimizedStorage health check failed:', error);
       }
 
       // Test enhanced terms storage
@@ -1924,7 +1925,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         await this.termsStorage.getHealthStatus();
         healthChecks.enhancedTermsStorage = true;
       } catch (error) {
-        console.error('[EnhancedStorage] EnhancedTermsStorage health check failed:', error);
+        logger.error('[EnhancedStorage] EnhancedTermsStorage health check failed:', error);
       }
 
       const overallHealth =
@@ -1944,7 +1945,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         },
       };
     } catch (error) {
-      console.error('[EnhancedStorage] getSystemHealth error:', error);
+      logger.error('[EnhancedStorage] getSystemHealth error:', error);
       return {
         status: 'critical',
         checks: {},
@@ -1977,7 +1978,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           performanceMetrics = await (this.baseStorage as any).getPerformanceMetrics();
         }
       } catch (error) {
-        console.warn('[EnhancedStorage] Could not get performance metrics:', error);
+        logger.warn('[EnhancedStorage] Could not get performance metrics:', error);
       }
 
       // Build comprehensive database metrics
@@ -2042,7 +2043,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       return metrics;
     } catch (error) {
-      console.error('[EnhancedStorage] getDatabaseMetrics error:', error);
+      logger.error('[EnhancedStorage] getDatabaseMetrics error:', error);
 
       // Return minimal metrics on error
       return {
@@ -2068,7 +2069,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const cacheKey = `metrics:search:${timeframe}`;
       const cached = await enhancedRedisCache.get<SearchMetrics>(cacheKey);
       if (cached) {
-        console.log('[EnhancedStorage] getSearchMetrics: Cache hit');
+        logger.info('[EnhancedStorage] getSearchMetrics: Cache hit');
         return cached;
       }
 
@@ -2082,7 +2083,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           popularTerms = await (this.baseStorage as any).getPopularTerms(timeframe);
         }
       } catch (error) {
-        console.warn('[EnhancedStorage] Could not get popular terms:', error);
+        logger.warn('[EnhancedStorage] Could not get popular terms:', error);
       }
 
       // Get search facets from enhanced terms storage
@@ -2137,11 +2138,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Cache for 15 minutes (search metrics update moderately)
       await enhancedRedisCache.set(cacheKey, metrics, 900);
-      console.log('[EnhancedStorage] getSearchMetrics: Cached result');
+      logger.info('[EnhancedStorage] getSearchMetrics: Cached result');
 
       return metrics;
     } catch (error) {
-      console.error('[EnhancedStorage] getSearchMetrics error:', error);
+      logger.error('[EnhancedStorage] getSearchMetrics error:', error);
 
       // Return minimal metrics on error
       return {
@@ -2170,7 +2171,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async getTermsByIds(ids: string[]): Promise<ITerm[]> {
-    console.log(`[EnhancedStorage] getTermsByIds called with ${ids.length} IDs`);
+    logger.info(`[EnhancedStorage] getTermsByIds called with ${ids.length} IDs`);
 
     try {
       if (!ids || ids.length === 0) {
@@ -2194,14 +2195,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         isLearned: false, // Would be set based on user progress
       }));
 
-      console.log(`[EnhancedStorage] getTermsByIds: Retrieved ${transformedTerms.length} terms`);
+      logger.info(`[EnhancedStorage] getTermsByIds: Retrieved ${transformedTerms.length} terms`);
       return transformedTerms;
     } catch (error) {
-      console.error('[EnhancedStorage] getTermsByIds error:', error);
+      logger.error('[EnhancedStorage] getTermsByIds error:', error);
 
       // Fallback to base storage if available
       try {
-        console.log('[EnhancedStorage] Falling back to base storage for term retrieval');
+        logger.info('[EnhancedStorage] Falling back to base storage for term retrieval');
         const fallbackTerms: ITerm[] = [];
 
         // Get terms one by one from base storage
@@ -2212,13 +2213,13 @@ export class EnhancedStorage implements IEnhancedStorage {
               fallbackTerms.push(term);
             }
           } catch (termError) {
-            console.warn(`[EnhancedStorage] Failed to get term ${id}:`, termError);
+            logger.warn(`[EnhancedStorage] Failed to get term ${id}:`, termError);
           }
         }
 
         return fallbackTerms;
       } catch (fallbackError) {
-        console.error('[EnhancedStorage] Fallback term retrieval failed:', fallbackError);
+        logger.error('[EnhancedStorage] Fallback term retrieval failed:', fallbackError);
         return [];
       }
     }
@@ -2226,7 +2227,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkUpdateTerms(updates: TermUpdate[]): Promise<BulkUpdateResult> {
     this.requireAdminAuth();
-    console.log(`[EnhancedStorage] bulkUpdateTerms called with ${updates.length} updates`);
+    logger.info(`[EnhancedStorage] bulkUpdateTerms called with ${updates.length} updates`);
 
     if (!updates || updates.length === 0) {
       return {
@@ -2287,7 +2288,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             await this.termsStorage.updateEnhancedTerm(update.id, updateData);
             results.updated++;
           } catch (updateError) {
-            console.error(`[EnhancedStorage] Failed to update term ${update.id}:`, updateError);
+            logger.error(`[EnhancedStorage] Failed to update term ${update.id}:`, updateError);
             results.errors.push({
               id: update.id,
               error: updateError instanceof Error ? updateError.message : 'Unknown error',
@@ -2306,10 +2307,10 @@ export class EnhancedStorage implements IEnhancedStorage {
       results.success = results.failed === 0;
       results.message = `Updated ${results.updated} terms, ${results.failed} failed`;
 
-      console.log(`[EnhancedStorage] bulkUpdateTerms completed: ${results.message}`);
+      logger.info(`[EnhancedStorage] bulkUpdateTerms completed: ${results.message}`);
       return results;
     } catch (error) {
-      console.error('[EnhancedStorage] bulkUpdateTerms error:', error);
+      logger.error('[EnhancedStorage] bulkUpdateTerms error:', error);
 
       return {
         success: false,
@@ -2329,7 +2330,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async exportTermsToJSON(filters?: ExportFilters): Promise<string> {
     this.requireAdminAuth();
-    console.log('[EnhancedStorage] exportTermsToJSON called with filters:', filters);
+    logger.info('[EnhancedStorage] exportTermsToJSON called with filters:', filters);
 
     try {
       // Build search parameters based on filters
@@ -2349,11 +2350,11 @@ export class EnhancedStorage implements IEnhancedStorage {
       let termsData;
       if (filters?.includeEnhanced) {
         // Get enhanced terms with full 42-section data
-        console.log('[EnhancedStorage] Exporting enhanced terms with full sections');
+        logger.info('[EnhancedStorage] Exporting enhanced terms with full sections');
         termsData = await this.termsStorage.enhancedSearch(searchParams, this.context?.user?.id);
       } else {
         // Get basic terms for smaller export
-        console.log('[EnhancedStorage] Exporting basic terms');
+        logger.info('[EnhancedStorage] Exporting basic terms');
         termsData = await this.termsStorage.enhancedSearch(searchParams, this.context?.user?.id);
       }
 
@@ -2395,12 +2396,12 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Convert to JSON string with formatting
       const jsonString = JSON.stringify(exportData, null, 2);
 
-      console.log(
+      logger.info(
         `[EnhancedStorage] exportTermsToJSON completed: ${termsData.terms.length} terms exported`
       );
       return jsonString;
     } catch (error) {
-      console.error('[EnhancedStorage] exportTermsToJSON error:', error);
+      logger.error('[EnhancedStorage] exportTermsToJSON error:', error);
 
       // Return error information as JSON
       const errorData = {
@@ -2416,7 +2417,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getEnhancedTermById(id: string): Promise<EnhancedTerm> {
     try {
-      console.log(`[EnhancedStorage] getEnhancedTermById called for ID: ${id}`);
+      logger.info(`[EnhancedStorage] getEnhancedTermById called for ID: ${id}`);
 
       // First try to get from enhanced terms storage with full 42-section support
       try {
@@ -2426,7 +2427,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         ) {
           const enhancedTerm = await this.termsStorage.getEnhancedTermWithSections(id);
           if (enhancedTerm) {
-            console.log(
+            logger.info(
               `[EnhancedStorage] getEnhancedTermById: Found enhanced term with ${enhancedTerm.sections?.length || 0} sections`
             );
             return {
@@ -2454,7 +2455,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           }
         }
       } catch (enhancedError) {
-        console.warn('[EnhancedStorage] Enhanced terms retrieval failed:', enhancedError);
+        logger.warn('[EnhancedStorage] Enhanced terms retrieval failed:', enhancedError);
       }
 
       // Fallback to base storage and enhance
@@ -2480,32 +2481,32 @@ export class EnhancedStorage implements IEnhancedStorage {
           relatedTerms: [],
         };
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getEnhancedTermById: Converted base term to enhanced format`
         );
         return enhancedTerm;
       } catch (baseError) {
-        console.error('[EnhancedStorage] Base storage retrieval failed:', baseError);
+        logger.error('[EnhancedStorage] Base storage retrieval failed:', baseError);
         throw new Error(
           `Failed to get enhanced term: ${baseError instanceof Error ? baseError.message : 'Unknown error'}`
         );
       }
     } catch (error) {
-      console.error('[EnhancedStorage] getEnhancedTermById error:', error);
+      logger.error('[EnhancedStorage] getEnhancedTermById error:', error);
       throw error;
     }
   }
 
   async getTermSections(termId: string): Promise<TermSection[]> {
     try {
-      console.log(`[EnhancedStorage] getTermSections called for term: ${termId}`);
+      logger.info(`[EnhancedStorage] getTermSections called for term: ${termId}`);
 
       // Try to get sections from enhanced storage
       try {
         if (this.termsStorage && typeof this.termsStorage.getTermSections === 'function') {
           const sections = await this.termsStorage.getTermSections(termId);
           if (sections && sections.length > 0) {
-            console.log(`[EnhancedStorage] getTermSections: Found ${sections.length} sections`);
+            logger.info(`[EnhancedStorage] getTermSections: Found ${sections.length} sections`);
             return sections.map(section => ({
               ...section,
               priority: section.priority ?? undefined,
@@ -2516,7 +2517,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           }
         }
       } catch (enhancedError) {
-        console.warn('[EnhancedStorage] Enhanced sections retrieval failed:', enhancedError);
+        logger.warn('[EnhancedStorage] Enhanced sections retrieval failed:', enhancedError);
       }
 
       // Fallback: Get term and generate default sections
@@ -2526,7 +2527,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       }
 
       const sections = this.generateDefaultSections(term);
-      console.log(
+      logger.info(
         `[EnhancedStorage] getTermSections: Generated ${sections.length} default sections`
       );
 
@@ -2549,7 +2550,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       return termSections;
     } catch (error) {
-      console.error('[EnhancedStorage] getTermSections error:', error);
+      logger.error('[EnhancedStorage] getTermSections error:', error);
       throw new Error(
         `Failed to get term sections: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2560,7 +2561,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(
+      logger.info(
         `[EnhancedStorage] updateTermSection called for term ${termId}, section ${sectionId}`
       );
 
@@ -2573,30 +2574,30 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         if (this.termsStorage && typeof this.termsStorage.updateTermSection === 'function') {
           await this.termsStorage.updateTermSection(termId, sectionId, data);
-          console.log(`[EnhancedStorage] updateTermSection: Section updated successfully`);
+          logger.info(`[EnhancedStorage] updateTermSection: Section updated successfully`);
           return;
         }
       } catch (enhancedError) {
-        console.warn('[EnhancedStorage] Enhanced storage update failed:', enhancedError);
+        logger.warn('[EnhancedStorage] Enhanced storage update failed:', enhancedError);
       }
 
       // Fallback: Update in base storage if supported
       try {
         if (typeof this.baseStorage.updateTermSection === 'function') {
           await this.baseStorage.updateTermSection(termId, sectionId, data);
-          console.log(`[EnhancedStorage] updateTermSection: Section updated via base storage`);
+          logger.info(`[EnhancedStorage] updateTermSection: Section updated via base storage`);
           return;
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage update failed:', baseError);
+        logger.warn('[EnhancedStorage] Base storage update failed:', baseError);
       }
 
       // If no storage supports section updates, log and return
-      console.warn(
+      logger.warn(
         `[EnhancedStorage] updateTermSection: No storage layer supports section updates yet`
       );
     } catch (error) {
-      console.error('[EnhancedStorage] updateTermSection error:', error);
+      logger.error('[EnhancedStorage] updateTermSection error:', error);
       throw new Error(
         `Failed to update term section: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2605,7 +2606,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async searchCategories(query: string, limit = 10): Promise<Category[]> {
     try {
-      console.log(
+      logger.info(
         `[EnhancedStorage] searchCategories called with query: "${query}", limit: ${limit}`
       );
 
@@ -2618,7 +2619,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           ? categoriesResult
           : (categoriesResult as any).data || [];
       } catch (error) {
-        console.warn('[EnhancedStorage] Failed to get categories:', error);
+        logger.warn('[EnhancedStorage] Failed to get categories:', error);
         allCategories = [];
       }
 
@@ -2650,13 +2651,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         return a.name.localeCompare(b.name);
       });
 
-      console.log(
+      logger.info(
         `[EnhancedStorage] searchCategories: Found ${searchResults.length} matching categories`
       );
 
       return searchResults.slice(0, limit);
     } catch (error) {
-      console.error('[EnhancedStorage] searchCategories error:', error);
+      logger.error('[EnhancedStorage] searchCategories error:', error);
       throw new Error(
         `Failed to search categories: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2758,7 +2759,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getUserProgressStats(userId: string): Promise<UserProgressStats> {
     this.requireAuth();
-    console.log('[EnhancedStorage] getUserProgressStats called for user:', userId);
+    logger.info('[EnhancedStorage] getUserProgressStats called for user:', userId);
 
     try {
       // Validate input
@@ -2784,7 +2785,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         const userAnalytics = await this.termsStorage.getUserAnalytics?.(userId);
         if (userAnalytics) {
-          console.log('[EnhancedStorage] getUserProgressStats: Found user analytics');
+          logger.info('[EnhancedStorage] getUserProgressStats: Found user analytics');
 
           // Map analytics data to progress stats
           const stats: UserProgressStats = {
@@ -2801,16 +2802,16 @@ export class EnhancedStorage implements IEnhancedStorage {
             lastActivity: (userAnalytics as any).lastActivity || new Date(),
           };
 
-          console.log(`[EnhancedStorage] getUserProgressStats: Retrieved stats for user ${userId}`);
+          logger.info(`[EnhancedStorage] getUserProgressStats: Retrieved stats for user ${userId}`);
           return stats;
         }
       } catch (analyticsError) {
-        console.warn('[EnhancedStorage] Enhanced analytics unavailable:', analyticsError);
+        logger.warn('[EnhancedStorage] Enhanced analytics unavailable:', analyticsError);
       }
 
       // Fallback: Try to get basic progress from base storage
       try {
-        console.log('[EnhancedStorage] Falling back to base storage for user progress');
+        logger.info('[EnhancedStorage] Falling back to base storage for user progress');
 
         // Get user streak if available
         if ('getUserStreak' in this.baseStorage) {
@@ -2845,17 +2846,17 @@ export class EnhancedStorage implements IEnhancedStorage {
           }
         }
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getUserProgressStats: Basic stats retrieved for user ${userId}`
         );
         return defaultStats;
       } catch (fallbackError) {
-        console.warn('[EnhancedStorage] Base storage progress unavailable:', fallbackError);
+        logger.warn('[EnhancedStorage] Base storage progress unavailable:', fallbackError);
       }
 
       // Final fallback: Generate basic progress from available data
       try {
-        console.log('[EnhancedStorage] Generating estimated progress stats');
+        logger.info('[EnhancedStorage] Generating estimated progress stats');
 
         // Get categories for progress estimation
         const categories = await this.baseStorage.getCategories();
@@ -2889,18 +2890,18 @@ export class EnhancedStorage implements IEnhancedStorage {
           lastActivity: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Within last week
         };
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getUserProgressStats: Generated estimated stats for user ${userId}`
         );
         return estimatedStats;
       } catch (estimationError) {
-        console.error('[EnhancedStorage] Failed to generate estimated stats:', estimationError);
+        logger.error('[EnhancedStorage] Failed to generate estimated stats:', estimationError);
 
         // Return absolute minimal stats
         return defaultStats;
       }
     } catch (error) {
-      console.error('[EnhancedStorage] getUserProgressStats error:', error);
+      logger.error('[EnhancedStorage] getUserProgressStats error:', error);
 
       // Return minimal stats on error
       return {
@@ -2925,7 +2926,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(`[EnhancedStorage] getUserSectionProgress called for user: ${userId}`);
+      logger.info(`[EnhancedStorage] getUserSectionProgress called for user: ${userId}`);
 
       const limit = options?.limit || 100;
       const offset = options?.offset || 0;
@@ -2934,13 +2935,13 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         if (typeof this.baseStorage.getUserSectionProgress === 'function') {
           const progress = await this.baseStorage.getUserSectionProgress(userId, options);
-          console.log(
+          logger.info(
             `[EnhancedStorage] getUserSectionProgress: Found ${progress.length} section progress records`
           );
           return progress;
         }
       } catch (baseError) {
-        console.warn(
+        logger.warn(
           '[EnhancedStorage] Base storage section progress retrieval failed:',
           baseError
         );
@@ -2982,12 +2983,12 @@ export class EnhancedStorage implements IEnhancedStorage {
         });
       }
 
-      console.log(
+      logger.info(
         `[EnhancedStorage] getUserSectionProgress: Generated ${mockProgress.length} mock progress records`
       );
       return mockProgress.slice(offset, offset + limit);
     } catch (error) {
-      console.error('[EnhancedStorage] getUserSectionProgress error:', error);
+      logger.error('[EnhancedStorage] getUserSectionProgress error:', error);
       throw new Error(
         `Failed to get user section progress: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -2998,7 +2999,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(
+      logger.info(
         `[EnhancedStorage] trackTermView called - user: ${userId}, term: ${termId}, section: ${sectionId || 'overview'}`
       );
 
@@ -3006,17 +3007,17 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         await this.incrementTermViewCount(termId);
       } catch (viewError) {
-        console.warn('[EnhancedStorage] Failed to increment term view count:', viewError);
+        logger.warn('[EnhancedStorage] Failed to increment term view count:', viewError);
       }
 
       // Track in base storage if available
       try {
         if (typeof this.baseStorage.trackTermView === 'function') {
           await this.baseStorage.trackTermView(userId, termId, sectionId);
-          console.log('[EnhancedStorage] Term view tracked in base storage');
+          logger.info('[EnhancedStorage] Term view tracked in base storage');
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage tracking failed:', baseError);
+        logger.warn('[EnhancedStorage] Base storage tracking failed:', baseError);
       }
 
       // Track analytics event
@@ -3030,12 +3031,12 @@ export class EnhancedStorage implements IEnhancedStorage {
           });
         }
       } catch (analyticsError) {
-        console.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
+        logger.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
       }
 
-      console.log('[EnhancedStorage] trackTermView completed');
+      logger.info('[EnhancedStorage] trackTermView completed');
     } catch (error) {
-      console.error('[EnhancedStorage] trackTermView error:', error);
+      logger.error('[EnhancedStorage] trackTermView error:', error);
       // Don't throw - tracking failures shouldn't break the user experience
     }
   }
@@ -3044,7 +3045,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(
+      logger.info(
         `[EnhancedStorage] trackSectionCompletion called - user: ${userId}, term: ${termId}, section: ${sectionId}`
       );
 
@@ -3052,10 +3053,10 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         if (typeof this.baseStorage.trackSectionCompletion === 'function') {
           await this.baseStorage.trackSectionCompletion(userId, termId, sectionId);
-          console.log('[EnhancedStorage] Section completion tracked in base storage');
+          logger.info('[EnhancedStorage] Section completion tracked in base storage');
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage tracking failed:', baseError);
+        logger.warn('[EnhancedStorage] Base storage tracking failed:', baseError);
       }
 
       // Update user progress stats
@@ -3067,7 +3068,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           });
         }
       } catch (progressError) {
-        console.warn('[EnhancedStorage] Progress update failed:', progressError);
+        logger.warn('[EnhancedStorage] Progress update failed:', progressError);
       }
 
       // Track analytics event
@@ -3081,26 +3082,26 @@ export class EnhancedStorage implements IEnhancedStorage {
           });
         }
       } catch (analyticsError) {
-        console.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
+        logger.warn('[EnhancedStorage] Analytics tracking failed:', analyticsError);
       }
 
       // Check for achievements
       try {
         await this.checkAndUnlockAchievements(userId);
       } catch (achievementError) {
-        console.warn('[EnhancedStorage] Achievement check failed:', achievementError);
+        logger.warn('[EnhancedStorage] Achievement check failed:', achievementError);
       }
 
-      console.log('[EnhancedStorage] trackSectionCompletion completed');
+      logger.info('[EnhancedStorage] trackSectionCompletion completed');
     } catch (error) {
-      console.error('[EnhancedStorage] trackSectionCompletion error:', error);
+      logger.error('[EnhancedStorage] trackSectionCompletion error:', error);
       // Don't throw - tracking failures shouldn't break the user experience
     }
   }
 
   async updateLearningStreak(userId: string): Promise<LearningStreak> {
     this.requireAuth();
-    console.log('[EnhancedStorage] updateLearningStreak called for user:', userId);
+    logger.info('[EnhancedStorage] updateLearningStreak called for user:', userId);
 
     try {
       // Validate input
@@ -3115,7 +3116,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         const existingStreak = await this.termsStorage.getUserStreak?.(userId);
         if (existingStreak) {
-          console.log('[EnhancedStorage] updateLearningStreak: Found existing streak');
+          logger.info('[EnhancedStorage] updateLearningStreak: Found existing streak');
 
           const lastActivityDate = new Date(
             (existingStreak as any).lastActivityDate ||
@@ -3173,13 +3174,13 @@ export class EnhancedStorage implements IEnhancedStorage {
             await this.termsStorage.updateUserStreak(userId, updatedStreak);
           }
 
-          console.log(
+          logger.info(
             `[EnhancedStorage] updateLearningStreak: Updated streak for user ${userId} - Current: ${updatedStreak.currentStreak}`
           );
           return updatedStreak;
         }
       } catch (enhancedError) {
-        console.warn('[EnhancedStorage] Enhanced streak storage unavailable:', enhancedError);
+        logger.warn('[EnhancedStorage] Enhanced streak storage unavailable:', enhancedError);
       }
 
       // Fallback: Try base storage
@@ -3187,7 +3188,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         if ('getUserStreak' in this.baseStorage) {
           const baseStreak = await (this.baseStorage as any).getUserStreak(userId);
           if (baseStreak) {
-            console.log('[EnhancedStorage] updateLearningStreak: Using base storage streak');
+            logger.info('[EnhancedStorage] updateLearningStreak: Using base storage streak');
 
             const lastActivityDate = new Date(
               baseStreak.lastActivity || baseStreak.lastActivityDate
@@ -3241,18 +3242,18 @@ export class EnhancedStorage implements IEnhancedStorage {
               await (this.baseStorage as any).updateUserStreak(userId, updatedStreak);
             }
 
-            console.log(
+            logger.info(
               `[EnhancedStorage] updateLearningStreak: Updated base streak for user ${userId}`
             );
             return updatedStreak;
           }
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage streak unavailable:', baseError);
+        logger.warn('[EnhancedStorage] Base storage streak unavailable:', baseError);
       }
 
       // No existing streak found - create new streak
-      console.log('[EnhancedStorage] updateLearningStreak: Creating new streak for user');
+      logger.info('[EnhancedStorage] updateLearningStreak: Creating new streak for user');
 
       const newStreak: LearningStreak = {
         userId,
@@ -3270,17 +3271,17 @@ export class EnhancedStorage implements IEnhancedStorage {
         } else if ('updateUserStreak' in this.baseStorage) {
           await (this.baseStorage as any).updateUserStreak(userId, newStreak);
         }
-        console.log(
+        logger.info(
           `[EnhancedStorage] updateLearningStreak: Created new streak for user ${userId}`
         );
       } catch (saveError) {
-        console.warn('[EnhancedStorage] Could not save new streak:', saveError);
+        logger.warn('[EnhancedStorage] Could not save new streak:', saveError);
         // Still return the streak object even if we can't persist it
       }
 
       return newStreak;
     } catch (error) {
-      console.error('[EnhancedStorage] updateLearningStreak error:', error);
+      logger.error('[EnhancedStorage] updateLearningStreak error:', error);
 
       // Return minimal streak on error
       return {
@@ -3298,7 +3299,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(`[EnhancedStorage] checkAndUnlockAchievements called for user: ${userId}`);
+      logger.info(`[EnhancedStorage] checkAndUnlockAchievements called for user: ${userId}`);
 
       const unlockedAchievements: Achievement[] = [];
 
@@ -3307,7 +3308,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         userStats = await this.getUserProgressStats(userId);
       } catch (error) {
-        console.warn('[EnhancedStorage] Failed to get user stats for achievements:', error);
+        logger.warn('[EnhancedStorage] Failed to get user stats for achievements:', error);
         return unlockedAchievements;
       }
 
@@ -3388,12 +3389,12 @@ export class EnhancedStorage implements IEnhancedStorage {
               await this.unlockAchievement(userId, unlockedAchievement.id);
               unlockedAchievements.push(unlockedAchievement);
 
-              console.log(
+              logger.info(
                 `[EnhancedStorage] Unlocked achievement: ${achievement.name} for user ${userId}`
               );
             }
           } catch (unlockError) {
-            console.warn(
+            logger.warn(
               `[EnhancedStorage] Failed to check/unlock achievement ${achievement.id}:`,
               unlockError
             );
@@ -3401,12 +3402,12 @@ export class EnhancedStorage implements IEnhancedStorage {
         }
       }
 
-      console.log(
+      logger.info(
         `[EnhancedStorage] checkAndUnlockAchievements: Unlocked ${unlockedAchievements.length} new achievements`
       );
       return unlockedAchievements;
     } catch (error) {
-      console.error('[EnhancedStorage] checkAndUnlockAchievements error:', error);
+      logger.error('[EnhancedStorage] checkAndUnlockAchievements error:', error);
       return [];
     }
   }
@@ -3415,7 +3416,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(
+      logger.info(
         `[EnhancedStorage] getUserTimeSpent called for user: ${userId}, timeframe: ${timeframe || 'all'}`
       );
 
@@ -3423,11 +3424,11 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         if (typeof this.baseStorage.getUserTimeSpent === 'function') {
           const timeSpent = await this.baseStorage.getUserTimeSpent(userId, timeframe);
-          console.log(`[EnhancedStorage] getUserTimeSpent: User has spent ${timeSpent} minutes`);
+          logger.info(`[EnhancedStorage] getUserTimeSpent: User has spent ${timeSpent} minutes`);
           return timeSpent;
         }
       } catch (baseError) {
-        console.warn('[EnhancedStorage] Base storage time retrieval failed:', baseError);
+        logger.warn('[EnhancedStorage] Base storage time retrieval failed:', baseError);
       }
 
       // Calculate based on user progress
@@ -3447,16 +3448,16 @@ export class EnhancedStorage implements IEnhancedStorage {
           totalMinutes = Math.floor(totalMinutes * 0.6);
         }
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getUserTimeSpent: Calculated ${totalMinutes} minutes for timeframe ${timeframe || 'all'}`
         );
         return totalMinutes;
       } catch (statsError) {
-        console.warn('[EnhancedStorage] Stats-based time calculation failed:', statsError);
+        logger.warn('[EnhancedStorage] Stats-based time calculation failed:', statsError);
         return 0;
       }
     } catch (error) {
-      console.error('[EnhancedStorage] getUserTimeSpent error:', error);
+      logger.error('[EnhancedStorage] getUserTimeSpent error:', error);
       throw new Error(
         `Failed to get user time spent: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -3467,19 +3468,19 @@ export class EnhancedStorage implements IEnhancedStorage {
     this.requireAuth();
 
     try {
-      console.log(`[EnhancedStorage] getCategoryProgress called for user: ${userId}`);
+      logger.info(`[EnhancedStorage] getCategoryProgress called for user: ${userId}`);
 
       // Try to get from base storage
       try {
         if (typeof this.baseStorage.getCategoryProgress === 'function') {
           const progress = await this.baseStorage.getCategoryProgress(userId);
-          console.log(
+          logger.info(
             `[EnhancedStorage] getCategoryProgress: Found progress for ${progress.length} categories`
           );
           return progress;
         }
       } catch (baseError) {
-        console.warn(
+        logger.warn(
           '[EnhancedStorage] Base storage category progress retrieval failed:',
           baseError
         );
@@ -3523,16 +3524,16 @@ export class EnhancedStorage implements IEnhancedStorage {
         // Sort by completion percentage (highest first)
         categoryProgress.sort((a, b) => b.completionPercentage - a.completionPercentage);
 
-        console.log(
+        logger.info(
           `[EnhancedStorage] getCategoryProgress: Generated progress for ${categoryProgress.length} categories`
         );
         return categoryProgress;
       } catch (error) {
-        console.warn('[EnhancedStorage] Failed to generate category progress:', error);
+        logger.warn('[EnhancedStorage] Failed to generate category progress:', error);
         return categoryProgress;
       }
     } catch (error) {
-      console.error('[EnhancedStorage] getCategoryProgress error:', error);
+      logger.error('[EnhancedStorage] getCategoryProgress error:', error);
       throw new Error(
         `Failed to get category progress: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -3563,9 +3564,9 @@ export class EnhancedStorage implements IEnhancedStorage {
         await this.baseStorage.unlockAchievement(userId, achievementId);
       }
       // In development, just log
-      console.log(`[EnhancedStorage] Achievement unlocked: ${achievementId}`);
+      logger.info(`[EnhancedStorage] Achievement unlocked: ${achievementId}`);
     } catch (error) {
-      console.warn('[EnhancedStorage] Failed to store unlocked achievement:', error);
+      logger.warn('[EnhancedStorage] Failed to store unlocked achievement:', error);
     }
   }
 
@@ -3665,7 +3666,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback implementation
       return { terms: [], total: 0 };
     } catch (error) {
-      console.error('[EnhancedStorage] getAllTerms error:', error);
+      logger.error('[EnhancedStorage] getAllTerms error:', error);
       return { terms: [], total: 0 };
     }
   }
@@ -3678,7 +3679,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback implementation
       return [];
     } catch (error) {
-      console.error('[EnhancedStorage] getRecentTerms error:', error);
+      logger.error('[EnhancedStorage] getRecentTerms error:', error);
       return [];
     }
   }
@@ -3691,7 +3692,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback implementation
       return [];
     } catch (error) {
-      console.error('[EnhancedStorage] getRecentFeedback error:', error);
+      logger.error('[EnhancedStorage] getRecentFeedback error:', error);
       return [];
     }
   }
@@ -3701,10 +3702,10 @@ export class EnhancedStorage implements IEnhancedStorage {
       if (typeof (this.baseStorage as any).deleteTerm === 'function') {
         await (this.baseStorage as any).deleteTerm(id);
       } else {
-        console.warn('[EnhancedStorage] deleteTerm not implemented in base storage');
+        logger.warn('[EnhancedStorage] deleteTerm not implemented in base storage');
       }
     } catch (error) {
-      console.error('[EnhancedStorage] deleteTerm error:', error);
+      logger.error('[EnhancedStorage] deleteTerm error:', error);
       throw error;
     }
   }
@@ -3717,7 +3718,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback implementation
       return { success: false, message: 'Bulk delete not implemented' };
     } catch (error) {
-      console.error('[EnhancedStorage] bulkDeleteTerms error:', error);
+      logger.error('[EnhancedStorage] bulkDeleteTerms error:', error);
       throw error;
     }
   }
@@ -3730,7 +3731,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback implementation
       return { success: false, message: 'Bulk update category not implemented' };
     } catch (error) {
-      console.error('[EnhancedStorage] bulkUpdateTermCategory error:', error);
+      logger.error('[EnhancedStorage] bulkUpdateTermCategory error:', error);
       throw error;
     }
   }
@@ -3743,7 +3744,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback implementation
       return { success: false, message: 'Bulk update status not implemented' };
     } catch (error) {
-      console.error('[EnhancedStorage] bulkUpdateTermStatus error:', error);
+      logger.error('[EnhancedStorage] bulkUpdateTermStatus error:', error);
       throw error;
     }
   }
@@ -3839,7 +3840,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async deleteCategory(categoryId: string): Promise<void> {
     // Mock implementation - would need actual database delete
-    console.log(`Category ${categoryId} deletion requested`);
+    logger.info(`Category ${categoryId} deletion requested`);
   }
 
   async getMaintenanceStatus(): Promise<any> {
@@ -3867,14 +3868,14 @@ export class EnhancedStorage implements IEnhancedStorage {
     try {
       await (this.baseStorage as any).incrementTermViewCount?.(termId);
     } catch (error) {
-      console.warn('[EnhancedStorage] incrementTermViewCount fallback:', error);
+      logger.warn('[EnhancedStorage] incrementTermViewCount fallback:', error);
     }
   }
 
   // Methods for import-all-terms.ts
   async createEnhancedTerm(termData: any): Promise<any> {
     try {
-      console.log('[EnhancedStorage] createEnhancedTerm called');
+      logger.info('[EnhancedStorage] createEnhancedTerm called');
       
       // Add analytics tracking
       termData.analytics = {
@@ -3929,14 +3930,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         ...termData,
       };
     } catch (error) {
-      console.error('[EnhancedStorage] createEnhancedTerm error:', error);
+      logger.error('[EnhancedStorage] createEnhancedTerm error:', error);
       throw error;
     }
   }
 
   async createTermSection(sectionData: any): Promise<any> {
     try {
-      console.log('[EnhancedStorage] createTermSection called');
+      logger.info('[EnhancedStorage] createTermSection called');
       
       // Add user experience enhancements
       sectionData.ux = {
@@ -3966,14 +3967,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         ...sectionData,
       };
     } catch (error) {
-      console.error('[EnhancedStorage] createTermSection error:', error);
+      logger.error('[EnhancedStorage] createTermSection error:', error);
       throw error;
     }
   }
 
   async createInteractiveElement(elementData: any): Promise<any> {
     try {
-      console.log('[EnhancedStorage] createInteractiveElement called');
+      logger.info('[EnhancedStorage] createInteractiveElement called');
       
       // Add interaction tracking
       elementData.tracking = {
@@ -4012,14 +4013,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         ...elementData,
       };
     } catch (error) {
-      console.error('[EnhancedStorage] createInteractiveElement error:', error);
+      logger.error('[EnhancedStorage] createInteractiveElement error:', error);
       throw error;
     }
   }
 
   async getEnhancedTermsStats(): Promise<any> {
     try {
-      console.log('[EnhancedStorage] getEnhancedTermsStats called');
+      logger.info('[EnhancedStorage] getEnhancedTermsStats called');
       
       // Try enhanced storage first
       if (this.termsStorage && typeof this.termsStorage.getEnhancedTermsStats === 'function') {
@@ -4067,7 +4068,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         },
       };
     } catch (error) {
-      console.error('[EnhancedStorage] getEnhancedTermsStats error:', error);
+      logger.error('[EnhancedStorage] getEnhancedTermsStats error:', error);
       throw error;
     }
   }

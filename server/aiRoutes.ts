@@ -4,6 +4,7 @@ import { mockIsAuthenticated } from './middleware/dev/mockAuth';
 import { optimizedStorage as storage } from './optimizedStorage';
 import { isUserAdmin } from './utils/authUtils';
 
+import logger from './utils/logger';
 export function registerAIRoutes(app: Express): void {
   // Generate definition for a new term
   app.post('/api/ai/generate-definition', mockIsAuthenticated, async (req: any, res) => {
@@ -31,7 +32,7 @@ export function registerAIRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error generating definition:', error);
+      logger.error('Error generating definition:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate definition',
@@ -60,7 +61,7 @@ export function registerAIRoutes(app: Express): void {
         data: result,
       });
     } catch (error) {
-      console.error('Error generating term suggestions:', error);
+      logger.error('Error generating term suggestions:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate suggestions',
@@ -88,7 +89,7 @@ export function registerAIRoutes(app: Express): void {
         data: result,
       });
     } catch (error) {
-      console.error('Error categorizing term:', error);
+      logger.error('Error categorizing term:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to categorize term',
@@ -132,7 +133,7 @@ export function registerAIRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error performing semantic search:', error);
+      logger.error('Error performing semantic search:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to perform semantic search',
@@ -168,7 +169,7 @@ export function registerAIRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error improving definition:', error);
+      logger.error('Error improving definition:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to improve definition',
@@ -215,7 +216,7 @@ export function registerAIRoutes(app: Express): void {
         data: updatedTerm,
       });
     } catch (error) {
-      console.error('Error applying improvements:', error);
+      logger.error('Error applying improvements:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to apply improvements',
@@ -263,7 +264,7 @@ export function registerAIRoutes(app: Express): void {
         data: feedback,
       });
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      logger.error('Error submitting feedback:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to submit feedback',
@@ -326,7 +327,7 @@ export function registerAIRoutes(app: Express): void {
         data: feedbackList,
       });
     } catch (error) {
-      console.error('Error fetching feedback:', error);
+      logger.error('Error fetching feedback:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch feedback',
@@ -386,7 +387,7 @@ export function registerAIRoutes(app: Express): void {
         data: updatedFeedback,
       });
     } catch (error) {
-      console.error('Error updating feedback status:', error);
+      logger.error('Error updating feedback status:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update feedback status',
@@ -450,7 +451,7 @@ export function registerAIRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error fetching verification status:', error);
+      logger.error('Error fetching verification status:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch verification status',
@@ -506,7 +507,7 @@ export function registerAIRoutes(app: Express): void {
         data: updatedVerification,
       });
     } catch (error) {
-      console.error('Error updating verification:', error);
+      logger.error('Error updating verification:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update verification',
@@ -641,7 +642,7 @@ export function registerAIRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error fetching AI analytics:', error);
+      logger.error('Error fetching AI analytics:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch AI analytics',
@@ -679,7 +680,7 @@ export function registerAIRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error fetching AI status:', error);
+      logger.error('Error fetching AI status:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch AI status',

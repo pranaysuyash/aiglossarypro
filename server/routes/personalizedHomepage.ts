@@ -17,6 +17,7 @@ import {
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 import { log as logger } from '../utils/logger';
 
+import logger from '../utils/logger';
 interface PersonalizedHomepageData {
   userProfile: UserProfile;
   recommendations: PersonalizedRecommendation[];
@@ -273,7 +274,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'User preferences updated successfully',
         });
       } catch (error) {
-        console.error('Update user preferences error:', error);
+        logger.error('Update user preferences error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -313,7 +314,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'Feedback recorded successfully',
         });
       } catch (error) {
-        console.error('Record personalization feedback error:', error);
+        logger.error('Record personalization feedback error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -330,7 +331,7 @@ async function getUserProfile(_userId: string): Promise<UserProfile | null> {
     // For now, we'll return null to always generate fresh profiles
     return null;
   } catch (error) {
-    console.error('Error getting user profile:', error);
+    logger.error('Error getting user profile:', error);
     return null;
   }
 }
@@ -341,14 +342,14 @@ async function getUserProfile(_userId: string): Promise<UserProfile | null> {
 async function cacheUserProfile(userProfile: UserProfile): Promise<void> {
   try {
     // In a real implementation, this would save to a user_profiles table or cache
-    console.log('User profile cached:', {
+    logger.info('User profile cached:', {
       userId: userProfile.userId,
       lastUpdated: userProfile.lastUpdated,
       skillLevel: userProfile.skillLevel,
       interestCount: userProfile.interests.length,
     });
   } catch (error) {
-    console.error('Error caching user profile:', error);
+    logger.error('Error caching user profile:', error);
   }
 }
 
@@ -372,7 +373,7 @@ async function getRecentActivity(userId: string): Promise<any[]> {
 
     return recentActivity;
   } catch (error) {
-    console.error('Error getting recent activity:', error);
+    logger.error('Error getting recent activity:', error);
     return [];
   }
 }
@@ -402,7 +403,7 @@ async function getContinueLearning(userId: string): Promise<any[]> {
 
     return continueLearning;
   } catch (error) {
-    console.error('Error getting continue learning data:', error);
+    logger.error('Error getting continue learning data:', error);
     return [];
   }
 }

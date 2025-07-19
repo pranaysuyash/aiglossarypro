@@ -165,10 +165,11 @@ export const defaultSidebarSections: SidebarSection[] = [
     title: 'Analytics & Monitoring',
     icon: BarChart3,
     items: [
-      { id: 'analytics-performance', title: 'Performance Dashboard' },
+      { id: 'analytics-performance', title: 'System Performance', icon: Activity },
       { id: 'analytics-costs', title: 'Cost Tracking' },
       { id: 'analytics-quality', title: 'Quality Metrics' },
       { id: 'analytics-advanced', title: 'Advanced Analytics' },
+      { id: 'analytics-system', title: 'Database & Pool', icon: Zap },
     ],
   },
   {

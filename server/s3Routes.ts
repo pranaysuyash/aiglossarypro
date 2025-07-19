@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import logger from './utils/logger';
 // Import appropriate auth based on configuration
 import { features } from './config';
 import {
@@ -33,7 +34,7 @@ router.get('/setup', authMiddleware, tokenMiddleware, adminMiddleware, async (_r
     }
 
     if (!s3Client || !hasAccessKey || !hasSecretKey || !hasBucketName) {
-      console.log('S3 credentials missing or incomplete:', {
+      logger.info('S3 credentials missing or incomplete:', {
         hasAccessKey,
         hasSecretKey,
         hasBucketName,
@@ -52,7 +53,7 @@ router.get('/setup', authMiddleware, tokenMiddleware, adminMiddleware, async (_r
       region: process.env.AWS_REGION || 'ap-south-1',
     });
   } catch (error) {
-    console.error('Error checking S3 setup:', error);
+    logger.error('Error checking S3 setup:', error);
     res.status(500).json({
       initialized: false,
       error: error instanceof Error ? error.message : String(error),
@@ -84,7 +85,7 @@ router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, asyn
       })),
     });
   } catch (error) {
-    console.error('Error listing S3 files:', error);
+    logger.error('Error listing S3 files:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to list files from S3',
@@ -117,7 +118,7 @@ router.get('/process-file', authMiddleware, tokenMiddleware, adminMiddleware, as
     const result = await processAndImportFromS3(bucketName, fileKey, 'ap-south-1', maxChunks);
     return res.json(result);
   } catch (error) {
-    console.error('Error in file processing:', error);
+    logger.error('Error in file processing:', error);
     return res.status(500).json({
       success: false,
       message: 'Error during file processing',

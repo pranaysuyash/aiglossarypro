@@ -11,6 +11,7 @@ import {
   optimizedSearchSuggestions,
 } from '../optimizedSearchService';
 
+import logger from '../utils/logger';
 /**
  * Search and discovery routes
  */
@@ -45,7 +46,7 @@ export function registerSearchRoutes(app: Express): void {
           });
         }
 
-        console.log('Search query:', q);
+        logger.info('Search query:', q);
 
         // Use optimized search service for better performance
         const searchResponse = await optimizedSearch({
@@ -99,7 +100,7 @@ export function registerSearchRoutes(app: Express): void {
 
         res.json(response);
       } catch (error) {
-        console.error('Error performing search:', error);
+        logger.error('Error performing search:', error);
         res.status(500).json({
           success: false,
           message: 'Search failed',
@@ -160,7 +161,7 @@ export function registerSearchRoutes(app: Express): void {
 
       res.json(allSuggestions.slice(0, limit));
     } catch (error) {
-      console.error('Error fetching search suggestions:', error);
+      logger.error('Error fetching search suggestions:', error);
       res.status(500).json({ message: 'Failed to fetch suggestions' });
     }
   });
@@ -233,7 +234,7 @@ export function registerSearchRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Error in fuzzy search:', error);
+      logger.error('Error in fuzzy search:', error);
       res.status(500).json({
         success: false,
         message: 'Fuzzy search failed',
@@ -255,7 +256,7 @@ export function registerSearchRoutes(app: Express): void {
         data: popularTerms,
       });
     } catch (error) {
-      console.error('Error fetching popular search terms:', error);
+      logger.error('Error fetching popular search terms:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch popular search terms',
@@ -273,7 +274,7 @@ export function registerSearchRoutes(app: Express): void {
         data: filters,
       });
     } catch (error) {
-      console.error('Error fetching search filters:', error);
+      logger.error('Error fetching search filters:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch search filters',
@@ -299,7 +300,7 @@ export function registerSearchRoutes(app: Express): void {
         data: searchResult,
       });
     } catch (error) {
-      console.error('Error performing advanced search:', error);
+      logger.error('Error performing advanced search:', error);
       res.status(500).json({
         success: false,
         message: 'Advanced search failed',

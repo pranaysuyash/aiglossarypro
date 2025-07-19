@@ -10,6 +10,7 @@ import { metricsCollector } from '../cache/CacheMetrics';
 import { queryCache, searchCache, userCache } from '../middleware/queryCache';
 import { validateRequest } from '../middleware/validateRequest';
 
+import logger from '../utils/logger';
 const router = Router();
 
 // Get current cache statistics
@@ -87,7 +88,7 @@ router.get(
 
       res.json({ metrics });
     } catch (error) {
-      console.error('Error fetching historical metrics:', error);
+      logger.error('Error fetching historical metrics:', error);
       res.status(500).json({ error: 'Failed to fetch historical metrics' });
     }
   }
@@ -144,7 +145,7 @@ router.get('/report', async (_req, res) => {
 
     res.json(report);
   } catch (error) {
-    console.error('Error generating cache report:', error);
+    logger.error('Error generating cache report:', error);
     res.status(500).json({ error: 'Failed to generate cache report' });
   }
 });
@@ -186,7 +187,7 @@ router.post('/clear', async (req, res) => {
       message: `Cleared ${clearedCount} entries from ${cacheType} cache`,
     });
   } catch (error) {
-    console.error('Error clearing cache:', error);
+    logger.error('Error clearing cache:', error);
     res.status(500).json({ error: 'Failed to clear cache' });
   }
 });

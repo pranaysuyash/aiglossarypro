@@ -13,10 +13,11 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
+import logger from '../../utils/logger';
 // SECURITY: All mock authentication functions are disabled
 export const mockIsAuthenticated = (_req: Request, res: Response, _next: NextFunction) => {
-  console.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
-  console.error('🚨 Use proper Firebase authentication instead');
+  logger.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
+  logger.error('🚨 Use proper Firebase authentication instead');
   res.status(500).json({
     success: false,
     message: 'Mock authentication is disabled for security reasons',
@@ -25,8 +26,8 @@ export const mockIsAuthenticated = (_req: Request, res: Response, _next: NextFun
 };
 
 export const mockAuthenticateToken = (_req: Request, res: Response, _next: NextFunction) => {
-  console.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
-  console.error('🚨 Use proper Firebase authentication instead');
+  logger.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
+  logger.error('🚨 Use proper Firebase authentication instead');
   res.status(500).json({
     success: false,
     message: 'Mock authentication is disabled for security reasons',
@@ -39,8 +40,8 @@ export async function mockRequireAdmin(
   res: Response,
   _next: NextFunction
 ): Promise<void> {
-  console.error('🚨 SECURITY ERROR: Mock admin authentication is DISABLED');
-  console.error('🚨 Use proper Firebase authentication instead');
+  logger.error('🚨 SECURITY ERROR: Mock admin authentication is DISABLED');
+  logger.error('🚨 Use proper Firebase authentication instead');
   res.status(500).json({
     success: false,
     message: 'Mock admin authentication is disabled for security reasons',
@@ -49,17 +50,17 @@ export async function mockRequireAdmin(
 }
 
 export function setupMockAuth(_app: any) {
-  console.error('🚨 SECURITY ERROR: Mock authentication setup is DISABLED');
-  console.error('🚨 This function will not set up any mock endpoints');
-  console.error('🚨 Use proper Firebase authentication instead');
+  logger.error('🚨 SECURITY ERROR: Mock authentication setup is DISABLED');
+  logger.error('🚨 This function will not set up any mock endpoints');
+  logger.error('🚨 Use proper Firebase authentication instead');
 
   // Do nothing - no mock endpoints will be created
   return;
 }
 
 export function setMockLogoutState(_loggedOut: boolean) {
-  console.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
-  console.error('🚨 Mock logout state cannot be modified');
+  logger.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
+  logger.error('🚨 Mock logout state cannot be modified');
 }
 
 /**

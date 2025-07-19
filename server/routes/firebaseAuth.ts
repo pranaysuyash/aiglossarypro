@@ -13,6 +13,7 @@ import { sendWelcomeEmail } from '../utils/email';
 import { log as logger } from '../utils/logger';
 import { blacklistToken, isTokenBlacklisted } from '../utils/tokenBlacklist';
 
+import logger from '../utils/logger';
 export function registerFirebaseAuthRoutes(app: Express): void {
   /**
    * Exchange Firebase ID token for JWT
@@ -155,7 +156,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
 
       res.json(response);
     } catch (error) {
-      console.error('Firebase login error:', error);
+      logger.error('Firebase login error:', error);
       res.status(500).json({
         success: false,
         message: 'Login failed',
@@ -226,7 +227,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         },
       });
     } catch (error: any) {
-      console.error('Registration error:', error);
+      logger.error('Registration error:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Registration failed',
@@ -280,7 +281,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
           setMockLogoutState(true);
         });
       } catch (error) {
-        console.warn('Could not set mock logout state:', error);
+        logger.warn('Could not set mock logout state:', error);
       }
     }
 
@@ -411,7 +412,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         data: userData,
       });
     } catch (error) {
-      console.error('Get user error:', error);
+      logger.error('Get user error:', error);
       res.status(401).json({
         success: false,
         message: 'Invalid token',
@@ -475,7 +476,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      console.error('Auth check error:', error);
+      logger.error('Auth check error:', error);
       res.status(200).json({
         success: true,
         data: {
@@ -537,7 +538,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         data: userData,
       });
     } catch (error) {
-      console.error('Get user error:', error);
+      logger.error('Get user error:', error);
       res.status(401).json({
         success: false,
         message: 'Authentication required',

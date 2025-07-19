@@ -13,6 +13,7 @@ import { categories, terms } from '../shared/schema';
 import { db } from './db';
 import { cached } from './middleware/queryCache';
 
+import logger from './utils/logger';
 export interface OptimizedSearchOptions {
   query: string;
   page?: number;
@@ -196,7 +197,7 @@ export async function optimizedSearch(
       30 * 1000 // 30 seconds cache for search results
     );
   } catch (error) {
-    console.error('Optimized search error:', error);
+    logger.error('Optimized search error:', error);
     throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -280,7 +281,7 @@ export async function getPopularSearchTerms(limit = 10): Promise<OptimizedSearch
  */
 export async function createSearchIndexes(): Promise<void> {
   try {
-    console.log('Creating optimized search indexes...');
+    logger.info('Creating optimized search indexes...');
 
     const indexQueries = [
       // Core FTS index that matches our query pattern
@@ -309,17 +310,17 @@ export async function createSearchIndexes(): Promise<void> {
     for (const indexQuery of indexQueries) {
       try {
         await db.execute(sql.raw(indexQuery));
-        console.log(`✓ Created index: ${indexQuery.split(' ')[5]}`);
+        logger.info(`✓ Created index: ${indexQuery.split(' ')[5]}`);
       } catch (error) {
-        console.warn(
+        logger.warn(
           `⚠ Index creation failed: ${error instanceof Error ? error.message : 'Unknown'}`
         );
       }
     }
 
-    console.log('✅ Search indexes creation completed');
+    logger.info('✅ Search indexes creation completed');
   } catch (error) {
-    console.error('Failed to create search indexes:', error);
+    logger.error('Failed to create search indexes:', error);
     throw error;
   }
 }

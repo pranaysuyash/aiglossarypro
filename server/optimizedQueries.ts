@@ -3,6 +3,7 @@ import { Redis } from 'ioredis';
 import { categories, codeExamples, terms, userProgress } from '../shared/schema.js';
 import { db } from './db';
 
+import logger from './utils/logger';
 import NodeCache = require('node-cache');
 
 // Initialize caches
@@ -333,7 +334,7 @@ export class OptimizedQueries {
         return parsed;
       }
     } catch (error) {
-      console.error('Redis get error:', error);
+      logger.error('Redis get error:', error);
     }
 
     return null;
@@ -347,7 +348,7 @@ export class OptimizedQueries {
     try {
       await redis.setex(key, ttl, JSON.stringify(value));
     } catch (error) {
-      console.error('Redis set error:', error);
+      logger.error('Redis set error:', error);
     }
   }
 
@@ -369,7 +370,7 @@ export class OptimizedQueries {
         await redis.del(...keys);
       }
     } catch (error) {
-      console.error('Error incrementing term views:', error);
+      logger.error('Error incrementing term views:', error);
     }
   }
 
@@ -391,7 +392,7 @@ export class OptimizedQueries {
           await redis.del(...redisKeys);
         }
       } catch (error) {
-        console.error('Error clearing Redis cache:', error);
+        logger.error('Error clearing Redis cache:', error);
       }
     } else {
       // Clear all caches
@@ -399,7 +400,7 @@ export class OptimizedQueries {
       try {
         await redis.flushdb();
       } catch (error) {
-        console.error('Error flushing Redis:', error);
+        logger.error('Error flushing Redis:', error);
       }
     }
   }
@@ -407,7 +408,7 @@ export class OptimizedQueries {
 
 // Export cache warming function
 export async function warmCache() {
-  console.log('Warming cache...');
+  logger.info('Warming cache...');
 
   try {
     // Warm trending terms
@@ -423,11 +424,11 @@ export async function warmCache() {
     try {
       await redis.setex(CACHE_KEYS.CATEGORIES, CACHE_TTL.VERY_LONG, JSON.stringify(allCategories));
     } catch (error) {
-      console.error('Redis cache error:', error);
+      logger.error('Redis cache error:', error);
     }
 
-    console.log('Cache warming complete');
+    logger.info('Cache warming complete');
   } catch (error) {
-    console.error('Error warming cache:', error);
+    logger.error('Error warming cache:', error);
   }
 }

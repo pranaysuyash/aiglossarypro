@@ -17,6 +17,7 @@ import { promisify } from 'node:util';
 import { brotliCompress, gzip } from 'node:zlib';
 import type { NextFunction, Request, Response } from 'express';
 
+import logger from '../utils/logger';
 const gzipAsync = promisify(gzip);
 const brotliAsync = promisify(brotliCompress);
 
@@ -153,7 +154,7 @@ export function responseMonitoringMiddleware(req: Request, res: Response, next: 
     // Log large responses for optimization opportunities
     if (sizeInBytes > 50 * 1024) {
       // 50KB
-      console.warn(
+      logger.warn(
         `Large API response detected: ${req.path} - ${(sizeInBytes / 1024).toFixed(2)}KB`
       );
     }

@@ -5,6 +5,7 @@ import type { AuthenticatedRequest } from '../../shared/types';
 import { verifyToken } from '../auth/simpleAuth';
 import { db } from '../db';
 
+import logger from '../utils/logger';
 /**
  * Authentication token middleware - validates user is authenticated
  */
@@ -50,7 +51,7 @@ export async function authenticateToken(
       message: 'Authentication required',
     });
   } catch (error) {
-    console.error('Error in authentication middleware:', error);
+    logger.error('Error in authentication middleware:', error);
     res.status(500).json({
       success: false,
       message: 'Authentication verification failed',
@@ -91,7 +92,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    console.error('Error checking admin privileges:', error);
+    logger.error('Error checking admin privileges:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to verify admin privileges',
@@ -112,7 +113,7 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
 
     return user.length > 0 && user[0].isAdmin === true;
   } catch (error) {
-    console.error('Error checking if user is admin:', error);
+    logger.error('Error checking if user is admin:', error);
     return false;
   }
 }

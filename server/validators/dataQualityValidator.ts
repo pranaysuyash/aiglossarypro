@@ -4,6 +4,7 @@
  */
 import { SECTION_NAMES } from '../utils/constants';
 
+import logger from '../utils/logger';
 interface ValidationResult {
   isValid: boolean;
   errors: string[];
@@ -260,20 +261,20 @@ export class DataQualityValidator {
    * Pre-import validation hook
    */
   static async validateImportData(data: any): Promise<ValidationResult> {
-    console.log('🔍 Running data quality validation...');
+    logger.info('🔍 Running data quality validation...');
 
     const result = DataQualityValidator.validateBatchData(data.categories || [], data.terms || []);
 
     if (!result.isValid) {
-      console.error('❌ Data validation failed:');
-      result.errors.forEach(error => console.error(`  - ${error}`));
+      logger.error('❌ Data validation failed:');
+      result.errors.forEach(error => logger.error(`  - ${error}`));
     }
 
     if (result.warnings.length > 0) {
-      console.warn('⚠️  Data validation warnings:');
-      result.warnings.slice(0, 10).forEach(warning => console.warn(`  - ${warning}`));
+      logger.warn('⚠️  Data validation warnings:');
+      result.warnings.slice(0, 10).forEach(warning => logger.warn(`  - ${warning}`));
       if (result.warnings.length > 10) {
-        console.warn(`  ... and ${result.warnings.length - 10} more warnings`);
+        logger.warn(`  ... and ${result.warnings.length - 10} more warnings`);
       }
     }
 

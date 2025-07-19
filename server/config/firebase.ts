@@ -7,6 +7,7 @@ import { cert, initializeApp, type ServiceAccount } from 'firebase-admin/app';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 
+import logger from '../utils/logger';
 // Firebase Admin SDK initialization
 let adminInitialized = false;
 
@@ -38,9 +39,9 @@ export function initializeFirebaseAdmin() {
     });
 
     adminInitialized = true;
-    console.log('✅ Firebase Admin SDK initialized');
+    logger.info('✅ Firebase Admin SDK initialized');
   } catch (error) {
-    console.error('❌ Failed to initialize Firebase Admin:', error);
+    logger.error('❌ Failed to initialize Firebase Admin:', error);
     throw error;
   }
 }
@@ -55,7 +56,7 @@ export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdTok
     const decodedToken = await getAdminAuth().verifyIdToken(idToken);
     return decodedToken;
   } catch (error) {
-    console.error('Error verifying Firebase token:', error);
+    logger.error('Error verifying Firebase token:', error);
     return null;
   }
 }
@@ -70,7 +71,7 @@ export async function createCustomToken(uid: string, claims?: object): Promise<s
     const customToken = await getAdminAuth().createCustomToken(uid, claims);
     return customToken;
   } catch (error) {
-    console.error('Error creating custom token:', error);
+    logger.error('Error creating custom token:', error);
     return null;
   }
 }
@@ -85,7 +86,7 @@ export async function getUserByEmail(email: string) {
     const userRecord = await getAdminAuth().getUserByEmail(email);
     return userRecord;
   } catch (error) {
-    console.error('Error getting user by email:', error);
+    logger.error('Error getting user by email:', error);
     return null;
   }
 }
@@ -106,7 +107,7 @@ export async function createFirebaseUser(email: string, password: string, displa
 
     return userRecord;
   } catch (error) {
-    console.error('Error creating Firebase user:', error);
+    logger.error('Error creating Firebase user:', error);
     return null;
   }
 }
@@ -121,7 +122,7 @@ export async function setCustomUserClaims(uid: string, claims: object) {
     await getAdminAuth().setCustomUserClaims(uid, claims);
     return true;
   } catch (error) {
-    console.error('Error setting custom claims:', error);
+    logger.error('Error setting custom claims:', error);
     return false;
   }
 }
@@ -136,7 +137,7 @@ export async function deleteFirebaseUser(uid: string) {
     await getAdminAuth().deleteUser(uid);
     return true;
   } catch (error) {
-    console.error('Error deleting Firebase user:', error);
+    logger.error('Error deleting Firebase user:', error);
     return false;
   }
 }

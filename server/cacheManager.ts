@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import logger from './utils/logger';
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const stat = promisify(fs.stat);
@@ -51,7 +52,7 @@ export class CacheManager {
       const fileBuffer = await readFile(filePath);
       return crypto.createHash('sha256').update(fileBuffer).digest('hex');
     } catch (error) {
-      console.error(`Error generating hash for ${filePath}:`, error);
+      logger.error(`Error generating hash for ${filePath}:`, error);
       throw error;
     }
   }
@@ -100,7 +101,7 @@ export class CacheManager {
 
       // Check if cache files exist
       if (!fs.existsSync(metadataPath) || !fs.existsSync(dataPath)) {
-        console.log('📦 Cache files not found');
+        logger.info('📦 Cache files not found');
         return false;
       }
 
@@ -110,13 +111,13 @@ export class CacheManager {
 
       // Check cache version compatibility
       if (metadata.cacheVersion !== this.cacheVersion) {
-        console.log('📦 Cache version mismatch, invalidating cache');
+        logger.info('📦 Cache version mismatch, invalidating cache');
         return false;
       }
 
       // CRITICAL FIX: Validate cache integrity - check for empty or invalid data
       if (!metadata.termCount || metadata.termCount <= 0) {
-        console.log(`📦 Cache is invalid: termCount is ${metadata.termCount || 0} (expected > 0)`);
+        logger.info(`📦 Cache is invalid: termCount is ${metadata.termCount || 0} (expected > 0)`);
         return false;
       }
 
@@ -131,19 +132,19 @@ export class CacheManager {
           !Array.isArray(cachedData.terms) ||
           cachedData.terms.length === 0
         ) {
-          console.log('📦 Cache is invalid: data file contains no terms');
+          logger.info('📦 Cache is invalid: data file contains no terms');
           return false;
         }
 
         // Verify term count matches metadata
         if (cachedData.terms.length !== metadata.termCount) {
-          console.log(
+          logger.info(
             `📦 Cache is invalid: term count mismatch (metadata: ${metadata.termCount}, data: ${cachedData.terms.length})`
           );
           return false;
         }
       } catch (_dataError) {
-        console.log('📦 Cache is invalid: corrupted data file');
+        logger.info('📦 Cache is invalid: corrupted data file');
         return false;
       }
 
@@ -156,17 +157,17 @@ export class CacheManager {
         metadata.lastModified === currentMetadata.lastModified;
 
       if (isValid) {
-        console.log(`✅ Cache is valid and up-to-date with ${metadata.termCount} terms`);
+        logger.info(`✅ Cache is valid and up-to-date with ${metadata.termCount} terms`);
         const cacheAge = Date.now() - metadata.processedAt;
         const ageHours = Math.round(cacheAge / (1000 * 60 * 60));
-        console.log(`📦 Cache age: ${ageHours} hours`);
+        logger.info(`📦 Cache age: ${ageHours} hours`);
       } else {
-        console.log('📦 Cache is invalid (file changed)');
+        logger.info('📦 Cache is invalid (file changed)');
       }
 
       return isValid;
     } catch (error) {
-      console.error('Error checking cache validity:', error);
+      logger.error('Error checking cache validity:', error);
       return false;
     }
   }
@@ -185,10 +186,10 @@ export class CacheManager {
       const dataContent = await readFile(dataPath, 'utf8');
       const data = JSON.parse(dataContent);
 
-      console.log('📦 Successfully loaded data from cache');
+      logger.info('📦 Successfully loaded data from cache');
       return data;
     } catch (error) {
-      console.error('Error loading from cache:', error);
+      logger.error('Error loading from cache:', error);
       return null;
     }
   }
@@ -221,12 +222,12 @@ export class CacheManager {
       await writeFile(metadataPath, JSON.stringify(metadata, null, 2));
       await writeFile(dataPath, JSON.stringify(data, null, 2));
 
-      console.log('✅ Data saved to cache successfully');
-      console.log(
+      logger.info('✅ Data saved to cache successfully');
+      logger.info(
         `📊 Cached: ${metadata.termCount} terms, ${metadata.categoryCount} categories, ${metadata.subcategoryCount} subcategories`
       );
     } catch (error) {
-      console.error('Error saving to cache:', error);
+      logger.error('Error saving to cache:', error);
       throw error;
     }
   }
@@ -245,7 +246,7 @@ export class CacheManager {
       const metadataContent = await readFile(metadataPath, 'utf8');
       return JSON.parse(metadataContent);
     } catch (error) {
-      console.error('Error getting cache info:', error);
+      logger.error('Error getting cache info:', error);
       return null;
     }
   }
@@ -265,9 +266,9 @@ export class CacheManager {
         fs.unlinkSync(dataPath);
       }
 
-      console.log('🗑️ Cache cleared successfully');
+      logger.info('🗑️ Cache cleared successfully');
     } catch (error) {
-      console.error('Error clearing cache:', error);
+      logger.error('Error clearing cache:', error);
     }
   }
 
@@ -282,9 +283,9 @@ export class CacheManager {
           fs.unlinkSync(path.join(this.cacheDir, file));
         }
       }
-      console.log('🗑️ All cache cleared successfully');
+      logger.info('🗑️ All cache cleared successfully');
     } catch (error) {
-      console.error('Error clearing all cache:', error);
+      logger.error('Error clearing all cache:', error);
     }
   }
 
@@ -308,13 +309,13 @@ export class CacheManager {
           const metadata: CacheMetadata = JSON.parse(content);
           cacheEntries.push(metadata);
         } catch (error) {
-          console.warn(`Error reading cache metadata ${file}:`, error);
+          logger.warn(`Error reading cache metadata ${file}:`, error);
         }
       }
 
       return cacheEntries;
     } catch (error) {
-      console.error('Error listing cache:', error);
+      logger.error('Error listing cache:', error);
       return [];
     }
   }
@@ -327,13 +328,13 @@ export class CacheManager {
       const cacheInfo = await this.getCacheInfo(filePath);
 
       if (!cacheInfo) {
-        console.log('📦 No cache found to invalidate');
+        logger.info('📦 No cache found to invalidate');
         return false;
       }
 
       // Check if cache is empty or invalid
       if (!cacheInfo.termCount || cacheInfo.termCount <= 0) {
-        console.log(`🗑️ Force invalidating empty cache (termCount: ${cacheInfo.termCount || 0})`);
+        logger.info(`🗑️ Force invalidating empty cache (termCount: ${cacheInfo.termCount || 0})`);
         await this.clearCache(filePath);
         return true;
       }
@@ -349,20 +350,20 @@ export class CacheManager {
           !Array.isArray(cachedData.terms) ||
           cachedData.terms.length === 0
         ) {
-          console.log('🗑️ Force invalidating corrupted cache (no terms in data)');
+          logger.info('🗑️ Force invalidating corrupted cache (no terms in data)');
           await this.clearCache(filePath);
           return true;
         }
       } catch (_dataError) {
-        console.log('🗑️ Force invalidating corrupted cache (invalid data file)');
+        logger.info('🗑️ Force invalidating corrupted cache (invalid data file)');
         await this.clearCache(filePath);
         return true;
       }
 
-      console.log('📦 Cache appears valid, not invalidating');
+      logger.info('📦 Cache appears valid, not invalidating');
       return false;
     } catch (error) {
-      console.error('Error force invalidating cache:', error);
+      logger.error('Error force invalidating cache:', error);
       return false;
     }
   }

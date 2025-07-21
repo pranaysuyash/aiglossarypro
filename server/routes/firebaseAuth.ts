@@ -252,27 +252,34 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       logger.info('Token blacklisted on logout', { userId: req.user?.id });
     }
 
-    // Clear auth cookies with the same options they were set with
+    // Clear auth cookies with the EXACT same options they were set with
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax' as const,
+      maxAge: 0, // Expire immediately
       path: '/',
-      domain: undefined, // Clear for current domain
     };
 
-    // Clear all possible cookie names
+    // Clear all possible cookie names with proper options
     res.clearCookie('authToken', cookieOptions);
     res.clearCookie('auth_token', cookieOptions);
     res.clearCookie('firebaseToken', cookieOptions);
     res.clearCookie('session', cookieOptions);
     res.clearCookie('connect.sid', cookieOptions);
     
-    // Also try clearing without options for backward compatibility
-    res.clearCookie('authToken');
-    res.clearCookie('auth_token');
-    res.clearCookie('firebaseToken');
-    res.clearCookie('connect.sid');
+    // Also set cookies to empty string with maxAge 0 to force expiration
+    res.cookie('auth_token', '', { ...cookieOptions, maxAge: 0 });
+    res.cookie('authToken', '', { ...cookieOptions, maxAge: 0 });
+    
+    // Clear session if exists
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          logger.error('Session destruction error:', err);
+        }
+      });
+    }
 
     // Set mock logout state for development
     if (process.env.NODE_ENV === 'development') {
@@ -284,6 +291,14 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         logger.warn('Could not set mock logout state:', error);
       }
     }
+
+    // Set no-cache headers to prevent browser from caching logged-in state
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'Surrogate-Control': 'no-store'
+    });
 
     // Send response with instructions for client-side cleanup
     res.json({

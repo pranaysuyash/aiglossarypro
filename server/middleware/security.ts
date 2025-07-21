@@ -113,6 +113,9 @@ export const corsMiddleware = cors({
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
       'http://127.0.0.1:5173',
+      'https://aiglossarypro.firebaseapp.com', // Firebase Auth Domain
+      'https://accounts.google.com', // Google OAuth
+      'https://api.github.com', // GitHub OAuth
       process.env.FRONTEND_URL,
       process.env.PRODUCTION_URL,
       process.env.STAGING_URL,

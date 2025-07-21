@@ -19,6 +19,11 @@ import type {
   PurchaseVerificationResponse,
 } from '@/types/api-responses';
 
+// Create a broadcast channel for cross-tab communication
+const authChannel = typeof BroadcastChannel !== 'undefined' 
+  ? new BroadcastChannel('auth_state') 
+  : null;
+
 export default function FirebaseLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -59,6 +64,12 @@ export default function FirebaseLoginPage() {
         queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
         await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Broadcast login to other tabs
+        if (authChannel) {
+          authChannel.postMessage({ type: 'login', user: (response.data as any).user });
+          console.log('📡 Broadcasted login to other tabs');
+        }
 
         // Check for premium status
         const userData = (response.data as any)?.user;
@@ -215,6 +226,12 @@ export default function FirebaseLoginPage() {
         queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
         await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Broadcast login to other tabs
+        if (authChannel) {
+          authChannel.postMessage({ type: 'login', user: (response.data as any).user });
+          console.log('📡 Broadcasted login to other tabs');
+        }
 
         // Check for premium status
         const userData = response.data?.user;

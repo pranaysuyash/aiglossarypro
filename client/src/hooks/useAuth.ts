@@ -3,6 +3,12 @@ import { useLocation } from 'wouter';
 import { signOutUser } from '@/lib/firebase';
 import { getQueryFn } from '@/lib/queryClient';
 import type { IUser } from '../../../shared/types';
+import { useEffect } from 'react';
+
+// Create a broadcast channel for cross-tab communication
+const authChannel = typeof BroadcastChannel !== 'undefined' 
+  ? new BroadcastChannel('auth_state') 
+  : null;
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -22,6 +28,52 @@ export function useAuth() {
     staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
+
+  // Listen for auth changes from other tabs
+  useEffect(() => {
+    const handleAuthChange = (event: MessageEvent) => {
+      if (event.data?.type === 'logout') {
+        console.log('🔄 Logout detected from another tab');
+        // Clear local state immediately
+        queryClient.setQueryData(['/api/auth/user'], null);
+        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('auth_token');
+        navigate('/login');
+      } else if (event.data?.type === 'login') {
+        console.log('🔄 Login detected from another tab');
+        // Update local state with the new user
+        queryClient.setQueryData(['/api/auth/user'], event.data.user);
+        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      }
+    };
+
+    // Listen for broadcast channel messages
+    if (authChannel) {
+      authChannel.addEventListener('message', handleAuthChange);
+    }
+
+    // Listen for storage events (fallback for older browsers)
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'authToken' && event.newValue === null) {
+        console.log('🔄 Auth token removed from localStorage');
+        queryClient.setQueryData(['/api/auth/user'], null);
+        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
+        navigate('/login');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      if (authChannel) {
+        authChannel.removeEventListener('message', handleAuthChange);
+      }
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [queryClient, navigate]);
 
   const logout = async () => {
     try {
@@ -103,13 +155,19 @@ export function useAuth() {
       queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
       console.log('✅ All queries cleared and invalidated');
       
-      // Step 7: Add a small delay and force a hard reset of auth state
+      // Step 7: Broadcast logout to other tabs
+      if (authChannel) {
+        authChannel.postMessage({ type: 'logout' });
+        console.log('📡 Broadcasted logout to other tabs');
+      }
+      
+      // Step 8: Add a small delay and force a hard reset of auth state
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Force set to null again to ensure UI updates
       queryClient.setQueryData(['/api/auth/user'], null);
       
-      // Step 8: Force navigation to login page to prevent any auto-redirect
+      // Step 9: Force navigation to login page to prevent any auto-redirect
       navigate('/login');
       
       // Add a small delay before reload to ensure navigation completes

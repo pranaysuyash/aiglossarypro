@@ -9,6 +9,8 @@ import { authenticateFirebaseToken, requireFirebaseAdmin } from '../middleware/f
 import { log as logger } from '../utils/logger';
 import enhancedContentGenerationRoutes from './admin/enhancedContentGeneration';
 import templateManagementRoutes from './admin/templateManagement';
+import { validate } from '../middleware/validationMiddleware';
+import { adminSchemas } from '../schemas/apiValidation';
 
 import logger from '../utils/logger';
 const router = express.Router();
@@ -307,6 +309,10 @@ export function registerAdminRoutes(app: Express): void {
     '/api/admin/maintenance',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
+    validate.body(adminSchemas.maintenance, {
+      sanitizeSql: true,
+      logErrors: true
+    }),
     async (req: Request, res: Response) => {
       try {
         const { operation } = req.body;

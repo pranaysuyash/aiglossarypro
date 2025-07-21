@@ -2,12 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@/lib/api';
-import { signInWithEmail, signInWithGoogle } from '@/lib/firebase';
+import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
 import FirebaseLoginPage from '../FirebaseLoginPage';
 
 // Mock dependencies
 vi.mock('@/lib/firebase', () => ({
-  signInWithGoogle: vi.fn(),
+  signInWithProvider: vi.fn(),
   signInWithEmail: vi.fn(),
 }));
 
@@ -76,7 +76,7 @@ describe('FirebaseLoginPage', () => {
       lifetimeAccess: false,
     };
 
-    (signInWithGoogle as any).mockResolvedValueOnce({ idToken: mockIdToken });
+    (signInWithProvider as any).mockResolvedValueOnce({ idToken: mockIdToken });
     (api.post as any).mockResolvedValueOnce({
       success: true,
       data: {
@@ -87,11 +87,11 @@ describe('FirebaseLoginPage', () => {
 
     renderComponent();
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i });
+    const googleButton = screen.getByRole('button', { name: /Continue with Google/i });
     fireEvent.click(googleButton);
 
     await waitFor(() => {
-      expect(signInWithGoogle).toHaveBeenCalled();
+      expect(signInWithProvider).toHaveBeenCalledWith('google');
       expect(api.post).toHaveBeenCalledWith('/auth/firebase/login', { idToken: mockIdToken });
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Free User - Welcome back!',
@@ -141,14 +141,14 @@ describe('FirebaseLoginPage', () => {
   });
 
   it('should handle authentication errors', async () => {
-    (signInWithGoogle as any).mockRejectedValueOnce({
+    (signInWithProvider as any).mockRejectedValueOnce({
       code: 'auth/user-not-found',
       message: 'User not found',
     });
 
     renderComponent();
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i });
+    const googleButton = screen.getByRole('button', { name: /Continue with Google/i });
     fireEvent.click(googleButton);
 
     await waitFor(() => {

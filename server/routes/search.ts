@@ -1,10 +1,13 @@
 import { asc, desc, ilike, or } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
+import { z } from 'zod';
 import { enhancedTerms as terms } from '../../shared/enhancedSchema';
 import type { ApiResponse, SearchResult } from '../../shared/types';
 import { db } from '../db';
 import { enhancedStorage as storage } from '../enhancedStorage';
 import { paginationSchema, searchQuerySchema } from '../middleware/security';
+import { validate } from '../middleware/validationMiddleware';
+import { searchSchemas } from '../schemas/engagementValidation';
 import {
   getPopularSearchTerms as getOptimizedPopularTerms,
   optimizedSearch,
@@ -19,42 +22,29 @@ export function registerSearchRoutes(app: Express): void {
   // Main search endpoint
   app.get(
     '/api/search',
-    (req, res, next) => {
-      try {
-        // Validate search query and pagination
-        searchQuerySchema.parse(req.query.q);
-        paginationSchema.parse(req.query);
-        next();
-      } catch (_error) {
-        return res.status(400).json({ error: 'Invalid search parameters' });
-      }
-    },
+    validate.query(searchSchemas.search, { 
+      sanitizeHtml: true,
+      logErrors: true 
+    }),
     async (req: Request, res: Response) => {
       try {
         const {
           q,
-          page = 1,
-          limit = 20,
-          category,
-          sort = 'relevance',
-        } = req.query;
-
-        if (!q || typeof q !== 'string' || q.trim().length === 0) {
-          return res.status(400).json({
-            success: false,
-            message: 'Search query is required',
-          });
-        }
+          page,
+          limit,
+          filters,
+          sort
+        } = req.query as any;
 
         logger.info('Search query:', q);
 
         // Use optimized search service for better performance
         const searchResponse = await optimizedSearch({
-          query: q as string,
-          page: parseInt(page as string) || 1,
-          limit: parseInt(limit as string) || 20,
-          category: category as string,
-          sort: sort as 'relevance' | 'name' | 'popularity' | 'recent',
+          query: q,
+          page: page,
+          limit: limit,
+          category: filters?.category,
+          sort: sort,
           includeDefinition: true,
         });
 
@@ -114,14 +104,13 @@ export function registerSearchRoutes(app: Express): void {
    * Get autocomplete suggestions for search
    * GET /api/search/suggestions?q=query&limit=10
    */
-  app.get('/api/search/suggestions', async (req: Request, res: Response) => {
+  app.get('/api/search/suggestions', 
+    validate.query(searchSchemas.suggest, { 
+      sanitizeHtml: true 
+    }),
+    async (req: Request, res: Response) => {
     try {
-      const query = req.query.q as string;
-      const limit = parseInt(req.query.limit as string) || 10;
-
-      if (!query || query.length < 2) {
-        return res.json([]);
-      }
+      const { q: query, limit } = req.query as any;
 
       // Use optimized search for suggestions
       const termSuggestions = await optimizedSearchSuggestions(query, Math.min(limit - 3, 15));
@@ -170,20 +159,21 @@ export function registerSearchRoutes(app: Express): void {
    * Fuzzy search endpoint for handling typos and partial matches
    * GET /api/search/fuzzy?q=query&threshold=0.3&limit=20
    */
-  app.get('/api/search/fuzzy', async (req: Request, res: Response) => {
+  app.get('/api/search/fuzzy', 
+    validate.query(z.object({
+      q: z.string().min(1).max(500),
+      threshold: z.coerce.number().min(0).max(1).default(0.3),
+      limit: z.coerce.number().int().min(1).max(100).default(20),
+      page: z.coerce.number().int().min(1).default(1)
+    }), { sanitizeHtml: true }),
+    async (req: Request, res: Response) => {
     try {
       const {
         q,
-        limit = 20,
-        page = 1,
-      } = req.query;
-
-      if (!q || typeof q !== 'string' || q.trim().length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Search query is required',
-        });
-      }
+        limit,
+        page,
+        threshold
+      } = req.query as any;
 
       // Use same basic search as main endpoint
       const searchResults = await db
@@ -230,7 +220,7 @@ export function registerSearchRoutes(app: Express): void {
           searchTime: 0,
           suggestions: [],
           searchType: 'fuzzy',
-          threshold: parseFloat(threshold as string),
+          threshold: threshold,
         },
       });
     } catch (error) {
@@ -244,12 +234,16 @@ export function registerSearchRoutes(app: Express): void {
   });
 
   // Popular search terms
-  app.get('/api/search/popular', async (req: Request, res: Response) => {
+  app.get('/api/search/popular', 
+    validate.query(z.object({
+      limit: z.coerce.number().int().min(1).max(50).default(10)
+    })),
+    async (req: Request, res: Response) => {
     try {
-      const { limit = 10 } = req.query;
+      const { limit } = req.query as any;
 
       // Use optimized popular terms for better performance
-      const popularTerms = await getOptimizedPopularTerms(parseInt(limit as string));
+      const popularTerms = await getOptimizedPopularTerms(limit);
 
       res.json({
         success: true,
@@ -283,15 +277,32 @@ export function registerSearchRoutes(app: Express): void {
   });
 
   // Advanced search endpoint
-  app.post('/api/search/advanced', async (req: Request, res: Response) => {
+  app.post('/api/search/advanced', 
+    validate.body(z.object({
+      query: z.string().optional(),
+      filters: z.object({
+        categories: z.array(z.string()).optional(),
+        difficulty: z.array(z.enum(['beginner', 'intermediate', 'advanced'])).optional(),
+        hasImplementation: z.boolean().optional(),
+        hasInteractive: z.boolean().optional(),
+        dateRange: z.object({
+          startDate: z.string().datetime().optional(),
+          endDate: z.string().datetime().optional()
+        }).optional()
+      }).optional(),
+      page: z.number().int().min(1).default(1),
+      limit: z.number().int().min(1).max(100).default(20),
+      sort: z.enum(['relevance', 'name', 'popularity', 'recent']).default('relevance')
+    }), { sanitizeHtml: true, logErrors: true }),
+    async (req: Request, res: Response) => {
     try {
-      const { query, filters, page = 1, limit = 20, sort = 'relevance' } = req.body;
+      const { query, filters, page, limit, sort } = req.body;
 
       const searchResult = await storage.advancedSearch({
         query: query?.trim(),
         filters,
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: page,
+        limit: limit,
         sortBy: sort,
       });
 

@@ -3,9 +3,12 @@ import type { Express } from 'express';
 import { enhancedTerms, users, userTermHistory } from '../../shared/enhancedSchema';
 import { db } from '../db';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
+import { validate } from '../middleware/validationMiddleware';
+import { progressSchemas } from '../schemas/engagementValidation';
 import ProgressTrackingService from '../services/progressTrackingService';
 import type { AuthenticatedRequest } from '../types/express';
 import { log as logger } from '../utils/logger';
+import { z } from 'zod';
 
 export function registerProgressRoutes(app: Express): void {
   // Get comprehensive progress statistics
@@ -30,7 +33,14 @@ export function registerProgressRoutes(app: Express): void {
   });
 
   // Track term interaction
-  app.post('/api/progress/track-interaction', multiAuthMiddleware, async (req, res) => {
+  app.post('/api/progress/track-interaction', 
+    multiAuthMiddleware,
+    validate.body(z.object({
+      termId: z.string().min(1),
+      sectionsViewed: z.array(z.string()).default([]),
+      timeSpentSeconds: z.number().min(0).default(0)
+    }), { logErrors: true }),
+    async (req, res) => {
     try {
       const userInfo = getUserInfo(req);
       if (!userInfo) {
@@ -38,11 +48,7 @@ export function registerProgressRoutes(app: Express): void {
       }
       const userId = userInfo.id;
 
-      const { termId, sectionsViewed = [], timeSpentSeconds = 0 } = req.body;
-
-      if (!termId) {
-        return res.status(400).json({ error: 'Term ID is required' });
-      }
+      const { termId, sectionsViewed, timeSpentSeconds } = req.body;
 
       await ProgressTrackingService.trackTermInteraction(
         userId,
@@ -61,7 +67,12 @@ export function registerProgressRoutes(app: Express): void {
   });
 
   // Toggle bookmark
-  app.post('/api/progress/bookmark', async (req, res) => {
+  app.post('/api/progress/bookmark', 
+    validate.body(z.object({
+      termId: z.string().min(1),
+      isBookmarked: z.boolean()
+    }), { logErrors: true }),
+    async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
@@ -69,10 +80,6 @@ export function registerProgressRoutes(app: Express): void {
       }
 
       const { termId, isBookmarked } = req.body;
-
-      if (!termId || typeof isBookmarked !== 'boolean') {
-        return res.status(400).json({ error: 'Term ID and bookmark status are required' });
-      }
 
       const result = await ProgressTrackingService.toggleBookmark(userId, termId, isBookmarked);
 
@@ -90,14 +97,18 @@ export function registerProgressRoutes(app: Express): void {
   });
 
   // Get user's bookmarks
-  app.get('/api/progress/bookmarks', async (req, res) => {
+  app.get('/api/progress/bookmarks', 
+    validate.query(z.object({
+      limit: z.coerce.number().int().min(1).max(100).default(50)
+    })),
+    async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const limit = parseInt(req.query.limit as string) || 50;
+      const limit = req.query.limit as number;
       const bookmarks = await ProgressTrackingService.getUserBookmarks(userId, limit);
 
       res.json(bookmarks);
@@ -130,15 +141,20 @@ export function registerProgressRoutes(app: Express): void {
   });
 
   // Get user's term history
-  app.get('/api/progress/history', async (req, res) => {
+  app.get('/api/progress/history', 
+    validate.query(z.object({
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+      offset: z.coerce.number().int().min(0).default(0)
+    })),
+    async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = parseInt(req.query.offset as string) || 0;
+      const limit = req.query.limit as number;
+      const offset = req.query.offset as number;
 
       const history = await db
         .select({
@@ -203,14 +219,18 @@ export function registerProgressRoutes(app: Express): void {
   });
 
   // Get daily learning stats
-  app.get('/api/progress/daily-stats', async (req, res) => {
+  app.get('/api/progress/daily-stats', 
+    validate.query(z.object({
+      days: z.coerce.number().int().min(1).max(365).default(30)
+    })),
+    async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const days = parseInt(req.query.days as string) || 30;
+      const days = req.query.days as number;
       const stats = await ProgressTrackingService.getUserProgressStats(userId);
 
       res.json(stats.dailyStats.slice(-days));

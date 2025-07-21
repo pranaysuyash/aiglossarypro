@@ -14,7 +14,8 @@ import { PPPBanner } from './PPPBanner';
 import { PricingCountdown } from './PricingCountdown';
 
 // Separate component for the comparison table to isolate DOM structure
-// @ts-ignore - Disable Million.js optimization for this component
+// Million.js optimization disabled for this component due to dynamic content
+// The /*#__PURE__*/ annotation helps with tree-shaking
 const ComparisonTable = /*#__PURE__*/ function ComparisonTable() {
   const pricing = useCountryPricing();
 

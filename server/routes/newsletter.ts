@@ -4,6 +4,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { contactSubmissions, newsletterSubscriptions } from '../../shared/schema';
 import { db } from '../db';
+import { validate } from '../middleware/validationMiddleware';
+import { newsletterSchemas } from '../schemas/engagementValidation';
 import { log } from '../utils/logger';
 
 const router = Router();
@@ -49,9 +51,16 @@ function extractLocationData(req: any) {
 }
 
 // Newsletter subscription endpoint
-router.post('/subscribe', async (req, res) => {
+router.post('/subscribe', 
+  validate.body(newsletterSchemas.subscribe, { 
+    sanitizeHtml: true,
+    logErrors: true 
+  }),
+  async (req, res) => {
   try {
-    const { email, utm_source, utm_medium, utm_campaign } = emailSchema.parse(req.body);
+    // Extract additional fields that aren't in the newsletter schema
+    const { email, marketingConsent } = req.body;
+    const { utm_source, utm_medium, utm_campaign } = req.body;
     const { hashedIp, userAgent, language } = extractLocationData(req);
 
     // Check if email already exists
@@ -102,10 +111,15 @@ router.post('/subscribe', async (req, res) => {
 });
 
 // Contact form endpoint
-router.post('/contact', async (req, res) => {
+router.post('/contact', 
+  validate.body(contactSchema, { 
+    sanitizeHtml: true,
+    sanitizeSql: true,
+    logErrors: true 
+  }),
+  async (req, res) => {
   try {
-    const { name, email, subject, message, utm_source, utm_medium, utm_campaign } =
-      contactSchema.parse(req.body);
+    const { name, email, subject, message, utm_source, utm_medium, utm_campaign } = req.body;
     const { hashedIp, userAgent, language } = extractLocationData(req);
 
     // Insert contact form submission with location data
@@ -146,9 +160,14 @@ router.post('/contact', async (req, res) => {
 });
 
 // Unsubscribe endpoint
-router.post('/unsubscribe', async (req, res) => {
+router.post('/unsubscribe', 
+  validate.body(newsletterSchemas.unsubscribe.omit({ token: true }).extend({ email: z.string().email() }), { 
+    sanitizeHtml: true,
+    logErrors: true 
+  }),
+  async (req, res) => {
   try {
-    const { email } = emailSchema.parse(req.body);
+    const { email } = req.body;
 
     await db
       .update(newsletterSubscriptions)

@@ -7,6 +7,7 @@ import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAdmin } from '../middleware/adminAuth';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
+import { validate } from '../middleware/validationMiddleware';
 import { engagementTrackingService } from '../services/engagementTrackingService';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 
@@ -143,9 +144,14 @@ export function registerEngagementRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post('/api/engagement/track', async (req: Request, res: Response) => {
+  app.post('/api/engagement/track', 
+    validate.body(trackInteractionSchema, { 
+      sanitizeHtml: true,
+      logErrors: true 
+    }),
+    async (req: Request, res: Response) => {
     try {
-      const validatedData = trackInteractionSchema.parse(req.body);
+      const validatedData = req.body;
 
       // Get user ID if authenticated
       const userId = (req as any).user?.id;
@@ -160,15 +166,6 @@ export function registerEngagementRoutes(app: Express): void {
         message: 'Interaction tracked successfully',
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return sendErrorResponse(
-          res,
-          ErrorCode.VALIDATION_ERROR,
-          'Invalid request data',
-          error.errors
-        );
-      }
-
       logger.error('Track interaction error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -244,9 +241,14 @@ export function registerEngagementRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post('/api/engagement/reading-progress', async (req: Request, res: Response) => {
+  app.post('/api/engagement/reading-progress', 
+    validate.body(trackReadingProgressSchema, { 
+      sanitizeHtml: true,
+      logErrors: true 
+    }),
+    async (req: Request, res: Response) => {
     try {
-      const validatedData = trackReadingProgressSchema.parse(req.body);
+      const validatedData = req.body;
 
       // Get user ID if authenticated
       const userId = (req as any).user?.id;
@@ -261,15 +263,6 @@ export function registerEngagementRoutes(app: Express): void {
         message: 'Reading progress tracked successfully',
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return sendErrorResponse(
-          res,
-          ErrorCode.VALIDATION_ERROR,
-          'Invalid request data',
-          error.errors
-        );
-      }
-
       logger.error('Track reading progress error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -345,7 +338,7 @@ export function registerEngagementRoutes(app: Express): void {
       const sessionMetrics = await engagementTrackingService.calculateSessionEngagement(sessionId);
 
       if (!sessionMetrics) {
-        return sendErrorResponse(res, ErrorCode.NOT_FOUND, 'Session not found');
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Session not found');
       }
 
       res.json({
@@ -542,7 +535,7 @@ export function registerEngagementRoutes(app: Express): void {
             res,
             ErrorCode.VALIDATION_ERROR,
             'Invalid query parameters',
-            error.errors
+            JSON.stringify(error.errors)
           );
         }
 

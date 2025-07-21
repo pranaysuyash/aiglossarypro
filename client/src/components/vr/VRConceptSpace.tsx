@@ -194,10 +194,9 @@ const VRInteractionManager: React.FC<{
   selectedConcept?: string;
   onConceptSelect: (conceptId: string) => void;
 }> = ({ concepts, selectedConcept, onConceptSelect }) => {
-  // @ts-ignore
-  const { player } = {} as any; // Player state would go here
-  // @ts-ignore
-  const { isPresenting } = {} as any; // useXR hook would go here
+  // VR state placeholders - to be implemented with actual XR hooks
+  const player = { position: [0, 0, 0] as [number, number, number] };
+  const isPresenting = false; // Will be replaced with useXR().isPresenting when XR is fully integrated
 
   // Handle hand/controller interactions
   const handleSelect = useCallback(

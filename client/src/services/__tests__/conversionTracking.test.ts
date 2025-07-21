@@ -356,12 +356,9 @@ describe('Conversion Tracking Edge Cases', () => {
   });
 
   it('handles missing analytics objects gracefully', () => {
-    // @ts-ignore
-    delete window.gtag;
-    // @ts-ignore
-    delete window.fbq;
-    // @ts-ignore
-    delete window.mixpanel;
+    (window as any).gtag = undefined;
+    (window as any).fbq = undefined;
+    (window as any).mixpanel = undefined;
 
     expect(() => {
       trackConversionEvent({

@@ -29,7 +29,7 @@ describe('Logging Middleware', () => {
     };
 
     // Create mock response with proper end function
-    originalEnd = jest.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
+    originalEnd = vi.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
       if (callback) callback();
       return mockRes as Response;
     });
@@ -37,11 +37,11 @@ describe('Logging Middleware', () => {
     mockRes = {
       statusCode: 200,
       end: originalEnd,
-      get: jest.fn(),
-      setHeader: jest.fn(),
+      get: vi.fn(),
+      setHeader: vi.fn(),
     };
 
-    mockNext = jest.fn();
+    mockNext = vi.fn();
   });
 
   describe('rateLimitLoggingMiddleware', () => {
@@ -67,7 +67,7 @@ describe('Logging Middleware', () => {
 
     it('should log rate limit exceeded when status code is 429', () => {
       mockRes.statusCode = 429;
-      (mockRes.get as jest.Mock).mockReturnValue('100');
+      (mockRes.get as vi.Mock).mockReturnValue('100');
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
@@ -85,7 +85,7 @@ describe('Logging Middleware', () => {
     it('should handle anonymous users when userId is not set', () => {
       mockReq.userId = undefined;
       mockRes.statusCode = 429;
-      (mockRes.get as jest.Mock).mockReturnValue('50');
+      (mockRes.get as vi.Mock).mockReturnValue('50');
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
@@ -98,7 +98,7 @@ describe('Logging Middleware', () => {
       beforeEach(() => {
         // Setup for 429 status to ensure logging
         mockRes.statusCode = 429;
-        (mockRes.get as jest.Mock).mockReturnValue('100');
+        (mockRes.get as vi.Mock).mockReturnValue('100');
         rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
       });
 
@@ -129,7 +129,7 @@ describe('Logging Middleware', () => {
       it('should handle calls with all parameters including callback', () => {
         const chunk = 'test response';
         const encoding: BufferEncoding = 'utf8';
-        const callback = jest.fn();
+        const callback = vi.fn();
 
         const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
 
@@ -140,7 +140,7 @@ describe('Logging Middleware', () => {
       it('should handle undefined encoding properly', () => {
         const chunk = 'test response';
         const encoding = undefined;
-        const callback = jest.fn();
+        const callback = vi.fn();
 
         const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
 
@@ -149,14 +149,14 @@ describe('Logging Middleware', () => {
 
       it('should preserve the original context (this)', () => {
         let capturedThis: any;
-        originalEnd = jest.fn(function (this: any) {
+        originalEnd = vi.fn(function (this: any) {
           capturedThis = this;
           return this;
         });
         mockRes.end = originalEnd;
 
         // Re-apply middleware
-        rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, jest.fn());
+        rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, vi.fn());
 
         (mockRes.end as any).call(mockRes);
 
@@ -166,7 +166,7 @@ describe('Logging Middleware', () => {
 
     it('should handle missing rate limit header gracefully', () => {
       mockRes.statusCode = 429;
-      (mockRes.get as jest.Mock).mockReturnValue(undefined);
+      (mockRes.get as vi.Mock).mockReturnValue(undefined);
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
@@ -181,7 +181,7 @@ describe('Logging Middleware', () => {
 
     it('should handle non-numeric rate limit header', () => {
       mockRes.statusCode = 429;
-      (mockRes.get as jest.Mock).mockReturnValue('invalid');
+      (mockRes.get as vi.Mock).mockReturnValue('invalid');
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 

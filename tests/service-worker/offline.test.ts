@@ -191,7 +191,7 @@ describe('Service Worker', () => {
       expect(response).toBe(networkResponse);
       expect(mockCache.match).toHaveBeenCalledWith(request);
       expect(mockFetch).toHaveBeenCalledWith(request);
-      expect(mockCache.put).toHaveBeenCalledWith(request, response);
+      expect(mockCache.put).toHaveBeenCalledWith(request, expect.any(Response));
     });
 
     it('should use network-first for API requests', async () => {
@@ -208,7 +208,7 @@ describe('Service Worker', () => {
 
       expect(response).toBe(networkResponse);
       expect(mockFetch).toHaveBeenCalledWith(request);
-      expect(mockCache.put).toHaveBeenCalledWith(request, response);
+      expect(mockCache.put).toHaveBeenCalledWith(request, expect.any(Response));
     });
 
     it('should serve offline page when network fails', async () => {

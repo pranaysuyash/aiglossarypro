@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticateFirebaseToken } from '../middleware/firebaseAuth';
+import { validate } from '../middleware/validationMiddleware';
 import { ReferralService } from '../services/referralService';
 import { log as logger } from '../utils/logger';
 
@@ -82,22 +83,20 @@ router.get('/links', authenticateFirebaseToken, async (req, res) => {
  * POST /api/referral/links/generate
  * Generate a new referral link for authenticated user
  */
-router.post('/links/generate', authenticateFirebaseToken, async (req, res) => {
+router.post('/links/generate', 
+  authenticateFirebaseToken,
+  validate.body(generateLinkSchema, { 
+    sanitizeHtml: true,
+    logErrors: true 
+  }),
+  async (req, res) => {
   try {
     const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    const validation = generateLinkSchema.safeParse(req.body);
-    if (!validation.success) {
-      return res.status(400).json({
-        error: 'Invalid request data',
-        details: validation.error.errors,
-      });
-    }
-
-    const { campaignName } = validation.data;
+    const { campaignName } = req.body;
     const referralCode = await ReferralService.generateReferralCode(userId, campaignName);
 
     // Generate the full referral URL
@@ -158,17 +157,14 @@ router.get('/payouts', authenticateFirebaseToken, async (req, res) => {
  * POST /api/referral/track-click
  * Track a referral click (public endpoint)
  */
-router.post('/track-click', async (req, res) => {
+router.post('/track-click', 
+  validate.body(trackClickSchema, { 
+    sanitizeHtml: true,
+    logErrors: true 
+  }),
+  async (req, res) => {
   try {
-    const validation = trackClickSchema.safeParse(req.body);
-    if (!validation.success) {
-      return res.status(400).json({
-        error: 'Invalid request data',
-        details: validation.error.errors,
-      });
-    }
-
-    const { referralCode, utm } = validation.data;
+    const { referralCode, utm } = req.body;
 
     // Extract context from request
     const context = {
@@ -203,22 +199,20 @@ router.post('/track-click', async (req, res) => {
  * POST /api/referral/set-referrer
  * Set referrer for authenticated user (when they sign up via referral)
  */
-router.post('/set-referrer', authenticateFirebaseToken, async (req, res) => {
+router.post('/set-referrer', 
+  authenticateFirebaseToken,
+  validate.body(setReferrerSchema, { 
+    sanitizeHtml: true,
+    logErrors: true 
+  }),
+  async (req, res) => {
   try {
     const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    const validation = setReferrerSchema.safeParse(req.body);
-    if (!validation.success) {
-      return res.status(400).json({
-        error: 'Invalid request data',
-        details: validation.error.errors,
-      });
-    }
-
-    const { referralCode } = validation.data;
+    const { referralCode } = req.body;
     const success = await ReferralService.setUserReferrer(userId, referralCode);
 
     if (!success) {

@@ -13,13 +13,18 @@ import {
   processTermsForAccessibility,
 } from '../utils/contentAccessibility';
 import { log } from '../utils/logger';
+import { validate } from '../middleware/validationMiddleware';
+import { contentSchemas, paramSchemas } from '../schemas/apiValidation';
 
 /**
  * Content accessibility and improvement routes
  */
 export function registerContentRoutes(app: Express): void {
   // Get accessibility score for a specific term
-  app.get('/api/content/accessibility/term/:id', async (req: Request, res: Response) => {
+  app.get(
+    '/api/content/accessibility/term/:id',
+    validate.params(paramSchemas.id),
+    async (req: Request, res: Response) => {
     try {
       const termId = req.params.id;
       const term = await storage.getTermById(termId);
@@ -65,6 +70,10 @@ export function registerContentRoutes(app: Express): void {
     '/api/content/accessibility/batch-analyze',
     multiAuthMiddleware,
     requireAdmin,
+    validate.body(contentSchemas.batchAnalyzeAccessibility, {
+      sanitizeHtml: true,
+      logErrors: true
+    }),
     async (req: Request, res: Response) => {
       try {
         const { termIds, limit } = req.body;

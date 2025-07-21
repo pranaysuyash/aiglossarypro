@@ -6,6 +6,8 @@ import { mockAuthenticateToken, mockIsAuthenticated } from '../middleware/dev/mo
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log as logger } from '../utils/logger';
+import { validate } from '../middleware/validationMiddleware';
+import { userSchemas } from '../schemas/apiValidation';
 
 /**
  * Authentication and user management routes
@@ -267,7 +269,15 @@ export function registerAuthRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.put('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.put(
+    '/api/settings',
+    authMiddleware,
+    tokenMiddleware,
+    validate.body(userSchemas.updateSettings, { 
+      sanitizeHtml: true,
+      logErrors: true 
+    }),
+    async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
       if (!userInfo) {

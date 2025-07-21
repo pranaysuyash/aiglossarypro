@@ -31,7 +31,7 @@ describe('Analytics Middleware', () => {
     };
 
     // Create mock response with proper end function
-    originalEnd = jest.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
+    originalEnd = vi.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
       if (callback) callback();
       return mockRes as Response;
     });
@@ -39,10 +39,10 @@ describe('Analytics Middleware', () => {
     mockRes = {
       statusCode: 200,
       end: originalEnd,
-      setHeader: jest.fn(),
+      setHeader: vi.fn(),
     };
 
-    mockNext = jest.fn();
+    mockNext = vi.fn();
   });
 
   describe('performanceTrackingMiddleware', () => {
@@ -125,7 +125,7 @@ describe('Analytics Middleware', () => {
 
         const chunk = 'test data';
         const encoding: BufferEncoding = 'utf8';
-        const callback = jest.fn();
+        const callback = vi.fn();
 
         const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
 
@@ -157,7 +157,7 @@ describe('Analytics Middleware', () => {
         );
 
         // Verify response time is calculated correctly
-        const trackCall = (analyticsService.trackPerformance as jest.Mock).mock.calls[0];
+        const trackCall = (analyticsService.trackPerformance as any).mock.calls[0];
         const responseTime = trackCall[2];
         expect(responseTime).toBeGreaterThanOrEqual(100);
         expect(responseTime).toBeLessThan(200); // Should be close to 100ms
@@ -165,10 +165,10 @@ describe('Analytics Middleware', () => {
 
       it('should handle errors in analytics tracking gracefully', async () => {
         const middleware = performanceTrackingMiddleware();
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
 
         // Make trackPerformance throw an error
-        (analyticsService.trackPerformance as jest.Mock).mockRejectedValueOnce(
+        (analyticsService.trackPerformance as any).mockRejectedValueOnce(
           new Error('Tracking failed')
         );
 
@@ -193,14 +193,14 @@ describe('Analytics Middleware', () => {
         middleware(mockReq as Request, mockRes as Response, mockNext);
 
         let capturedThis: any;
-        originalEnd = jest.fn(function (this: any) {
+        originalEnd = vi.fn(function (this: any) {
           capturedThis = this;
           return this;
         });
         mockRes.end = originalEnd;
 
         // Re-apply middleware to override the new mock
-        middleware(mockReq as Request, mockRes as Response, jest.fn());
+        middleware(mockReq as Request, mockRes as Response, vi.fn());
 
         const _result = (mockRes.end as any).call(mockRes);
 

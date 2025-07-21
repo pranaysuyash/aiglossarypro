@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -139,8 +140,8 @@ export async function downloadFileFromS3(bucketName: string, key: string, destin
         return;
       }
 
-      // @ts-ignore - Body should have pipe method as a readable stream
-      response.Body.pipe(writeStream)
+      // Cast Body to Readable stream for pipe operation
+      (response.Body as Readable).pipe(writeStream)
         .on('error', (err: Error) => {
           const duration = Date.now() - startTime;
           monitoringService.logOperationComplete(logId, 'error', duration, undefined, err.message);

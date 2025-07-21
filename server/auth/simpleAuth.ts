@@ -323,11 +323,29 @@ export function setupSimpleAuth(app: Express) {
   });
 
   // Logout
-  app.post('/api/auth/logout', (_req: Request, res: Response) => {
+  app.post('/api/auth/logout', (req: Request, res: Response) => {
     // Clear all possible auth cookies
     res.clearCookie('auth_token');
     res.clearCookie('authToken');
     res.clearCookie('firebaseToken');
+    
+    // Clear connect.sid cookie (Passport session)
+    res.clearCookie('connect.sid', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+    });
+    
+    // Destroy session if it exists
+    if ((req as any).session?.destroy) {
+      (req as any).session.destroy((err: any) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+        }
+      });
+    }
+    
     res.json({ success: true, message: 'Logged out successfully' });
   });
 

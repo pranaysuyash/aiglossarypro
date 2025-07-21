@@ -266,7 +266,14 @@ export function registerFirebaseAuthRoutes(app: Express): void {
     res.clearCookie('auth_token', cookieOptions);
     res.clearCookie('firebaseToken', cookieOptions);
     res.clearCookie('session', cookieOptions);
-    res.clearCookie('connect.sid', cookieOptions);
+    
+    // Clear connect.sid cookie with its specific options (Passport session)
+    res.clearCookie('connect.sid', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+    });
     
     // Also set cookies to empty string with maxAge 0 to force expiration
     res.cookie('auth_token', '', { ...cookieOptions, maxAge: 0 });

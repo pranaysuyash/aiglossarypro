@@ -8,7 +8,7 @@
     "start:dev": "node scripts/dev-start.js",
     "dev:smart": "node scripts/dev-start.js",
     "dev:basic": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:server": "NODE_ENV=development SEPARATE_FRONTEND_SERVER=true NODE_OPTIONS='--max-old-space-size=4096' tsx server/index.ts",
+    "dev:server": "NODE_ENV=development SEPARATE_FRONTEND_SERVER=true NODE_OPTIONS='--max-old-space-size=4096' tsx watch server/index.ts",
     "dev:client": "vite",
     "dev:perf": "concurrently \"npm:dev\" \"sleep 10 && npx react-scan@latest http://localhost:5173\"",
     "dev:scan": "concurrently \"npm:dev\" \"sleep 10 && npx react-scan@latest http://localhost:5173 --config react-scan.config.js\"",

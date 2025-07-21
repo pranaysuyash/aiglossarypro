@@ -102,9 +102,18 @@ function SmartLandingPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [, setLocation] = useLocation();
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  
+  // Check if we're in a logout state (just logged out)
+  const isLoggedOut = sessionStorage.getItem('just_logged_out') === 'true';
 
   // Handle authenticated user redirect with better state management
   useEffect(() => {
+    // Don't auto-redirect if user just logged out
+    if (isLoggedOut) {
+      sessionStorage.removeItem('just_logged_out');
+      return;
+    }
+    
     // Only check once when loading is complete
     if (!isLoading && !hasCheckedAuth) {
       setHasCheckedAuth(true);
@@ -120,7 +129,7 @@ function SmartLandingPage() {
         }, 100);
       }
     }
-  }, [isAuthenticated, isLoading, setLocation, hasCheckedAuth, user]);
+  }, [isAuthenticated, isLoading, setLocation, hasCheckedAuth, user, isLoggedOut]);
 
   // Show loading while checking auth status
   if (isLoading) {
@@ -134,8 +143,8 @@ function SmartLandingPage() {
     );
   }
 
-  // Don't render landing page for authenticated users
-  if (isAuthenticated && hasCheckedAuth) {
+  // Don't render landing page for authenticated users (unless they just logged out)
+  if (isAuthenticated && hasCheckedAuth && !isLoggedOut) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="text-center">

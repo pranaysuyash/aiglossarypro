@@ -15,6 +15,9 @@ import {
   signInWithPopup,
   signOut,
   type User,
+  setPersistence,
+  browserLocalPersistence,
+  inMemoryPersistence,
 } from 'firebase/auth';
 
 // Firebase configuration from environment variables
@@ -49,7 +52,26 @@ try {
   if (missingKeys.length === 0) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    console.log('✅ Firebase initialized successfully');
+    
+    // Check if user just logged out
+    const justLoggedOut = sessionStorage.getItem('just_logged_out') === 'true';
+    
+    // Set Firebase persistence based on logout state
+    if (auth) {
+      if (justLoggedOut) {
+        // Use in-memory persistence after logout to prevent auto-reauth
+        setPersistence(auth, inMemoryPersistence).catch(error => {
+          console.warn('Failed to set Firebase persistence:', error);
+        });
+        console.log('✅ Firebase initialized with in-memory persistence (post-logout)');
+      } else {
+        // Use local persistence for normal operation
+        setPersistence(auth, browserLocalPersistence).catch(error => {
+          console.warn('Failed to set Firebase persistence:', error);
+        });
+        console.log('✅ Firebase initialized with local persistence');
+      }
+    }
   } else {
     console.warn('⚠️ Firebase not initialized due to missing configuration');
   }
@@ -155,10 +177,10 @@ export async function signOutUser() {
       throw new Error('Firebase authentication is not initialized');
     }
     
-    // Clear Firebase auth state completely
+    // Step 1: Clear Firebase auth state completely
     await signOut(auth);
     
-    // Clear any Firebase-related localStorage keys
+    // Step 2: Clear any Firebase-related localStorage keys
     const firebaseKeys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -167,6 +189,31 @@ export async function signOutUser() {
       }
     }
     firebaseKeys.forEach(key => localStorage.removeItem(key));
+    
+    // Step 3: Clear any Firebase-related sessionStorage keys
+    const sessionKeys = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (key.startsWith('firebase:') || key.includes('firebase') || key.includes('authUser'))) {
+        sessionKeys.push(key);
+      }
+    }
+    sessionKeys.forEach(key => sessionStorage.removeItem(key));
+    
+    // Step 4: Clear Firebase IndexedDB if possible
+    try {
+      if ('indexedDB' in window) {
+        const databases = await indexedDB.databases();
+        for (const db of databases) {
+          if (db.name && (db.name.includes('firebase') || db.name.includes('firebaseLocalStorageDb'))) {
+            await indexedDB.deleteDatabase(db.name);
+            console.log(`✅ Deleted Firebase IndexedDB: ${db.name}`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to clear Firebase IndexedDB:', e);
+    }
     
     console.log('✅ Firebase signout and cleanup completed');
   } catch (error) {
@@ -190,7 +237,27 @@ export function onAuthChange(callback: (user: User | null) => void) {
     console.warn('Firebase auth not initialized, cannot subscribe to auth changes');
     return () => {}; // Return empty unsubscribe function
   }
-  return onAuthStateChanged(auth, callback);
+  
+  // Check if we're in a logout state
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const justLoggedOut = sessionStorage.getItem('just_logged_out') === 'true';
+    
+    if (justLoggedOut && user) {
+      // If we just logged out but Firebase still has a user, force sign out
+      console.log('⚠️ Detected auth state after logout, forcing sign out...');
+      signOut(auth).then(() => {
+        callback(null);
+      }).catch(() => {
+        callback(null);
+      });
+      return;
+    }
+    
+    // Normal auth state change
+    callback(user);
+  });
+  
+  return unsubscribe;
 }
 
 /**

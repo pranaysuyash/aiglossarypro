@@ -4,6 +4,7 @@ import { signOutUser } from '@/lib/firebase';
 import { getQueryFn } from '@/lib/queryClient';
 import type { IUser } from '../../../shared/types';
 import { useEffect } from 'react';
+import { clearAllAuthData, setupAuthStateMonitor, markLogoutState, isInLogoutState } from '@/lib/authPersistence';
 
 // Create a broadcast channel for cross-tab communication
 const authChannel = typeof BroadcastChannel !== 'undefined' 
@@ -35,11 +36,10 @@ export function useAuth() {
       if (event.data?.type === 'logout') {
         console.log('🔄 Logout detected from another tab');
         // Clear local state immediately
+        clearAllAuthData();
         queryClient.setQueryData(['/api/auth/user'], null);
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('auth_token');
         navigate('/login');
       } else if (event.data?.type === 'login') {
         console.log('🔄 Login detected from another tab');
@@ -58,6 +58,7 @@ export function useAuth() {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'authToken' && event.newValue === null) {
         console.log('🔄 Auth token removed from localStorage');
+        clearAllAuthData();
         queryClient.setQueryData(['/api/auth/user'], null);
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
@@ -67,11 +68,20 @@ export function useAuth() {
 
     window.addEventListener('storage', handleStorageChange);
 
+    // Setup aggressive auth state monitor
+    const cleanup = setupAuthStateMonitor(() => {
+      console.log('🔍 Auth state monitor triggered logout');
+      queryClient.setQueryData(['/api/auth/user'], null);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      navigate('/login');
+    });
+
     return () => {
       if (authChannel) {
         authChannel.removeEventListener('message', handleAuthChange);
       }
       window.removeEventListener('storage', handleStorageChange);
+      cleanup();
     };
   }, [queryClient, navigate]);
 
@@ -79,16 +89,16 @@ export function useAuth() {
     try {
       console.log('🚪 Starting logout process...');
       
-      // Step 1: Immediately clear query cache and set user to null
+      // Step 1: Mark logout state
+      markLogoutState();
+      
+      // Step 2: Immediately clear query cache and set user to null
       queryClient.setQueryData(['/api/auth/user'], null);
       console.log('✅ Query cache cleared');
       
-      // Step 2: Clear all local storage immediately
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('auth_token'); // Also check for alternate cookie name
-      localStorage.clear();
-      sessionStorage.clear();
-      console.log('✅ Local storage cleared');
+      // Step 3: Use aggressive auth cleanup
+      clearAllAuthData();
+      console.log('✅ All auth data cleared');
 
       // Step 3: Clear all cookies (including httpOnly ones via backend)
       document.cookie.split(';').forEach((c) => {

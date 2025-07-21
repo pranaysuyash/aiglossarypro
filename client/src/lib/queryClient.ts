@@ -1,4 +1,5 @@
 import { QueryClient, type QueryFunction } from '@tanstack/react-query';
+import { isInLogoutState } from '@/lib/authPersistence';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -32,6 +33,12 @@ type UnauthorizedBehavior = 'returnNull' | 'throw';
 export const getQueryFn: <T>(options: { on401: UnauthorizedBehavior }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
     async ({ queryKey }) => {
+      // Check if we're in logout state for auth queries
+      if (queryKey[0] === '/api/auth/user' && isInLogoutState()) {
+        console.log('🚫 Blocking auth query during logout state');
+        return null;
+      }
+      
       // Prepare headers
       const headers: Record<string, string> = {};
 

@@ -4,7 +4,7 @@ import { Router } from 'express';
 import expressWs from 'express-ws';
 import multer from 'multer';
 import { WebSocket } from 'ws';
-import { mockIsAuthenticated } from './middleware/dev/mockAuth';
+import { multiAuthMiddleware } from './middleware/multiAuth';
 import { getOptimizedS3Client, type UploadProgress } from './s3ServiceOptimized';
 
 import logger from './utils/logger';
@@ -451,7 +451,7 @@ router.post('/archive', async (req, res) => {
 });
 
 // Cleanup old files
-router.post('/cleanup', mockIsAuthenticated, async (req, res) => {
+router.post('/cleanup', multiAuthMiddleware, async (req, res) => {
   try {
     const { prefix = '', olderThanDays = 30, keepVersions = 5 } = req.body;
 

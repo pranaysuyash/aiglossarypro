@@ -2,7 +2,6 @@ import type { Express, Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../../shared/types';
 import { features } from '../config';
 import { authenticateToken } from '../middleware/adminAuth';
-import { mockAuthenticateToken, mockIsAuthenticated } from '../middleware/dev/mockAuth';
 import { parseId, parseNumericQuery, parsePagination } from '../middleware/inputValidation';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';

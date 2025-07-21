@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import { enhancedStorage } from './enhancedTermsStorage';
-import { mockIsAuthenticated } from './middleware/dev/mockAuth';
+import { multiAuthMiddleware } from './middleware/multiAuth';
 
 import logger from './utils/logger';
 /**
@@ -184,7 +184,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
    * Demo endpoint for personalized features
    * GET /api/demo/personalization
    */
-  app.get('/api/demo/personalization', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/demo/personalization', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
 
@@ -224,7 +224,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
    * Demo endpoint for analytics features
    * GET /api/demo/analytics
    */
-  app.get('/api/demo/analytics', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/demo/analytics', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const _user = await enhancedStorage.getUser(userId);

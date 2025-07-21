@@ -4,7 +4,7 @@ import { z } from 'zod';
 import logger from './utils/logger';
 // import { processExcelUpload } from './dataTransformationPipeline'; // File removed
 import { enhancedStorage } from './enhancedTermsStorage';
-import { mockIsAuthenticated } from './middleware/dev/mockAuth';
+import { multiAuthMiddleware } from './middleware/multiAuth';
 import { isUserAdmin } from './utils/authUtils';
 
 // File upload configuration
@@ -81,7 +81,7 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.post(
     '/api/enhanced/upload',
-    mockIsAuthenticated,
+    multiAuthMiddleware,
     upload.single('file'),
     async (req: Request, res: Response) => {
       try {
@@ -138,7 +138,7 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get(
     '/api/enhanced/upload/status',
-    mockIsAuthenticated,
+    multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
         if (!req.user) {
@@ -380,7 +380,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get user preferences for enhanced experience
    * GET /api/enhanced/preferences
    */
-  app.get('/api/enhanced/preferences', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/preferences', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const preferences = await enhancedStorage.getUserPreferences(userId);
@@ -395,7 +395,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Update user preferences
    * PUT /api/enhanced/preferences
    */
-  app.put('/api/enhanced/preferences', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.put('/api/enhanced/preferences', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const preferences = userPreferencesSchema.parse(req.body);
@@ -419,7 +419,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get personalized term recommendations
    * GET /api/enhanced/recommendations
    */
-  app.get('/api/enhanced/recommendations', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/recommendations', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -442,7 +442,7 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get(
     '/api/enhanced/analytics/terms/:id',
-    mockIsAuthenticated,
+    multiAuthMiddleware,
     async (req: any, res: Response) => {
       try {
         const userId = req.user.claims.sub;
@@ -469,7 +469,7 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get(
     '/api/enhanced/analytics/overview',
-    mockIsAuthenticated,
+    multiAuthMiddleware,
     async (req: any, res: Response) => {
       try {
         const userId = req.user.claims.sub;
@@ -513,7 +513,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Rate term or section quality
    * POST /api/enhanced/rate
    */
-  app.post('/api/enhanced/rate', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/enhanced/rate', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { termId, sectionName, rating, feedback } = req.body;
@@ -534,7 +534,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get content quality reports
    * GET /api/enhanced/quality-report
    */
-  app.get('/api/enhanced/quality-report', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/quality-report', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -595,7 +595,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get enhanced schema information for debugging
    * GET /api/enhanced/schema-info
    */
-  app.get('/api/enhanced/schema-info', mockIsAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/schema-info', multiAuthMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);

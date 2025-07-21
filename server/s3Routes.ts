@@ -2,20 +2,17 @@ import { Router } from 'express';
 import logger from './utils/logger';
 // Import appropriate auth based on configuration
 import { features } from './config';
-import {
-  mockAuthenticateToken,
-  mockIsAuthenticated,
-  mockRequireAdmin,
-} from './middleware/dev/mockAuth';
+import { authenticateFirebaseToken, requireFirebaseAdmin } from './middleware/firebaseAuth';
+import { multiAuthMiddleware } from './middleware/multiAuth';
 import { processAndImportFromS3 } from './pythonProcessor';
 import { getS3Client, initS3Client, listFiles } from './s3Service';
 
 const router = Router();
 
-// Choose authentication middleware based on environment
-const authMiddleware = features.isDevelopment ? mockIsAuthenticated : mockIsAuthenticated; // Using mock for now
-const tokenMiddleware = mockAuthenticateToken;
-const adminMiddleware = mockRequireAdmin;
+// Use proper authentication middleware
+const authMiddleware = multiAuthMiddleware;
+const tokenMiddleware = authenticateFirebaseToken;
+const adminMiddleware = requireFirebaseAdmin;
 
 // Check S3 setup status - REQUIRES ADMIN
 router.get('/setup', authMiddleware, tokenMiddleware, adminMiddleware, async (_req, res) => {

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowRight,
+  BarChart3,
   BookOpen,
   Calendar,
   Clock,
@@ -389,12 +390,9 @@ export default function Dashboard() {
                     <span
                       className={`font-medium ${(accessStatus?.remainingViews || 0) <= 10 ? 'text-red-500' : 'text-green-500'}`}
                     >
-                      {accessStatus?.lifetimeAccess ? 
-                        'Unlimited' : 
-                        (typeof accessStatus?.remainingViews === 'number' && accessStatus.remainingViews < Number.MAX_SAFE_INTEGER ? 
-                          accessStatus.remainingViews : 
-                          5)
-                      }
+                      {typeof accessStatus?.remainingViews === 'number' && accessStatus.remainingViews < 1000 
+                        ? accessStatus.remainingViews 
+                        : accessStatus?.dailyLimit || 50}
                     </span>
                   </div>
                 )}
@@ -428,6 +426,22 @@ export default function Dashboard() {
         <CardContent>
           {activityLoading ? (
             <div className="h-80 animate-pulse bg-gray-200 dark:bg-gray-700 rounded"></div>
+          ) : chartData.length === 0 || chartData.every(d => d.viewed === 0) ? (
+            <div className="h-64 xs:h-80 flex items-center justify-center">
+              <div className="text-center">
+                <BarChart3 className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  No activity yet. Start exploring terms to see your progress here!
+                </p>
+                <Button 
+                  onClick={() => window.location.href = '/glossary'} 
+                  variant="outline"
+                  size="sm"
+                >
+                  Start Learning
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="h-64 xs:h-80 overflow-hidden">
               <BarChart

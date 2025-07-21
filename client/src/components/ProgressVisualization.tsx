@@ -182,21 +182,84 @@ export function ProgressVisualization({
     );
   }
 
-  if (error) {
+  if (error || !user) {
     return (
       <Card className={`${className}`}>
-        <CardContent className="text-center py-8">
-          <p className="text-red-500">Error loading progress: {error}</p>
-          <Button onClick={fetchProgressStats} className="mt-4">
-            Try Again
-          </Button>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BookOpen className="mr-2 h-5 w-5" />
+            Learning Progress
+          </CardTitle>
+          <CardDescription>Track your learning journey</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="mb-4">
+              <Trophy className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Start Your Learning Journey</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                Explore AI/ML terms to build your knowledge and track your progress
+              </p>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={() => window.location.href = '/glossary'} 
+                className="bg-primary hover:bg-primary/90"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                Browse Terms
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/categories'} 
+                variant="outline"
+              >
+                Explore Categories
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!stats) {
-    return null;
+  if (!stats || stats.totalTermsViewed === 0) {
+    return (
+      <Card className={`${className}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BookOpen className="mr-2 h-5 w-5" />
+            Learning Progress
+          </CardTitle>
+          <CardDescription>Track your learning journey</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="mb-4">
+              <Trophy className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Start Your Learning Journey</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                Explore AI/ML terms to build your knowledge and track your progress
+              </p>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={() => window.location.href = '/glossary'} 
+                className="bg-primary hover:bg-primary/90"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                Browse Terms
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/categories'} 
+                variant="outline"
+              >
+                Explore Categories
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const bookmarkLimitReached = stats.totalBookmarks >= 50;

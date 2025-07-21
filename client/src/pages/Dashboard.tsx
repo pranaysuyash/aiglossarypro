@@ -235,14 +235,6 @@ export default function Dashboard() {
             </Badge>
           )}
         </div>
-        {!accessStatus?.lifetimeAccess && (
-          <Link href="/lifetime">
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-              <Crown className="w-4 h-4 mr-2" />
-              Upgrade to Premium
-            </Button>
-          </Link>
-        )}
       </div>
 
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 xs:gap-4 mb-6">
@@ -425,22 +417,22 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           {activityLoading ? (
-            <div className="h-80 animate-pulse bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-32 animate-pulse bg-gray-200 dark:bg-gray-700 rounded"></div>
           ) : chartData.length === 0 || chartData.every(d => d.viewed === 0) ? (
-            <div className="h-64 xs:h-80 flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  No activity yet. Start exploring terms to see your progress here!
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-8 w-8 text-gray-400 dark:text-gray-600" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No activity yet. Start exploring to track your progress!
                 </p>
-                <Button 
-                  onClick={() => window.location.href = '/glossary'} 
-                  variant="outline"
-                  size="sm"
-                >
-                  Start Learning
-                </Button>
               </div>
+              <Button 
+                onClick={() => window.location.href = '/glossary'} 
+                variant="outline"
+                size="sm"
+              >
+                Start Learning
+              </Button>
             </div>
           ) : (
             <div className="h-64 xs:h-80 overflow-hidden">

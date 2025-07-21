@@ -38,7 +38,8 @@ import {
   LazySupportCenterPage,
 } from '@/components/lazy/LazyPages';
 import OfflineStatus from '@/components/OfflineStatus';
-import { OnboardingTour, useOnboarding } from '@/components/onboarding/OnboardingTour';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { StickyUrgencyBar, UrgencyBanner } from '@/components/UrgencyIndicators';

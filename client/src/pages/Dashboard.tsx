@@ -389,7 +389,12 @@ export default function Dashboard() {
                     <span
                       className={`font-medium ${(accessStatus?.remainingViews || 0) <= 10 ? 'text-red-500' : 'text-green-500'}`}
                     >
-                      {accessStatus?.remainingViews || 0}
+                      {accessStatus?.lifetimeAccess ? 
+                        'Unlimited' : 
+                        (typeof accessStatus?.remainingViews === 'number' && accessStatus.remainingViews < Number.MAX_SAFE_INTEGER ? 
+                          accessStatus.remainingViews : 
+                          5)
+                      }
                     </span>
                   </div>
                 )}

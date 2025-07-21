@@ -16,7 +16,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
-import { getIdToken } from 'firebase/auth';
+import { getIdToken } from '@/lib/firebase';
 
 interface UserProgressStats {
   totalTermsViewed: number;
@@ -83,19 +83,37 @@ export function ProgressVisualization({
     try {
       setLoading(true);
       
-      // Get Firebase ID token
+      // Get Firebase ID token or use local auth token
       let token = null;
-      if (user) {
+      
+      // First try to get token from localStorage (for non-Firebase auth)
+      token = localStorage.getItem('authToken');
+      
+      // If no local token and we have a Firebase user, try to get Firebase token
+      if (!token && user) {
         try {
-          token = await getIdToken(user as any);
+          token = await getIdToken();
         } catch (tokenError) {
-          console.error('Error getting ID token:', tokenError);
-          throw new Error('Authentication failed');
+          console.error('Error getting Firebase ID token:', tokenError);
+          // Continue with local token attempt
         }
       }
       
       if (!token) {
-        throw new Error('No authentication token');
+        // If no token at all, show empty stats for new user
+        setStats({
+          totalTermsViewed: 0,
+          totalBookmarks: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          categoriesExplored: 0,
+          timeSpentMinutes: 0,
+          achievements: [],
+          dailyStats: [],
+          upgradePromptTriggers: [],
+        });
+        setLoading(false);
+        return;
       }
       
       const response = await fetch('/api/progress/stats', {

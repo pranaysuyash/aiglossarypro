@@ -101,7 +101,7 @@ export function getDailyLimits(
 
   // Premium users have unlimited access
   if (hasPremiumAccess(user)) {
-    return { limit: Number.MAX_SAFE_INTEGER, isUnlimited: true };
+    return { limit: 999999, isUnlimited: true };
   }
 
   // No trial period - free users get daily limits immediately
@@ -120,7 +120,7 @@ export function getRemainingDailyViews(
   const { limit, isUnlimited } = getDailyLimits(user, config);
 
   if (isUnlimited) {
-    return { remaining: Number.MAX_SAFE_INTEGER, dailyViews: 0, limit };
+    return { remaining: 999999, dailyViews: 0, limit };
   }
 
   // Calculate remaining views for today

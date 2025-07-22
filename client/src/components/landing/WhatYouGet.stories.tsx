@@ -14,9 +14,9 @@ const meta: Meta<typeof WhatYouGet> = {
     },
   },
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gray-50">
-        <Story />
+        <WhatYouGet />
       </div>
     ),
   ],
@@ -77,7 +77,7 @@ export const Desktop: Story = {
 
 export const WithDarkBackground: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gray-900">
         <div
           className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
@@ -129,7 +129,7 @@ export const WithDarkBackground: Story = {
 
 export const CompactVersion: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-white py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -194,7 +194,7 @@ export const CompactVersion: Story = {
 
 export const WithPricing: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-gradient-to-br from-purple-50 to-blue-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -210,7 +210,7 @@ export const WithPricing: Story = {
             </p>
           </div>
 
-          <Story />
+          <WhatYouGet />
         </div>
       </div>
     ),
@@ -226,7 +226,7 @@ export const WithPricing: Story = {
 
 export const FeatureHighlight: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">

@@ -125,7 +125,7 @@ export const InteractiveDemo: Story = {
       },
     },
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement: _ }) => {
     // This story is meant for manual interaction
     console.log('Try filling out the form and submitting it!');
     console.log('Use "error@example.com" to test error handling.');

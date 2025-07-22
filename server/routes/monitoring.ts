@@ -1,3 +1,5 @@
+import apiOptimizer from '@server/utils/apiOptimization';
+import queryOptimizer from '@server/utils/queryOptimization';
 import { Router } from 'express';
 import { monitoringService } from '../monitoring/monitoringService';
 import { log } from '../utils/logger';
@@ -221,6 +223,229 @@ function getTrend(current: number, previous: number): 'improving' | 'stable' | '
 
   if (Math.abs(change) < 5) return 'stable';
   return change > 0 ? 'degrading' : 'improving';
+}
+
+/**
+ * Get API response optimization statistics
+ */
+router.get('/api-stats', async (req, res) => {
+  try {
+    const timeWindow = parseInt(req.query.timeWindow as string) || 3600000; // 1 hour default
+
+    const responseStats = apiOptimizer.getResponseStats(timeWindow);
+    const cacheStats = apiOptimizer.getCacheStats();
+
+    res.json({
+      success: true,
+      data: {
+        response: responseStats,
+        cache: cacheStats,
+        timeWindow
+      }
+    });
+  } catch (error) {
+    log.error('Failed to get API stats', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get API stats' });
+  }
+});
+
+/**
+ * Get database query optimization statistics
+ */
+router.get('/query-stats', async (req, res) => {
+  try {
+    const timeWindow = parseInt(req.query.timeWindow as string) || 3600000; // 1 hour default
+
+    const queryStats = queryOptimizer.getQueryStats(timeWindow);
+    const cacheStats = queryOptimizer.getCacheStats();
+    const indexRecommendations = queryOptimizer.generateIndexRecommendations();
+
+    res.json({
+      success: true,
+      data: {
+        queries: queryStats,
+        cache: cacheStats,
+        indexRecommendations,
+        timeWindow
+      }
+    });
+  } catch (error) {
+    log.error('Failed to get query stats', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get query stats' });
+  }
+});
+
+/**
+ * Clear API response cache
+ */
+router.post('/clear-api-cache', async (req, res) => {
+  try {
+    const { tags } = req.body;
+
+    if (tags && Array.isArray(tags)) {
+      const invalidated = apiOptimizer.invalidateByTags(tags);
+      res.json({
+        success: true,
+        message: `Invalidated ${invalidated} cache entries by tags`,
+        data: { invalidated, tags }
+      });
+    } else {
+      apiOptimizer.clearCache();
+      res.json({
+        success: true,
+        message: 'All API cache cleared'
+      });
+    }
+  } catch (error) {
+    log.error('Failed to clear API cache', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to clear API cache' });
+  }
+});
+
+/**
+ * Clear query cache
+ */
+router.post('/clear-query-cache', async (req, res) => {
+  try {
+    const { pattern } = req.body;
+
+    const invalidated = queryOptimizer.invalidateCache(pattern);
+    res.json({
+      success: true,
+      message: `Invalidated ${invalidated} query cache entries`,
+      data: { invalidated, pattern }
+    });
+  } catch (error) {
+    log.error('Failed to clear query cache', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to clear query cache' });
+  }
+});
+
+/**
+ * Get comprehensive optimization report
+ */
+router.get('/optimization-report', async (req, res) => {
+  try {
+    const timeWindow = parseInt(req.query.timeWindow as string) || 3600000; // 1 hour default
+
+    const apiStats = apiOptimizer.getResponseStats(timeWindow);
+    const apiCache = apiOptimizer.getCacheStats();
+    const queryStats = queryOptimizer.getQueryStats(timeWindow);
+    const queryCache = queryOptimizer.getCacheStats();
+    const indexRecommendations = queryOptimizer.generateIndexRecommendations();
+
+    // Calculate overall performance score
+    const performanceScore = calculatePerformanceScore({
+      avgResponseTime: apiStats.avgResponseTime,
+      cacheHitRate: apiStats.cacheHitRate,
+      errorRate: apiStats.errorRate,
+      slowRequests: apiStats.slowRequests,
+      totalRequests: apiStats.totalRequests
+    });
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          performanceScore,
+          timeWindow,
+          timestamp: Date.now()
+        },
+        api: {
+          response: apiStats,
+          cache: apiCache
+        },
+        database: {
+          queries: queryStats,
+          cache: queryCache,
+          indexRecommendations
+        },
+        recommendations: generateOptimizationRecommendations({
+          apiStats,
+          queryStats,
+          indexRecommendations
+        })
+      }
+    });
+  } catch (error) {
+    log.error('Failed to get optimization report', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get optimization report' });
+  }
+});
+
+/**
+ * Calculate performance score (0-100)
+ */
+function calculatePerformanceScore(metrics: {
+  avgResponseTime: number;
+  cacheHitRate: number;
+  errorRate: number;
+  slowRequests: number;
+  totalRequests: number;
+}): number {
+  let score = 100;
+
+  // Penalize slow response times
+  if (metrics.avgResponseTime > 500) {
+    score -= Math.min(30, (metrics.avgResponseTime - 500) / 50);
+  }
+
+  // Reward high cache hit rates
+  score += (metrics.cacheHitRate - 50) * 0.3;
+
+  // Penalize high error rates
+  score -= metrics.errorRate * 2;
+
+  // Penalize slow requests
+  if (metrics.totalRequests > 0) {
+    const slowRequestRate = (metrics.slowRequests / metrics.totalRequests) * 100;
+    score -= slowRequestRate * 0.5;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/**
+ * Generate optimization recommendations
+ */
+function generateOptimizationRecommendations(data: {
+  apiStats: any;
+  queryStats: any;
+  indexRecommendations: any[];
+}): string[] {
+  const recommendations: string[] = [];
+
+  // API recommendations
+  if (data.apiStats.avgResponseTime > 500) {
+    recommendations.push('Consider enabling response caching for slow endpoints');
+  }
+
+  if (data.apiStats.cacheHitRate < 30) {
+    recommendations.push('Increase cache TTL or implement more aggressive caching strategy');
+  }
+
+  if (data.apiStats.errorRate > 5) {
+    recommendations.push('Investigate and fix high error rate in API responses');
+  }
+
+  // Database recommendations
+  if (data.queryStats.avgExecutionTime > 100) {
+    recommendations.push('Optimize slow database queries or add query caching');
+  }
+
+  if (data.queryStats.slowQueries > 10) {
+    recommendations.push('Review and optimize the slowest database queries');
+  }
+
+  if (data.indexRecommendations.length > 0) {
+    recommendations.push(`Consider adding ${data.indexRecommendations.length} database indexes for better performance`);
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push('Performance looks good! Continue monitoring for any changes.');
+  }
+
+  return recommendations;
 }
 
 export default router;

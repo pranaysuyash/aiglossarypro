@@ -1,0 +1,101 @@
+{
+  "timestamp": "2025-07-22T02:59:44.200Z",
+  "environment": "development",
+  "summary": {
+    "total": 8,
+    "passed": 0,
+    "failed": 2,
+    "skipped": 6
+  },
+  "results": [
+    {
+      "service": "Firebase Authentication",
+      "status": "fail",
+      "message": "Missing required environment variables: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_APP_ID",
+      "details": {
+        "missingVars": [
+          "VITE_FIREBASE_API_KEY",
+          "VITE_FIREBASE_AUTH_DOMAIN",
+          "VITE_FIREBASE_PROJECT_ID",
+          "VITE_FIREBASE_STORAGE_BUCKET",
+          "VITE_FIREBASE_MESSAGING_SENDER_ID",
+          "VITE_FIREBASE_APP_ID"
+        ]
+      }
+    },
+    {
+      "service": "Email Service (Resend)",
+      "status": "skip",
+      "message": "Skipped - missing optional environment variables: RESEND_API_KEY, EMAIL_FROM",
+      "details": {
+        "missingVars": [
+          "RESEND_API_KEY",
+          "EMAIL_FROM"
+        ]
+      }
+    },
+    {
+      "service": "Email Service (SMTP)",
+      "status": "skip",
+      "message": "Skipped - missing optional environment variables: SMTP_HOST, SMTP_USER, SMTP_PASS, EMAIL_FROM",
+      "details": {
+        "missingVars": [
+          "SMTP_HOST",
+          "SMTP_USER",
+          "SMTP_PASS",
+          "EMAIL_FROM"
+        ]
+      }
+    },
+    {
+      "service": "Gumroad Webhooks",
+      "status": "fail",
+      "message": "Missing required environment variables: GUMROAD_WEBHOOK_SECRET",
+      "details": {
+        "missingVars": [
+          "GUMROAD_WEBHOOK_SECRET"
+        ]
+      }
+    },
+    {
+      "service": "Gumroad API",
+      "status": "skip",
+      "message": "Skipped - missing optional environment variables: GUMROAD_ACCESS_TOKEN",
+      "details": {
+        "missingVars": [
+          "GUMROAD_ACCESS_TOKEN"
+        ]
+      }
+    },
+    {
+      "service": "PostHog Analytics",
+      "status": "skip",
+      "message": "Skipped - missing optional environment variables: VITE_POSTHOG_KEY",
+      "details": {
+        "missingVars": [
+          "VITE_POSTHOG_KEY"
+        ]
+      }
+    },
+    {
+      "service": "Google Analytics 4",
+      "status": "skip",
+      "message": "Skipped - missing optional environment variables: VITE_GA_MEASUREMENT_ID",
+      "details": {
+        "missingVars": [
+          "VITE_GA_MEASUREMENT_ID"
+        ]
+      }
+    },
+    {
+      "service": "Sentry Monitoring",
+      "status": "skip",
+      "message": "Skipped - missing optional environment variables: SENTRY_DSN",
+      "details": {
+        "missingVars": [
+          "SENTRY_DSN"
+        ]
+      }
+    }
+  ]
+}

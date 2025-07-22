@@ -2,7 +2,7 @@ import { Copy, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { sanitizeMermaidHTML } from '@/utils/sanitize';
 
 // Lazy load mermaid only when needed

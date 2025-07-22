@@ -14,9 +14,9 @@ const meta: Meta<typeof SocialProof> = {
     },
   },
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gray-50">
-        <Story />
+        <SocialProof />
       </div>
     ),
   ],
@@ -77,7 +77,7 @@ export const Desktop: Story = {
 
 export const HighNumbers: Story = {
   decorators: [
-    Story => {
+    _ => {
       // Mock higher numbers for this story
       const originalComponent = SocialProof;
 
@@ -127,9 +127,9 @@ export const HighNumbers: Story = {
 
 export const WithAnimation: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <Story />
+        <SocialProof />
       </div>
     ),
   ],
@@ -145,7 +145,7 @@ export const WithAnimation: Story = {
 
 export const MinimalVersion: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center">
@@ -186,7 +186,7 @@ export const MinimalVersion: Story = {
 
 export const WithCustomTestimonials: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">

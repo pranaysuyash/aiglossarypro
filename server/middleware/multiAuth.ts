@@ -285,6 +285,16 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
         isAdmin: decoded.isAdmin,
       };
       return next();
+    } else {
+      // If token is invalid, return 401 immediately
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired token',
+        availableProviders: {
+          google: !!process.env.GOOGLE_CLIENT_ID,
+          github: !!process.env.GITHUB_CLIENT_ID,
+        },
+      });
     }
   }
 

@@ -6,7 +6,7 @@ import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { validate } from '../middleware/validationMiddleware';
 import { progressSchemas } from '../schemas/engagementValidation';
 import ProgressTrackingService from '../services/progressTrackingService';
-import type { AuthenticatedRequest } from '../types/express';
+import type { AuthenticatedRequest } from '../../shared/types';
 import { log as logger } from '../utils/logger';
 import { z } from 'zod';
 

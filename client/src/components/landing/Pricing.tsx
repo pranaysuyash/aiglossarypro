@@ -16,6 +16,7 @@ import { PricingCountdown } from './PricingCountdown';
 // Separate component for the comparison table to isolate DOM structure
 // Million.js optimization disabled for this component due to dynamic content
 // The /*#__PURE__*/ annotation helps with tree-shaking
+// million-ignore
 const ComparisonTable = /*#__PURE__*/ function ComparisonTable() {
   const pricing = useCountryPricing();
 
@@ -100,6 +101,7 @@ const ComparisonTable = /*#__PURE__*/ function ComparisonTable() {
   );
 }
 
+// million-ignore
 export function Pricing() {
   const pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();

@@ -2,11 +2,11 @@ import type { Express } from 'express';
 import multer from 'multer';
 import { supportService } from '../services/supportService';
 import { log } from '../utils/logger';
-import { asyncHandler } from '../middleware/errorHandler.js';
-import { validateAuth } from '../middleware/auth.js';
-import { validateAdminAuth } from '../middleware/adminAuth.js';
+import { asyncHandler } from '../middleware/errorHandler';
+import { validateAuth } from '../middleware/auth';
+import { validateAdminAuth } from '../middleware/adminAuth';
 import { z } from 'zod';
-import { uploadFileToS3 } from '../s3Service.js';
+import { uploadFileToS3 } from '../s3Service';
 
 // Configure multer for file uploads
 const upload = multer({

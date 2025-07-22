@@ -6,13 +6,11 @@ import { cacheManager } from '../cacheManager';
 import { enhancedStorage as storage } from '../enhancedStorage';
 import { authenticateToken, requireAdmin } from '../middleware/adminAuth';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../middleware/firebaseAuth';
-import { log as logger } from '../utils/logger';
+import logger from '../utils/logger';
 import enhancedContentGenerationRoutes from './admin/enhancedContentGeneration';
 import templateManagementRoutes from './admin/templateManagement';
 import { validate } from '../middleware/validationMiddleware';
 import { adminSchemas } from '../schemas/apiValidation';
-
-import logger from '../utils/logger';
 const router = express.Router();
 
 /**

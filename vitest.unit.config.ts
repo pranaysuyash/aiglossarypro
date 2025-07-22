@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 
-import path from 'node:path';
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -14,6 +14,7 @@ export default defineConfig({
       'tests/components/**/*.test.{ts,tsx}',
       'tests/api/**/*.test.{ts,tsx}',
       'tests/service-worker/**/*.test.{ts,tsx}',
+      'tests/integration/**/*.test.{ts,tsx}',
       'client/src/components/**/__tests__/**/*.test.{ts,tsx}',
     ],
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'tests/visual/**/*'],

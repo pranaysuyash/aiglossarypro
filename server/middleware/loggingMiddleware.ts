@@ -112,9 +112,9 @@ export const errorLoggingMiddleware = (
   captureAPIError(err, {
     method: req.method,
     path: req.path,
-    userId: req.userId,
-    requestId: req.requestId,
-    body: req.body,
+    ...(req.userId && { userId: req.userId }),
+    ...(req.requestId && { requestId: req.requestId }),
+    ...(req.body && { body: req.body }),
   });
 
   // Don't call next() here - let the error handler deal with the response

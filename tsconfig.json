@@ -6,6 +6,9 @@
     "tests/**/*",
     "stories/**/*",
     "scripts/**/*",
+    "config/**/*",
+    "src/**/*",
+    "cypress/**/*",
     "*.ts",
     "*.tsx"
   ],

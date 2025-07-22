@@ -24,13 +24,13 @@ interface CountryPricing {
   };
 }
 
-// Launch pricing configuration
+// Launch pricing configuration defaults (will be overridden by server data)
 const LAUNCH_PRICING_CONFIG = {
   originalPrice: 249,
   launchPrice: 179,
   savingsAmount: 70,
   totalSlots: 500,
-  claimedSlots: 237, // Start realistic, update manually
+  claimedSlots: 0, // Default to 0, will be updated from server
   showCounter: true,
   isActive: true, // Control launch pricing globally
 };
@@ -61,61 +61,33 @@ export function useCountryPricing() {
   });
 
   useEffect(() => {
-    const detectCountry = async () => {
+    const fetchPricingData = async () => {
       try {
-        // Use a more reliable service or fallback to default
-        const response = await fetch('https://api.ipdata.co/v1/current?api-key=test', {
-          mode: 'cors',
-          headers: {
-            Accept: 'application/json',
-          },
-        }).catch(() => null);
+        const [locationResponse, earlyBirdResponse] = await Promise.all([
+          fetch('/api/location'),
+          fetch('/api/early-bird-status'),
+        ]);
 
-        if (!response?.ok) {
-          // Fallback to default US pricing
-          setPricing(prev => ({ ...prev, loading: false }));
-          return;
-        }
+        const locationData = await locationResponse.json();
+        const earlyBirdData = await earlyBirdResponse.json();
 
-        const data = await response.json();
-
-        const countryPricing = calculatePPPPricing(data.country_code, data.country_name);
+        const countryPricing = calculatePPPPricing(locationData.country_code, locationData.country_name);
         setPricing({
           ...countryPricing,
           loading: false,
           launchPricing: {
-            isActive:
-              LAUNCH_PRICING_CONFIG.isActive &&
-              LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
-            launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
-            originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
-            savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
-            claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
-            totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
-            showCounter: LAUNCH_PRICING_CONFIG.showCounter,
+            ...countryPricing.launchPricing,
+            claimedSlots: earlyBirdData?.data?.totalPurchased || 0,
+            isActive: earlyBirdData?.data?.isActive || false,
           },
         });
       } catch (error) {
-        console.error('Country detection failed:', error);
-        setPricing(prev => ({
-          ...prev,
-          loading: false,
-          launchPricing: {
-            isActive:
-              LAUNCH_PRICING_CONFIG.isActive &&
-              LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
-            launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
-            originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
-            savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
-            claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
-            totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
-            showCounter: LAUNCH_PRICING_CONFIG.showCounter,
-          },
-        }));
+        console.error('Failed to fetch pricing data:', error);
+        setPricing(prev => ({ ...prev, loading: false }));
       }
     };
 
-    detectCountry();
+    fetchPricingData();
   }, []);
 
   return pricing;
@@ -127,15 +99,13 @@ function calculatePPPPricing(
 ): Omit<CountryPricing, 'loading'> {
   const basePrice = 249;
 
-  // Calculate launch pricing
+  // Calculate launch pricing (use defaults, will be overridden by server data)
   const launchPricing = {
-    isActive:
-      LAUNCH_PRICING_CONFIG.isActive &&
-      LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+    isActive: LAUNCH_PRICING_CONFIG.isActive,
     launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
     originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
     savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
-    claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
+    claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots, // This will be updated from server
     totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
     showCounter: LAUNCH_PRICING_CONFIG.showCounter,
   };

@@ -14,9 +14,9 @@ const meta: Meta<typeof FounderStory> = {
     },
   },
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen">
-        <Story />
+        <FounderStory />
       </div>
     ),
   ],
@@ -77,9 +77,9 @@ export const Desktop: Story = {
 
 export const WithAlternativeBackground: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-        <Story />
+        <FounderStory />
       </div>
     ),
   ],
@@ -94,7 +94,7 @@ export const WithAlternativeBackground: Story = {
 
 export const CompactVersion: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -151,7 +151,7 @@ export const CompactVersion: Story = {
 
 export const WithRealPhoto: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -198,7 +198,7 @@ export const WithRealPhoto: Story = {
 
 export const MinimalVersion: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="bg-gray-50 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Built by Someone Who Gets It</h2>

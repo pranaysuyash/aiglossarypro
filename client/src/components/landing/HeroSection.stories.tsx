@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import { setMockCountryPricing } from '@/hooks/__mocks__/useCountryPricing';
 import { posthogExperiments } from '@/services/posthogExperiments';
 import { HeroSection } from './HeroSection';
@@ -17,12 +18,12 @@ const createMockPricing = (overrides = {}) => ({
   ...overrides,
 });
 
-const HeroSectionDecorator = (Story: React.ComponentType, context: any) => {
+const HeroSectionDecorator = (_: React.ComponentType, context: any) => {
   const { mockPricing } = context.parameters;
 
   setMockCountryPricing(mockPricing || createMockPricing());
 
-  return <Story />;
+  return <HeroSection />;
 };
 
 const meta: Meta<typeof HeroSection> = {
@@ -112,9 +113,9 @@ export const TabletView: Story = {
 
 export const HighContrastMode: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div style={{ filter: 'contrast(150%) brightness(110%)' }}>
-        <Story />
+        <HeroSection />
       </div>
     ),
   ],
@@ -498,14 +499,14 @@ export const ComparisonVariants: Story = {
 
 // PostHog Experiment Stories
 const mockExperimentDecorator =
-  (variant: 'control' | 'sample' | 'explore') => (Story: React.ComponentType) => {
+  (variant: 'control' | 'sample' | 'explore') => (_: React.ComponentType) => {
     // Mock the PostHog experiment hook
     React.useEffect(() => {
       // Mock the experiment service
       (posthogExperiments as any).getExperimentVariant = () => variant;
     }, []);
 
-    return <Story />;
+    return <HeroSection />;
   };
 
 export const PostHogExperiment_Control: Story = {

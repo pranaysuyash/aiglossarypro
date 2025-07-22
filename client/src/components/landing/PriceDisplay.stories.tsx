@@ -438,10 +438,10 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    Story => (
+    _ => (
       <div className="p-6 bg-gray-900 rounded-lg shadow-sm dark">
         <div className="text-white">
-          <Story />
+          <PriceDisplay showComparison={true} showSavings={true} size="lg" />
         </div>
       </div>
     ),

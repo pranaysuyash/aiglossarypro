@@ -1,5 +1,7 @@
-import { QueryClient, type QueryFunction } from '@tanstack/react-query';
 import { isInLogoutState } from '@/lib/authPersistence';
+import { MemoryMonitor } from '@/lib/MemoryMonitor';
+import { IndexedDBManager } from '@/lib/IndexedDBManager';
+import { QueryClient, type QueryFunction } from '@tanstack/react-query';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -38,7 +40,7 @@ export const getQueryFn: <T>(options: { on401: UnauthorizedBehavior }) => QueryF
         console.log('🚫 Blocking auth query during logout state');
         return null;
       }
-      
+
       // Prepare headers
       const headers: Record<string, string> = {};
 
@@ -74,12 +76,14 @@ export const getQueryFn: <T>(options: { on401: UnauthorizedBehavior }) => QueryF
       return jsonResponse;
     };
 
+// Memory-optimized query client with automatic cleanup
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: 'returnNull' }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
       staleTime: 300000, // 5 minutes
       gcTime: 600000, // 10 minutes (formerly cacheTime)
       retry: (failureCount, error) => {
@@ -111,3 +115,135 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Memory optimization: Set cache size limits
+const MAX_CACHE_SIZE = 50; // Maximum number of queries to cache
+const MEMORY_CHECK_INTERVAL = 30000; // Check memory every 30 seconds
+
+// Register cleanup function with memory monitor (only in browser environment)
+if (typeof window !== 'undefined') {
+  try {
+    MemoryMonitor.registerCleanupFunction(() => {
+      console.log('🧹 Emergency query cache cleanup triggered');
+
+      // Get all queries and sort by last access time
+      const queryCache = queryClient.getQueryCache();
+      const queries = queryCache.getAll();
+
+      // Remove oldest queries if cache is too large
+      if (queries.length > MAX_CACHE_SIZE) {
+        const sortedQueries = queries
+          .sort((a, b) => (a.state.dataUpdatedAt || 0) - (b.state.dataUpdatedAt || 0))
+          .slice(0, queries.length - MAX_CACHE_SIZE);
+
+        sortedQueries.forEach(query => {
+          queryCache.remove(query);
+        });
+
+        console.log(`🧹 Removed ${sortedQueries.length} old queries from cache`);
+      }
+
+      // Force garbage collection of query cache
+      queryClient.getQueryCache().clear();
+      queryClient.getMutationCache().clear();
+    });
+  } catch (error) {
+    console.warn('Failed to register memory monitor cleanup:', error);
+  }
+}
+
+// Periodic cache optimization
+let cacheOptimizationInterval: NodeJS.Timeout | null = null;
+
+function startCacheOptimization() {
+  if (cacheOptimizationInterval) {
+    return;
+  }
+
+  cacheOptimizationInterval = setInterval(() => {
+    const queryCache = queryClient.getQueryCache();
+    const queries = queryCache.getAll();
+
+    // Check if cache size exceeds limit
+    if (queries.length > MAX_CACHE_SIZE) {
+      console.log(`🧹 Cache size (${queries.length}) exceeds limit (${MAX_CACHE_SIZE}), cleaning up...`);
+
+      // Remove stale queries first
+      const staleQueries = queries.filter(query => {
+        const staleTime = query.options.staleTime || 0;
+        const dataUpdatedAt = query.state.dataUpdatedAt || 0;
+        return Date.now() - dataUpdatedAt > staleTime;
+      });
+
+      staleQueries.forEach(query => {
+        queryCache.remove(query);
+      });
+
+      // If still too many, remove oldest queries
+      const remainingQueries = queryCache.getAll();
+      if (remainingQueries.length > MAX_CACHE_SIZE) {
+        const sortedQueries = remainingQueries
+          .sort((a, b) => (a.state.dataUpdatedAt || 0) - (b.state.dataUpdatedAt || 0))
+          .slice(0, remainingQueries.length - MAX_CACHE_SIZE);
+
+        sortedQueries.forEach(query => {
+          queryCache.remove(query);
+        });
+      }
+
+      console.log(`🧹 Cache cleanup completed, ${queryCache.getAll().length} queries remaining`);
+    }
+
+    // Check memory usage and trigger GC if needed
+    const memoryStats = MemoryMonitor.getMemoryStats();
+    if (memoryStats.current && memoryStats.current.usedJSHeapSize > 256 * 1024 * 1024) {
+      MemoryMonitor.triggerGarbageCollection();
+    }
+  }, MEMORY_CHECK_INTERVAL);
+}
+
+function stopCacheOptimization() {
+  if (cacheOptimizationInterval) {
+    clearInterval(cacheOptimizationInterval);
+    cacheOptimizationInterval = null;
+  }
+}
+
+// Start cache optimization when module loads (only in browser)
+if (typeof window !== 'undefined') {
+  startCacheOptimization();
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    stopCacheOptimization();
+  });
+}
+
+// Export cache management functions
+export const cacheManager = {
+  startOptimization: startCacheOptimization,
+  stopOptimization: stopCacheOptimization,
+  getCacheSize: () => queryClient.getQueryCache().getAll().length,
+  clearCache: () => {
+    queryClient.getQueryCache().clear();
+    queryClient.getMutationCache().clear();
+  },
+  optimizeCache: () => {
+    const queryCache = queryClient.getQueryCache();
+    const queries = queryCache.getAll();
+
+    if (queries.length > MAX_CACHE_SIZE) {
+      const sortedQueries = queries
+        .sort((a, b) => (a.state.dataUpdatedAt || 0) - (b.state.dataUpdatedAt || 0))
+        .slice(0, queries.length - MAX_CACHE_SIZE);
+
+      sortedQueries.forEach(query => {
+        queryCache.remove(query);
+      });
+
+      return sortedQueries.length;
+    }
+
+    return 0;
+  },
+};

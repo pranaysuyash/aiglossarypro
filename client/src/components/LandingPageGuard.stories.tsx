@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import { posthogExperiments } from '@/services/posthogExperiments';
 import { LandingPageGuard } from './LandingPageGuard';
 
@@ -30,11 +31,11 @@ const mockExperimentVariant = (variant: string) => {
 
 export const ControlVariant: Story = {
   decorators: [
-    Story => {
+    _ => {
       React.useEffect(() => {
         mockExperimentVariant('control');
       }, []);
-      return <Story />;
+      return <LandingPageGuard />;
     },
   ],
   parameters: {
@@ -49,11 +50,11 @@ export const ControlVariant: Story = {
 
 export const MarketingSampleVariant: Story = {
   decorators: [
-    Story => {
+    _ => {
       React.useEffect(() => {
         mockExperimentVariant('marketing_sample');
       }, []);
-      return <Story />;
+      return <LandingPageGuard />;
     },
   ],
   parameters: {

@@ -5,9 +5,7 @@ import { authenticateToken } from '../middleware/adminAuth';
 import { parseId, parseNumericQuery, parsePagination } from '../middleware/inputValidation';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';
-import { log as logger } from '../utils/logger';
-
-import logger from '../utils/logger';
+import { log } from '../utils/logger';
 // Extended request interfaces for parsed middleware data
 interface RequestWithPagination extends Request {
   pagination: {
@@ -71,7 +69,7 @@ export function registerUserRoutes(app: Express): void {
           hasMore: result.hasMore,
         });
       } catch (error) {
-        logger.error('Error fetching user favorites', {
+        log.error('Error fetching user favorites', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -107,7 +105,7 @@ export function registerUserRoutes(app: Express): void {
           data: { isFavorite },
         });
       } catch (error) {
-        logger.error('Error checking favorite status', {
+        log.error('Error checking favorite status', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -143,7 +141,7 @@ export function registerUserRoutes(app: Express): void {
           message: 'Term added to favorites',
         });
       } catch (error) {
-        logger.error('Error adding favorite', {
+        log.error('Error adding favorite', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -171,7 +169,7 @@ export function registerUserRoutes(app: Express): void {
           message: 'Term removed from favorites',
         });
       } catch (error) {
-        logger.error('Error removing favorite', {
+        log.error('Error removing favorite', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -205,7 +203,7 @@ export function registerUserRoutes(app: Express): void {
           hasMore: false,
         });
       } catch (error) {
-        logger.error('Error fetching user progress', {
+        log.error('Error fetching user progress', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -234,7 +232,7 @@ export function registerUserRoutes(app: Express): void {
           data: progress,
         });
       } catch (error) {
-        logger.error('Error fetching term progress', {
+        log.error('Error fetching term progress', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -272,7 +270,7 @@ export function registerUserRoutes(app: Express): void {
           message: 'Progress updated successfully',
         });
       } catch (error) {
-        logger.error('Error updating term progress', {
+        log.error('Error updating term progress', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -300,7 +298,7 @@ export function registerUserRoutes(app: Express): void {
           message: 'Progress removed successfully',
         });
       } catch (error) {
-        logger.error('Error removing term progress', {
+        log.error('Error removing term progress', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -342,7 +340,7 @@ export function registerUserRoutes(app: Express): void {
           hasMore: activity.hasMore,
         });
       } catch (error) {
-        logger.error('Error fetching user activity', {
+        log.error('Error fetching user activity', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -367,7 +365,7 @@ export function registerUserRoutes(app: Express): void {
           data: streak,
         });
       } catch (error) {
-        logger.error('Error fetching user streak', {
+        log.error('Error fetching user streak', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -393,7 +391,7 @@ export function registerUserRoutes(app: Express): void {
           data: stats,
         });
       } catch (error) {
-        logger.error('Error fetching user stats', {
+        log.error('Error fetching user stats', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -506,7 +504,7 @@ export function registerUserRoutes(app: Express): void {
         data: status,
       });
     } catch (error) {
-      logger.error('Error fetching access status', {
+      log.error('Error fetching access status', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -599,7 +597,7 @@ export function registerUserRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error fetching daily usage:', error);
+      log.error('Error fetching daily usage:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch daily usage statistics',
@@ -651,7 +649,7 @@ export function registerUserRoutes(app: Express): void {
           },
         });
       } catch (error) {
-        logger.error('Error checking term access', {
+        log.error('Error checking term access', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
@@ -716,7 +714,7 @@ export function registerUserRoutes(app: Express): void {
           data: enhancedSettings,
         });
       } catch (error) {
-        logger.error('Error fetching enhanced settings', {
+        log.error('Error fetching enhanced settings', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });

@@ -103,8 +103,11 @@ export function registerDailyTermsRoutes(app: Express): void {
       }
 
       // Clear cache if refresh is requested
-      if (refresh === 'true' || refresh === true) {
-        await dailyTermsService.clearCache?.(format(targetDate, 'yyyy-MM-dd'));
+      if (refresh === 'true') {
+        // Check if clearCache method exists
+        if ('clearCache' in dailyTermsService && typeof dailyTermsService.clearCache === 'function') {
+          await dailyTermsService.clearCache(format(targetDate, 'yyyy-MM-dd'));
+        }
       }
 
       const dailyTermsResponse = await dailyTermsService.getTodaysTerms(targetDate);
@@ -576,7 +579,7 @@ export function registerDailyTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get('/api/daily-terms/config', async (req: Request, res: Response) => {
+  app.get('/api/daily-terms/config', async (_req: Request, res: Response) => {
     try {
       // Get current configuration (this would typically be stored in database)
       const config = {
@@ -626,7 +629,7 @@ export function registerDailyTermsRoutes(app: Express): void {
       // Validate difficulty distribution sums to 1
       if (newConfig.difficultyDistribution) {
         const sum = Object.values(newConfig.difficultyDistribution).reduce(
-          (a: any, b: any) => a + b,
+          (a: number, b: unknown) => a + (typeof b === 'number' ? b : 0),
           0
         );
         if (Math.abs(sum - 1) > 0.01) {

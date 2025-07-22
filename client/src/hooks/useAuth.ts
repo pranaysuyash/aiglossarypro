@@ -1,115 +1,221 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { clearAllAuthData, isInLogoutState, markLogoutState } from '@/lib/authPersistence';
+import { authQueryDeduplicator } from '@/lib/authQueryDeduplicator';
+import { authQueryKey, getAuthQueryOptions, recordAuthQuery } from '@/lib/authQueryOptions';
+import { AuthStateManager } from '@/lib/AuthStateManager';
 import { signOutUser } from '@/lib/firebase';
-import { getQueryFn } from '@/lib/queryClient';
+import IndexedDBManager from '@/lib/IndexedDBManager';
+import { MemoryMonitor } from '@/lib/MemoryMonitor';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'wouter';
 import type { IUser } from '../../../shared/types';
-import { useEffect } from 'react';
-import { clearAllAuthData, setupAuthStateMonitor, markLogoutState, isInLogoutState } from '@/lib/authPersistence';
 
-// Create a broadcast channel for cross-tab communication
-const authChannel = typeof BroadcastChannel !== 'undefined' 
-  ? new BroadcastChannel('auth_state') 
-  : null;
+// Create a broadcast channel for cross-tab communication with proper cleanup
+let authChannel: BroadcastChannel | null = null;
+
+function getAuthChannel(): BroadcastChannel | null {
+  if (typeof BroadcastChannel === 'undefined') {
+    return null;
+  }
+
+  if (!authChannel) {
+    authChannel = new BroadcastChannel('auth_state');
+  }
+
+  return authChannel;
+}
+
+function closeAuthChannel(): void {
+  if (authChannel) {
+    authChannel.close();
+    authChannel = null;
+  }
+}
 
 export function useAuth() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
+  const authStateManager = AuthStateManager.getInstance();
+  const [authState, setAuthState] = useState(authStateManager.getState());
+
+  // Use refs to track cleanup functions and prevent memory leaks
+  const cleanupFunctionsRef = useRef<Set<() => void>>(new Set());
+  const isUnmountedRef = useRef(false);
+
+  // Subscribe to auth state changes from AuthStateManager with proper cleanup
+  useEffect(() => {
+    const unsubscribe = authStateManager.subscribe((newState) => {
+      if (isUnmountedRef.current) return; // Prevent state updates after unmount
+
+      setAuthState(newState);
+      // Update React Query cache when auth state changes (single source of truth)
+      queryClient.setQueryData(authQueryKey, newState.user);
+    });
+
+    cleanupFunctionsRef.current.add(unsubscribe);
+    return unsubscribe;
+  }, [queryClient]);
+
+  // Custom query function with deduplication, circuit breaker and rate limiting
+  const authQueryFn = useCallback(async () => {
+    return authQueryDeduplicator.executeQuery(async () => {
+      // Record the query attempt
+      recordAuthQuery();
+
+      if (!authStateManager.canMakeAuthRequest()) {
+        // Return cached state if circuit breaker is open
+        return authState.user;
+      }
+
+      authStateManager.setLoading();
+
+      try {
+        const response = await fetch('/api/auth/user', {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken') || ''}`,
+          },
+        });
+
+        if (response.status === 401) {
+          authStateManager.recordSuccess(null);
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(`${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const user = data.success && data.data ? data.data : data;
+        authStateManager.recordSuccess(user);
+        return user;
+      } catch (error) {
+        authStateManager.recordFailure(error as Error);
+        throw error;
+      }
+    });
+  }, [authState.user]);
 
   const {
     data: user,
-    isLoading,
+    isLoading: queryLoading,
     error,
     refetch,
   } = useQuery<IUser>({
-    queryKey: ['/api/auth/user'],
-    queryFn: getQueryFn({ on401: 'returnNull' }),
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false, // Don't refetch if data exists
-    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    ...getAuthQueryOptions(),
+    queryFn: authQueryFn,
+    enabled: !isInLogoutState() && getAuthQueryOptions().enabled,
+    refetchInterval: false as const, // Fix TypeScript error
   });
 
-  // Listen for auth changes from other tabs
+  // Use auth state manager's loading state
+  const isLoading = authState.isLoading || queryLoading;
+
+  // Simplified cross-tab communication to prevent loops with proper cleanup
   useEffect(() => {
     const handleAuthChange = (event: MessageEvent) => {
+      if (isUnmountedRef.current) return; // Prevent actions after unmount
+
       if (event.data?.type === 'logout') {
         console.log('🔄 Logout detected from another tab');
-        // Clear local state immediately
-        clearAllAuthData();
-        queryClient.setQueryData(['/api/auth/user'], null);
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-        queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
+        authStateManager.reset();
         navigate('/login');
-      } else if (event.data?.type === 'login') {
+      } else if (event.data?.type === 'login' && event.data?.user) {
         console.log('🔄 Login detected from another tab');
-        // Update local state with the new user
-        queryClient.setQueryData(['/api/auth/user'], event.data.user);
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        authStateManager.updateFromStorage(event.data.user);
       }
     };
 
+    const handleStorageChange = (event: StorageEvent) => {
+      if (isUnmountedRef.current) return; // Prevent actions after unmount
+
+      if (event.key === 'authToken' && event.newValue === null) {
+        console.log('🔄 Auth token removed from localStorage');
+        authStateManager.reset();
+        navigate('/login');
+      }
+    };
+
+    // Get or create broadcast channel
+    const channel = getAuthChannel();
+
     // Listen for broadcast channel messages
-    if (authChannel) {
-      authChannel.addEventListener('message', handleAuthChange);
+    if (channel) {
+      channel.addEventListener('message', handleAuthChange);
+      cleanupFunctionsRef.current.add(() => {
+        channel.removeEventListener('message', handleAuthChange);
+      });
     }
 
     // Listen for storage events (fallback for older browsers)
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'authToken' && event.newValue === null) {
-        console.log('🔄 Auth token removed from localStorage');
-        clearAllAuthData();
-        queryClient.setQueryData(['/api/auth/user'], null);
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-        queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
-        navigate('/login');
-      }
-    };
-
     window.addEventListener('storage', handleStorageChange);
-
-    // Setup aggressive auth state monitor
-    const cleanup = setupAuthStateMonitor(() => {
-      console.log('🔍 Auth state monitor triggered logout');
-      queryClient.setQueryData(['/api/auth/user'], null);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      navigate('/login');
+    cleanupFunctionsRef.current.add(() => {
+      window.removeEventListener('storage', handleStorageChange);
     });
 
     return () => {
-      if (authChannel) {
-        authChannel.removeEventListener('message', handleAuthChange);
-      }
-      window.removeEventListener('storage', handleStorageChange);
-      cleanup();
+      // Cleanup all event listeners
+      cleanupFunctionsRef.current.forEach(cleanup => cleanup());
+      cleanupFunctionsRef.current.clear();
     };
-  }, [queryClient, navigate]);
+  }, [navigate]);
+
+  // Register cleanup with memory monitor and handle component unmount
+  useEffect(() => {
+    const memoryCleanup = MemoryMonitor.registerCleanupFunction(async () => {
+      console.log('🧹 Auth hook memory cleanup triggered');
+
+      // Clear auth state if memory is critical
+      if (!MemoryMonitor.isMemoryUsageSafe()) {
+        authStateManager.reset();
+        queryClient.removeQueries({ queryKey: authQueryKey });
+
+        // Emergency IndexedDB cleanup
+        try {
+          await IndexedDBManager.emergencyCleanup();
+        } catch (error) {
+          console.error('Emergency IndexedDB cleanup failed:', error);
+        }
+      }
+    });
+
+    cleanupFunctionsRef.current.add(memoryCleanup);
+
+    return () => {
+      isUnmountedRef.current = true;
+
+      // Run all cleanup functions
+      cleanupFunctionsRef.current.forEach(cleanup => {
+        try {
+          cleanup();
+        } catch (error) {
+          console.error('Error during auth hook cleanup:', error);
+        }
+      });
+      cleanupFunctionsRef.current.clear();
+
+      // Close broadcast channel if this is the last useAuth instance
+      closeAuthChannel();
+
+      memoryCleanup();
+    };
+  }, [queryClient]);
 
   const logout = async () => {
     try {
       console.log('🚪 Starting logout process...');
-      
-      // Step 1: Mark logout state
+
+      // Step 1: Mark logout state to prevent new auth queries
       markLogoutState();
-      
-      // Step 2: Immediately clear query cache and set user to null
-      queryClient.setQueryData(['/api/auth/user'], null);
-      console.log('✅ Query cache cleared');
-      
-      // Step 3: Use aggressive auth cleanup
+
+      // Step 2: Reset auth state manager and deduplicator
+      authStateManager.reset();
+      authQueryDeduplicator.clear();
+
+      // Step 3: Clear all auth data
       clearAllAuthData();
       console.log('✅ All auth data cleared');
-
-      // Step 3: Clear all cookies (including httpOnly ones via backend)
-      document.cookie.split(';').forEach((c) => {
-        const eqPos = c.indexOf('=');
-        const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
-        if (name.includes('auth') || name.includes('token') || name.includes('firebase')) {
-          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
-        }
-      });
-      console.log('✅ Client cookies cleared');
 
       // Step 4: Sign out from Firebase
       try {
@@ -125,87 +231,61 @@ export function useAuth() {
           method: 'POST',
           credentials: 'include',
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           console.log('✅ Backend logout completed', data);
-          
+
           // Handle client actions from server response
           if (data.clientActions?.clearIndexedDB) {
             for (const dbName of data.clientActions.clearIndexedDB) {
               try {
-                await indexedDB.deleteDatabase(dbName);
+                await IndexedDBManager.deleteDatabase(dbName);
                 console.log(`✅ Deleted IndexedDB: ${dbName}`);
               } catch (e) {
                 console.warn(`⚠️ Failed to delete IndexedDB ${dbName}:`, e);
               }
             }
           }
+
+          // Additional IndexedDB cleanup for auth-related databases
+          try {
+            await IndexedDBManager.cleanupDatabases({
+              keepDatabases: [], // Don't keep any databases during logout
+              maxSize: 0, // Delete all databases
+            });
+            console.log('✅ IndexedDB cleanup completed');
+          } catch (e) {
+            console.warn('⚠️ IndexedDB cleanup error:', e);
+          }
         }
       } catch (backendError) {
         console.warn('⚠️ Backend logout error (continuing anyway):', backendError);
       }
-      
-      // Step 5.5: Clear all Firebase-related IndexedDB databases
-      try {
-        const databases = await indexedDB.databases();
-        for (const db of databases) {
-          if (db.name && (db.name.includes('firebase') || db.name.includes('firebaseLocalStorageDb'))) {
-            await indexedDB.deleteDatabase(db.name);
-            console.log(`✅ Deleted Firebase IndexedDB: ${db.name}`);
-          }
-        }
-      } catch (e) {
-        console.warn('⚠️ Failed to clear Firebase IndexedDB:', e);
-      }
 
-      // Step 6: Clear ALL queries and invalidate auth
+      // Step 6: Clear React Query cache (single operation, no invalidation)
       queryClient.clear();
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
-      console.log('✅ All queries cleared and invalidated');
-      
+      console.log('✅ All queries cleared');
+
       // Step 7: Broadcast logout to other tabs
-      if (authChannel) {
-        authChannel.postMessage({ type: 'logout' });
+      const channel = getAuthChannel();
+      if (channel) {
+        channel.postMessage({ type: 'logout' });
         console.log('📡 Broadcasted logout to other tabs');
       }
-      
-      // Step 8: Add a small delay and force a hard reset of auth state
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Force set to null again to ensure UI updates
-      queryClient.setQueryData(['/api/auth/user'], null);
-      
-      // Step 9: Force navigation to login page to prevent any auto-redirect
+
+      // Step 8: Navigate to login page
       navigate('/login');
-      
-      // Add a small delay before reload to ensure navigation completes
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-      
+
       console.log('✅ Logout process completed successfully');
-      
+
     } catch (error) {
       console.error('❌ Logout error:', error);
-      // Even if logout fails, aggressively clear local state
-      queryClient.setQueryData(['/api/auth/user'], null);
-      localStorage.clear();
-      sessionStorage.clear();
+      // Emergency cleanup - reset auth state manager
+      authStateManager.reset();
+      clearAllAuthData();
       queryClient.clear();
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      queryClient.removeQueries({ queryKey: ['/api/auth/user'] });
-      
-      // Clear all auth-related cookies
-      document.cookie.split(';').forEach((c) => {
-        const eqPos = c.indexOf('=');
-        const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
-        if (name.includes('auth') || name.includes('token') || name.includes('firebase')) {
-          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-        }
-      });
-      
+      navigate('/login');
       console.log('✅ Emergency cleanup completed');
     }
   };

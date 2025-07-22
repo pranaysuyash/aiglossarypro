@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { AISemanticSearch } from '../AISemanticSearch';
 import { type DynamicFilter, DynamicFilterPanel } from './DynamicFilterPanel';
 import { RelationshipGraph } from './RelationshipGraph';

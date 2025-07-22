@@ -14,9 +14,9 @@ const meta: Meta<typeof LandingHeader> = {
     },
   },
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gray-50">
-        <Story />
+        <LandingHeader />
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-4">Page Content</h2>
           <p className="text-gray-600 mb-4">
@@ -105,9 +105,9 @@ export const Desktop: Story = {
 
 export const WithScrollBehavior: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-[200vh] bg-gray-50">
-        <Story />
+        <LandingHeader />
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-4">Scroll to test sticky behavior</h2>
           <p className="text-gray-600 mb-4">
@@ -141,7 +141,7 @@ export const WithScrollBehavior: Story = {
 
 export const WithInternationalPricing: Story = {
   decorators: [
-    Story => {
+    _ => {
       // Mock different pricing for this story
       const mockInternationalPricing = () => ({
         localPrice: 99,
@@ -153,7 +153,7 @@ export const WithInternationalPricing: Story = {
 
       // Temporarily override the hook
 
-      return <Story />;
+      return <LandingHeader />;
     },
   ],
   parameters: {
@@ -168,10 +168,10 @@ export const WithInternationalPricing: Story = {
 
 export const DarkMode: Story = {
   decorators: [
-    Story => (
+    _ => (
       <div className="min-h-screen bg-gray-900">
         <div className="dark">
-          <Story />
+          <LandingHeader />
         </div>
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-4 text-white">Dark Mode Content</h2>

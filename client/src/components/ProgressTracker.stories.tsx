@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 
 // Create a mock query client for stories

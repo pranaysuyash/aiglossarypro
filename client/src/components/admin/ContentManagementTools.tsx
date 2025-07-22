@@ -5,21 +5,29 @@
  * and AI-assisted content generation.
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { 
+  // TODO: Implement import/export features using these icons
   HardDriveDownload, 
   HardDriveUpload, 
-  Play, 
-  Pause, 
-  Users, 
   FileUp, 
-  FileDown, 
-  Server, 
-  Database, 
-  BrainCircuit 
+  FileDown,
+  FileText,
+  RefreshCw,
+  Check,
+  Target,
+  BarChart3,
+  Settings,
+  Zap,
+  AlertCircle,
+  TrendingUp,
+  X,
+  Code,
+  Eye
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/useToast';
 
 interface ContentStats {
   totalTerms: number;
@@ -58,6 +66,11 @@ interface ContentValidationResult {
 
 export function ContentManagementTools() {
   const { toast } = useToast();
+  
+  // State variables
+  const [activeTab, setActiveTab] = useState<'overview' | 'bulk-ops' | 'validation' | 'generation'>('overview');
+  const [bulkOperations, setBulkOperations] = useState<BulkOperation[]>([]);
+  const [validationResults, setValidationResults] = useState<ContentValidationResult[]>([]);
 
   // Fetch content statistics
   const { data: contentStats, isLoading: statsLoading } = useQuery<ContentStats>({

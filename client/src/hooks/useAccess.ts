@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { useAuth } from './useAuth';
 
 export interface AccessStatus {
   hasAccess: boolean;
@@ -28,14 +29,8 @@ export interface AccessCheckResult {
  * Hook to check user's access level and viewing limits
  */
 export function useAccess(): AccessCheckResult {
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: async () => {
-      const response = await api.get('/auth/user');
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  // Use the centralized useAuth hook instead of making duplicate auth queries
+  const { user } = useAuth();
 
   const {
     data: accessStatus,
@@ -61,8 +56,8 @@ export function useAccess(): AccessCheckResult {
       return response.data as AccessStatus;
     },
     enabled: !!user?.id,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: false, // Disable automatic refetching to prevent loops
   });
 
   const hasAccess = accessStatus?.hasAccess || false;

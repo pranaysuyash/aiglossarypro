@@ -1,91 +1,205 @@
-import React, { useEffect, useState } from 'react';
-import katex from 'katex';
-// Remove the static import of KaTeX CSS
-// import 'katex/dist/katex.min.css';
+/**
+ * Math Renderer component with KaTeX support
+ * Lazy loads KaTeX library to reduce bundle size
+ */
+
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+
+// Lazy load KaTeX library and CSS
+const katexLoader = lazy(() =>
+  import('katex').then(module => ({ default: module.default }))
+);
 
 interface MathRendererProps {
-  expression: string;
-  displayMode?: boolean;
-  className?: string;
+  math: string;
+  displayMode?: boolean; // true for block math, false for inline
   throwOnError?: boolean;
+  fontSize?: 'small' | 'normal' | 'large';
+  color?: string;
 }
 
-// Lazy load KaTeX CSS only when needed
-const loadKatexCSS = () => {
-  if (!document.getElementById('katex-css')) {
-    const link = document.createElement('link');
-    link.id = 'katex-css';
-    link.rel = 'stylesheet';
-    link.href = '/assets/vendor-math-CIur2ABi.css'; // Use the already bundled version
-    document.head.appendChild(link);
-  }
-};
+function MathLoading({ displayMode = false }: { displayMode?: boolean }) {
+  return (
+    <div className={`flex items-center justify-center ${displayMode ? 'h-16' : 'h-6'} bg-gray-50 rounded`}>
+      <div className="flex items-center space-x-2">
+        <LoadingSpinner size="sm" />
+        <span className="text-xs text-gray-600">Loading math...</span>
+      </div>
+    </div>
+  );
+}
 
-export const MathRenderer: React.FC<MathRendererProps> = ({
-  expression,
+function KaTeXRenderer({
+  math,
   displayMode = false,
-  className = '',
   throwOnError = false,
-}) => {
-  const [html, setHtml] = useState<string>('');
+  fontSize = 'normal',
+  color
+}: MathRendererProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [cssLoaded, setCssLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load CSS on first render
-    if (!cssLoaded) {
-      loadKatexCSS();
-      setCssLoaded(true);
-    }
+    let mounted = true;
 
-    try {
-      const rendered = katex.renderToString(expression, {
-        displayMode,
-        throwOnError,
-        output: 'html',
-        trust: false,
-        strict: 'ignore',
-      });
-      setHtml(rendered);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to render expression');
-      setHtml('');
-    }
-  }, [expression, displayMode, throwOnError, cssLoaded]);
+    const renderMath = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Dynamically import KaTeX and CSS
+        const [katex] = await Promise.all([
+          import('katex'),
+          import('katex/dist/katex.min.css') // Import CSS
+        ]);
+
+        if (containerRef.current && mounted) {
+          // Clear previous content
+          containerRef.current.innerHTML = '';
+
+          // Render the math
+          katex.default.render(math, containerRef.current, {
+            displayMode,
+            throwOnError,
+            strict: false,
+            trust: false,
+            macros: {
+              "\\RR": "\\mathbb{R}",
+              "\\NN": "\\mathbb{N}",
+              "\\ZZ": "\\mathbb{Z}",
+              "\\QQ": "\\mathbb{Q}",
+              "\\CC": "\\mathbb{C}",
+            }
+          });
+
+          // Apply custom styling
+          if (containerRef.current) {
+            const mathElement = containerRef.current.querySelector('.katex');
+            if (mathElement) {
+              // Apply font size
+              const fontSizeMap = {
+                small: '0.875rem',
+                normal: '1rem',
+                large: '1.25rem'
+              };
+              (mathElement as HTMLElement).style.fontSize = fontSizeMap[fontSize];
+
+              // Apply color
+              if (color) {
+                (mathElement as HTMLElement).style.color = color;
+              }
+            }
+          }
+
+          setIsLoading(false);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to render math');
+          setIsLoading(false);
+        }
+      }
+    };
+
+    renderMath();
+
+    return () => {
+      mounted = false;
+    };
+  }, [math, displayMode, throwOnError, fontSize, color]);
+
+  if (isLoading) {
+    return <MathLoading displayMode={displayMode} />;
+  }
 
   if (error) {
     return (
-      <span className={`math-renderer math-error ${className}`}>
-        <span className="katex-error" title={error}>
-          {expression}
-        </span>
-      </span>
-    );
-  }
-
-  if (!cssLoaded) {
-    return (
-      <span className={`math-renderer loading ${className}`}>
-        {expression}
-      </span>
+      <div className={`p-2 bg-red-50 border border-red-200 rounded ${displayMode ? 'block' : 'inline-block'}`}>
+        <span className="text-xs text-red-600">Math Error: {error}</span>
+        <details className="mt-1">
+          <summary className="cursor-pointer text-xs text-red-700">Show source</summary>
+          <code className="text-xs bg-red-100 p-1 rounded">{math}</code>
+        </details>
+      </div>
     );
   }
 
   return (
-    <span
-      className={`math-renderer ${displayMode ? 'math-display' : 'math-inline'} ${className}`}
-      dangerouslySetInnerHTML={{ __html: html }}
-      role="img"
-      aria-label={`Mathematical expression: ${expression}`}
+    <div
+      ref={containerRef}
+      className={displayMode ? 'math-display my-4' : 'math-inline'}
     />
   );
+}
+
+function SimpleMathFallback({ math, displayMode = false }: { math: string; displayMode?: boolean }) {
+  return (
+    <code className={`bg-gray-100 px-2 py-1 rounded font-mono text-sm ${displayMode ? 'block my-2' : 'inline'}`}>
+      {math}
+    </code>
+  );
+}
+
+export function MathRenderer({
+  math,
+  displayMode = false,
+  throwOnError = false,
+  fontSize = 'normal',
+  color
+}: MathRendererProps) {
+  const [showFallback, setShowFallback] = useState(false);
+
+  if (showFallback) {
+    return <SimpleMathFallback math={math} displayMode={displayMode} />;
+  }
+
+  return (
+    <div className="relative group">
+      <Suspense fallback={<MathLoading displayMode={displayMode} />}>
+        <KaTeXRenderer
+          math={math}
+          displayMode={displayMode}
+          throwOnError={throwOnError}
+          fontSize={fontSize}
+          color={color}
+        />
+      </Suspense>
+
+      {/* Show fallback button on hover */}
+      <button
+        onClick={() => setShowFallback(true)}
+        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-500 hover:text-gray-700 bg-white border rounded px-1"
+        title="Show LaTeX source"
+      >
+        src
+      </button>
+    </div>
+  );
+}
+
+// Inline math component
+export function InlineMath({ children }: { children: string }) {
+  return <MathRenderer math={children} displayMode={false} />;
+}
+
+// Block math component
+export function BlockMath({ children }: { children: string }) {
+  return <MathRenderer math={children} displayMode={true} />;
+}
+
+// Alias for backward compatibility
+export const MathText = MathRenderer;
+
+// Example math expressions for testing
+export const exampleMath = {
+  inline: 'E = mc^2',
+  quadratic: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}',
+  integral: '\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}',
+  matrix: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}',
+  summation: '\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}',
+  limit: '\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1'
 };
 
-// Inline math text component for convenience
-export const MathText: React.FC<{ children: string; className?: string }> = ({ 
-  children, 
-  className 
-}) => {
-  return <MathRenderer expression={children} displayMode={false} className={className} />;
-};
+export default MathRenderer;

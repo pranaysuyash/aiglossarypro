@@ -1,7 +1,8 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
+import { vi } from 'vitest';
 import {
   clearConversionSession,
   getConversionFunnelAnalytics,
@@ -16,14 +17,14 @@ const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
 
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
-    removeItem: jest.fn((key: string) => {
+    removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: jest.fn(() => {
+    clear: vi.fn(() => {
       store = {};
     }),
   };
@@ -79,7 +80,7 @@ Object.defineProperty(document, 'referrer', {
 describe('Conversion Tracking', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getConversionSession', () => {
@@ -338,7 +339,7 @@ describe('Conversion Tracking', () => {
 describe('Conversion Tracking Edge Cases', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('handles localStorage errors gracefully', () => {
@@ -370,7 +371,7 @@ describe('Conversion Tracking Edge Cases', () => {
   });
 
   it('handles network errors when sending to server', () => {
-    global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+    global.fetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     expect(() => {
       trackConversionEvent({

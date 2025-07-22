@@ -10,10 +10,8 @@ import { generateToken } from '../auth/simpleAuth';
 import { createFirebaseUser, verifyFirebaseToken } from '../config/firebase';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { sendWelcomeEmail } from '../utils/email';
-import { log as logger } from '../utils/logger';
-import { blacklistToken, isTokenBlacklisted } from '../utils/tokenBlacklist';
-
 import logger from '../utils/logger';
+import { blacklistToken, isTokenBlacklisted } from '../utils/tokenBlacklist';
 export function registerFirebaseAuthRoutes(app: Express): void {
   /**
    * Exchange Firebase ID token for JWT

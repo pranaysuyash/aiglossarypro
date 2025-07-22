@@ -8,6 +8,7 @@ import {
   Eye,
   Filter,
   Info,
+  Loader2,
   Play,
   RefreshCw,
   Settings,
@@ -44,7 +45,7 @@ import {
   getEssentialColumns,
   searchColumns,
 } from '@/constants/columns';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 
 interface GenerationRequest {
   termId: string;

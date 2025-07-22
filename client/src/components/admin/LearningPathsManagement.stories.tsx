@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import LearningPathsManagement from './LearningPathsManagement';
+import { LearningPathsManagement } from './LearningPathsManagement';
 
 const meta: Meta<typeof LearningPathsManagement> = {
   title: 'Components/LearningPathsManagement',

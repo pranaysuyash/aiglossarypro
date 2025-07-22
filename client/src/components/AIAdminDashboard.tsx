@@ -10,11 +10,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useToast } from '../hooks/use-toast';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Progress } from './ui/progress';
+import { useToast } from '@/hooks/useToast';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 interface AIStatusData {
   status: string;

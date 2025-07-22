@@ -111,20 +111,11 @@ export function setupAuthStateMonitor(onLogout: () => void) {
     }
   });
   
-  // Check periodically for stale auth state
-  const checkInterval = setInterval(() => {
-    const justLoggedOut = sessionStorage.getItem('just_logged_out') === 'true';
-    const hasAuthToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
-    
-    if (justLoggedOut && hasAuthToken) {
-      console.log('⚠️ Detected stale auth state, clearing...');
-      clearAllAuthData();
-      onLogout();
-    }
-  }, 1000);
+  // Disable periodic check to prevent auth loops
+  // Only rely on storage events for cross-tab sync
   
-  // Return cleanup function
-  return () => clearInterval(checkInterval);
+  // Return no-op cleanup function
+  return () => {};
 }
 
 /**

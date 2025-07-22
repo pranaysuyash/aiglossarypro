@@ -1,112 +1,101 @@
 #!/usr/bin/env tsx
 
-/**
- * Debug Login Page - Simple test to understand the login page structure
- */
-
-import chalk from 'chalk';
 import { chromium } from 'playwright';
+import chalk from 'chalk';
 
 async function debugLoginPage() {
-  console.log(chalk.blue('🔍 Debugging Login Page Structure...'));
-
-  const browser = await chromium.launch({
+  const browser = await chromium.launch({ 
     headless: false,
-    devtools: true,
-    slowMo: 1000,
+    slowMo: 500
   });
-
+  
   const page = await browser.newPage();
-
+  
+  // Listen for console messages
+  page.on('console', msg => {
+    const type = msg.type();
+    const text = msg.text();
+    if (type === 'error') {
+      console.log(chalk.red(`[CONSOLE ERROR] ${text}`));
+    } else if (type === 'warning') {
+      console.log(chalk.yellow(`[CONSOLE WARN] ${text}`));
+    }
+  });
+  
+  // Listen for page errors
+  page.on('pageerror', error => {
+    console.log(chalk.red(`[PAGE ERROR] ${error.message}`));
+  });
+  
   try {
-    // Navigate to login
-    console.log(chalk.cyan('📍 Navigating to login page...'));
-    await page.goto('http://localhost:5173/login');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000);
-
+    console.log(chalk.blue('1. Navigating to login page...'));
+    await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle' });
+    
+    console.log(chalk.blue('\n2. Waiting for React to mount...'));
+    await page.waitForTimeout(5000);
+    
+    // Check React DevTools
+    const hasReact = await page.evaluate(() => {
+      return !!(window as any).React || !!(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
+    });
+    console.log('React detected:', hasReact);
+    
+    // Check for #root element
+    const rootElement = await page.$('#root');
+    console.log('Root element found:', !!rootElement);
+    
+    if (rootElement) {
+      const rootContent = await rootElement.evaluate(el => el.innerHTML.substring(0, 200));
+      console.log('Root content preview:', rootContent);
+    }
+    
+    console.log(chalk.blue('\n3. Looking for login form elements...'));
+    
+    // Check for tabs (sign in / register)
+    const tabs = await page.$$('[role="tablist"] button');
+    console.log('Tabs found:', tabs.length);
+    
+    // Check all inputs
+    const allInputs = await page.$$('input');
+    console.log('Total inputs found:', allInputs.length);
+    
+    for (let i = 0; i < allInputs.length; i++) {
+      const input = allInputs[i];
+      const type = await input.getAttribute('type');
+      const id = await input.getAttribute('id');
+      const name = await input.getAttribute('name');
+      const placeholder = await input.getAttribute('placeholder');
+      console.log(`\nInput ${i + 1}:`);
+      console.log('  - Type:', type);
+      console.log('  - ID:', id);
+      console.log('  - Name:', name);
+      console.log('  - Placeholder:', placeholder);
+    }
+    
+    // Try to find email input with JavaScript
+    const emailInputExists = await page.evaluate(() => {
+      const selectors = ['#email', 'input[type="email"]', 'input[id="email"]'];
+      for (const selector of selectors) {
+        const el = document.querySelector(selector);
+        if (el) return { found: true, selector };
+      }
+      return { found: false };
+    });
+    console.log('\nEmail input search result:', emailInputExists);
+    
+    // Check for any error messages
+    const errorElements = await page.$$('.error, .alert, [role="alert"]');
+    console.log('\nError elements found:', errorElements.length);
+    
     // Take screenshot
     await page.screenshot({ path: 'debug-login-page.png', fullPage: true });
-    console.log(chalk.green('📸 Screenshot saved: debug-login-page.png'));
-
-    // Debug: Check what elements are actually on the page
-    console.log(chalk.cyan('📍 Checking page elements...'));
-
-    // Check if we can find tabs
-    const tabs = await page.locator('[role="tab"]').count();
-    console.log(chalk.gray(`Found ${tabs} tabs`));
-
-    // Check for Test Users tab specifically
-    const testUsersTab = await page.locator('text="Test Users"').isVisible();
-    console.log(chalk.gray(`Test Users tab visible: ${testUsersTab}`));
-
-    // Check for Sign In tab
-    const signInTab = await page.locator('text="Sign In"').isVisible();
-    console.log(chalk.gray(`Sign In tab visible: ${signInTab}`));
-
-    // Check for email input
-    const emailInputs = await page.locator('input[type="email"]').count();
-    console.log(chalk.gray(`Email inputs found: ${emailInputs}`));
-
-    // Check for password input
-    const passwordInputs = await page.locator('input[type="password"]').count();
-    console.log(chalk.gray(`Password inputs found: ${passwordInputs}`));
-
-    // Check for submit button
-    const submitButtons = await page.locator('button[type="submit"]').count();
-    console.log(chalk.gray(`Submit buttons found: ${submitButtons}`));
-
-    // Check for OAuth buttons
-    const googleButton = await page.locator('text="Continue with Google"').isVisible();
-    const githubButton = await page.locator('text="Continue with GitHub"').isVisible();
-    console.log(chalk.gray(`Google OAuth button visible: ${googleButton}`));
-    console.log(chalk.gray(`GitHub OAuth button visible: ${githubButton}`));
-
-    // Get page title
-    const title = await page.title();
-    console.log(chalk.gray(`Page title: ${title}`));
-
-    // Get current URL
-    const url = page.url();
-    console.log(chalk.gray(`Current URL: ${url}`));
-
-    // Check for any error messages
-    const errorElements = await page.locator('[role="alert"]').count();
-    console.log(chalk.gray(`Error elements found: ${errorElements}`));
-
-    // If in development mode, try to click Test Users tab
-    if (testUsersTab) {
-      console.log(chalk.cyan('📍 Clicking Test Users tab...'));
-      await page.click('text="Test Users"');
-      await page.waitForTimeout(2000);
-
-      // Check for "Use This Account" buttons
-      const useAccountButtons = await page.locator('text="Use This Account"').count();
-      console.log(chalk.gray(`"Use This Account" buttons found: ${useAccountButtons}`));
-
-      if (useAccountButtons > 0) {
-        console.log(chalk.cyan('📍 Clicking first "Use This Account" button...'));
-        await page.click('text="Use This Account"');
-        await page.waitForTimeout(2000);
-
-        // Check if fields got populated
-        const emailValue = await page.inputValue('input[type="email"]').catch(() => '');
-        const passwordValue = await page.inputValue('input[type="password"]').catch(() => '');
-
-        console.log(chalk.gray(`Email field value: ${emailValue}`));
-        console.log(chalk.gray(`Password field filled: ${passwordValue ? 'Yes' : 'No'}`));
-      }
-    }
-
-    // Keep browser open for manual inspection
-    console.log(chalk.blue('🔍 Browser will remain open for manual inspection...'));
-    console.log(chalk.gray('Press Ctrl+C to close'));
-
-    // Wait indefinitely
-    await new Promise(() => {});
+    console.log(chalk.green('\n✓ Screenshot saved: debug-login-page.png'));
+    
   } catch (error) {
-    console.error(chalk.red('❌ Error:'), error);
+    console.error(chalk.red('Error:'), error);
   } finally {
+    console.log(chalk.yellow('\nKeeping browser open for inspection...'));
+    await page.waitForTimeout(30000);
     await browser.close();
   }
 }

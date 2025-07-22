@@ -2,12 +2,10 @@ import { ArrowRight, Clock, Shield, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
-import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useABTestTracking } from '@/services/abTestingService';
 import { trackCTAClick } from '@/types/analytics';
 
 export function FinalCTA() {
-  const _pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();
   const { trackConversion } = useABTestTracking(currentVariant);
 

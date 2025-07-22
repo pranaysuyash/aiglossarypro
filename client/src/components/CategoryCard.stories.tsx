@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import CategoryCard from './CategoryCard';
 
-// Mock function for actions
-const _fn = () => () => {};
+// Mock function for actions (if needed later)
 
 // Mock category data
 const mockCategory = {

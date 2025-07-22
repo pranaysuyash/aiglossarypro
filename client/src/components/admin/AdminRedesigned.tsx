@@ -15,7 +15,7 @@ import TemplateManagement from '@/components/admin/TemplateManagement';
 import UserManagementDashboard from '@/components/admin/UserManagementDashboard';
 import S3FileBrowser from '@/components/S3FileBrowser';
 import AdminNewsletterDashboard from '@/pages/admin/AdminNewsletterDashboard';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import AdminDashboard from './AdminDashboard';
 import AdminHeader from './AdminHeader';
 // Import new components
@@ -23,7 +23,7 @@ import AdminSidebar, { defaultSidebarSections } from './AdminSidebar';
 import CodeExamplesManagement from './CodeExamplesManagement';
 import ContentManagementTools from './ContentManagementTools';
 import ContentOverview from './ContentOverview';
-import LearningPathsManagement from './LearningPathsManagement';
+import { LearningPathsManagement } from './LearningPathsManagement';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 
 export default function AdminRedesigned() {

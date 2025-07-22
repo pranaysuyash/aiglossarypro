@@ -16,7 +16,8 @@ import {
   Users,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 
 interface LearningPath {
   id: string;
@@ -56,11 +57,13 @@ interface LearningPathsManagementProps {
   onPathSelect?: (path: LearningPath) => void;
 }
 
-export function LearningPathsManagement() {
+export function LearningPathsManagement({ onPathSelect }: LearningPathsManagementProps = {}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // State for modals and forms
+  // TODO: Implement create and edit modal components
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
@@ -68,8 +71,9 @@ export function LearningPathsManagement() {
 
   // State for filters and search
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
   // Build query parameters
   const queryParams = new URLSearchParams();
@@ -248,7 +252,7 @@ export function LearningPathsManagement() {
             Analytics
           </button>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => setIsCreateModalOpen(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
           >
             <Plus className="w-4 h-4 mr-2" />

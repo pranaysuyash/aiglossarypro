@@ -31,8 +31,9 @@ export function useDailyUsage() {
       return result.data;
     },
     enabled: !!user, // Only run if user is authenticated
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-    refetchOnWindowFocus: true,
+    refetchInterval: false, // Disable automatic refetching to prevent loops
+    refetchOnWindowFocus: false, // Disable window focus refetching
+    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
   });
 
   const shouldShowWarning = data && !data.isInGracePeriod && data.percentageUsed >= 80;

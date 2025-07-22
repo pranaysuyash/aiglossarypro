@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import express, { type Express } from 'express';
 import { nanoid } from 'nanoid';
 import { createLogger, createServer as createViteServer } from 'vite';
-import viteConfig from '../scripts/vite.config.js';
+import viteConfig from '../scripts/vite.config';
 import { log as logger } from './utils/logger';
 
 // Get current directory in a way that works with both CommonJS and ES modules

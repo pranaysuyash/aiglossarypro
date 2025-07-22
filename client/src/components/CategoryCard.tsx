@@ -76,12 +76,12 @@ const CategoryCard = memo(
     );
 
     // Memoize click handler
-    const _handleClick = useCallback(() => {
+    const handleClick = useCallback(() => {
       window.location.href = `/category/${category.id}`;
     }, [category.id]);
 
     return (
-      <Card className="h-full transition-all duration-200 hover:shadow-lg border border-gray-100 dark:border-gray-800 group">
+      <Card className="h-full transition-all duration-200 hover:shadow-lg border border-gray-100 dark:border-gray-800 group cursor-pointer" onClick={handleClick}>
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-start space-x-3 mb-4">
             <div

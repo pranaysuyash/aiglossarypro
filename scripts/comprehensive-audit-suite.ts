@@ -114,13 +114,13 @@ class ComprehensiveAuditSuite {
         default:
           throw new Error(`Unknown pillar: ${pillarName}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       return {
         pillar: pillarName,
         status: 'failed',
         duration: Date.now() - startTime,
         summary: { total: 0, passed: 0, failed: 1, warnings: 0 },
-        details: [{ error: error.message }],
+        details: [{ error: error.message || 'Unknown error' }],
       };
     }
   }
@@ -176,9 +176,9 @@ class ComprehensiveAuditSuite {
             `    ✓ Loaded comprehensive audit results: ${comprehensiveResults.total} tests`
           );
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log(
-          `    Warning: Could not read comprehensive audit JSON report: ${error.message}`
+          `    Warning: Could not read comprehensive audit JSON report: ${error.message || 'Unknown error'}`
         );
       }
 
@@ -208,13 +208,13 @@ class ComprehensiveAuditSuite {
         ],
         reportPath: path.join(reportsDir, 'visual-audit-report.html'),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         pillar: 'visual',
         status: 'failed',
         duration: Date.now() - startTime,
         summary: { total: 0, passed: 0, failed: 1, warnings: 0 },
-        details: [{ error: error.message }],
+        details: [{ error: error.message || 'Unknown error' }],
       };
     }
   }
@@ -246,13 +246,13 @@ class ComprehensiveAuditSuite {
         details: parsedResult.details || [],
         reportPath: path.join(reportsDir, 'accessibility-audit-report.html'),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         pillar: 'accessibility',
         status: 'failed',
         duration: Date.now() - startTime,
         summary: { total: 0, passed: 0, failed: 1, warnings: 0 },
-        details: [{ error: error.message }],
+        details: [{ error: error.message || 'Unknown error' }],
       };
     }
   }
@@ -295,13 +295,13 @@ class ComprehensiveAuditSuite {
         ],
         reportPath: path.join(reportsDir, 'performance-audit-report.html'),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         pillar: 'performance',
         status: 'failed',
         duration: Date.now() - startTime,
         summary: { total: 0, passed: 0, failed: 1, warnings: 0 },
-        details: [{ error: error.message }],
+        details: [{ error: error.message || 'Unknown error' }],
       };
     }
   }
@@ -353,13 +353,13 @@ class ComprehensiveAuditSuite {
         details: results,
         reportPath: path.join(reportsDir, 'functional-audit-report.html'),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         pillar: 'functional',
         status: 'failed',
         duration: Date.now() - startTime,
         summary: { total: 0, passed: 0, failed: 1, warnings: 0 },
-        details: [{ error: error.message }],
+        details: [{ error: error.message || 'Unknown error' }],
       };
     }
   }
@@ -376,7 +376,7 @@ class ComprehensiveAuditSuite {
 
       // Run ESLint
       console.log('    🔍 ESLint analysis...');
-      const eslintResult = await this.executeCommand(
+      await this.executeCommand(
         `npx eslint . --ext .js,.jsx,.ts,.tsx --format json --output-file ${eslintReportPath}`,
         { allowFailure: true }
       );
@@ -398,8 +398,8 @@ class ComprehensiveAuditSuite {
               ? biomeResult.substring(0, maxSize) + '...[truncated]'
               : biomeResult;
           fs.writeFileSync(biomeReportPath, truncatedResult);
-        } catch (error) {
-          console.log('Failed to write Biome results:', error.message);
+        } catch (error: any) {
+          console.log('Failed to write Biome results:', error.message || 'Unknown error');
         }
       }
 
@@ -410,14 +410,19 @@ class ComprehensiveAuditSuite {
       });
 
       // Parse ESLint results
-      let eslintData = { total: 0, errors: 0, warnings: 0, details: [] };
+      let eslintData: { total: number; errors: number; warnings: number; details: any[] } = { 
+        total: 0, 
+        errors: 0, 
+        warnings: 0, 
+        details: [] 
+      };
 
       if (fs.existsSync(eslintReportPath)) {
         try {
           const eslintReport = JSON.parse(fs.readFileSync(eslintReportPath, 'utf8'));
           eslintData = this.parseEslintResults(eslintReport);
-        } catch (error) {
-          console.log('Failed to parse ESLint results:', error.message);
+        } catch (error: any) {
+          console.log('Failed to parse ESLint results:', error.message || 'Unknown error');
         }
       }
 
@@ -434,14 +439,14 @@ class ComprehensiveAuditSuite {
             const biomeReport = JSON.parse(biomeContent);
             biomeData = this.parseBiomeResults(biomeReport);
           }
-        } catch (error) {
-          console.log('Failed to parse Biome results:', error.message);
+        } catch (error: any) {
+          console.log('Failed to parse Biome results:', error.message || 'Unknown error');
           // Try alternative text parsing as fallback
           try {
             const biomeContent = fs.readFileSync(biomeReportPath, 'utf8');
             biomeData = this.parseBiomeOutputText(biomeContent);
-          } catch (fallbackError) {
-            console.log('Fallback Biome parsing also failed:', fallbackError.message);
+          } catch (fallbackError: any) {
+            console.log('Fallback Biome parsing also failed:', fallbackError.message || 'Unknown error');
           }
         }
       }
@@ -470,13 +475,13 @@ class ComprehensiveAuditSuite {
         ],
         reportPath: path.join(reportsDir, 'code-quality-audit-report.html'),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         pillar: 'code-quality',
         status: 'failed',
         duration: Date.now() - startTime,
         summary: { total: 0, passed: 0, failed: 1, warnings: 0 },
-        details: [{ error: error.message }],
+        details: [{ error: error.message || 'Unknown error' }],
       };
     }
   }
@@ -495,7 +500,7 @@ class ComprehensiveAuditSuite {
         maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
       return result;
-    } catch (error) {
+    } catch (error: any) {
       if (allowFailure) {
         return error.stdout || error.stderr || '';
       }
@@ -579,16 +584,6 @@ class ComprehensiveAuditSuite {
         failed = 0,
         warnings = 0;
 
-      // Look for summary patterns in comprehensive audit output
-      const summaryPatterns = [
-        /(\d+)\s+tests?\s+passed/i,
-        /(\d+)\s+tests?\s+failed/i,
-        /(\d+)\s+warnings?/i,
-        /(\d+)\s+total\s+tests?/i,
-        /(\d+)\s+screenshots?\s+captured/i,
-        /(\d+)\s+pages?\s+tested/i,
-      ];
-
       for (const line of lines) {
         const passedMatch = line.match(/(\d+)\s+(?:tests?|components?|pages?)\s+passed/i);
         const failedMatch = line.match(/(\d+)\s+(?:tests?|components?|pages?)\s+failed/i);
@@ -654,8 +649,8 @@ class ComprehensiveAuditSuite {
 
     if (biomeReport.diagnostics) {
       total = biomeReport.diagnostics.length;
-      errors = biomeReport.diagnostics.filter(d => d.severity === 'error').length;
-      warnings = biomeReport.diagnostics.filter(d => d.severity === 'warning').length;
+      errors = biomeReport.diagnostics.filter((d: any) => d.severity === 'error').length;
+      warnings = biomeReport.diagnostics.filter((d: any) => d.severity === 'warning').length;
     }
 
     return { total, errors, warnings };
@@ -826,7 +821,7 @@ class ComprehensiveAuditSuite {
   }
 
   private getPillarTitle(pillar: string): string {
-    const titles = {
+    const titles: Record<string, string> = {
       visual: '🎨 Visual & Interaction Correctness',
       accessibility: '♿ Accessibility (WCAG 2.1 AA)',
       performance: '⚡ Performance Analysis',
@@ -886,8 +881,8 @@ class ComprehensiveAuditSuite {
       }
 
       console.log('✅ Development server is ready for testing at http://localhost:5173');
-    } catch (error) {
-      console.error('Failed to start development server:', error.message);
+    } catch (error: any) {
+      console.error('Failed to start development server:', error.message || 'Unknown error');
       await this.stopDevelopmentServer();
       throw error;
     }
@@ -910,8 +905,8 @@ class ComprehensiveAuditSuite {
         }
 
         console.log('✅ Development server stopped');
-      } catch (error) {
-        console.error('Error stopping development server:', error.message);
+      } catch (error: any) {
+        console.error('Error stopping development server:', error.message || 'Unknown error');
       }
 
       this.serverProcess = null;

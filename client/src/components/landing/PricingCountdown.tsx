@@ -63,7 +63,7 @@ export function PricingCountdown({ className = '', compact = false }: PricingCou
     );
 
     return () => clearInterval(interval);
-  }, [fetchStatus]);
+  }, []); // Empty dependency array to prevent re-running on every render
 
   // Handle loading state
   if (loading) {

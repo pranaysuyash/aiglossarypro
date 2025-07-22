@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm';
 import { Redis } from 'ioredis';
-import { categories, codeExamples, terms, userProgress } from '../shared/schema.js';
+import { categories, codeExamples, terms, userProgress } from '../shared/schema';
 import { db } from './db';
 
 import logger from './utils/logger';

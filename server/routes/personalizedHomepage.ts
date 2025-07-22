@@ -15,9 +15,7 @@ import {
   type UserProfile,
 } from '../services/userProfilingService';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
-import { log as logger } from '../utils/logger';
-
-import logger from '../utils/logger';
+import { log } from '../utils/logger';
 interface PersonalizedHomepageData {
   userProfile: UserProfile;
   recommendations: PersonalizedRecommendation[];
@@ -93,7 +91,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'Personalized homepage data generated successfully',
         });
       } catch (error) {
-        logger.error('Get personalized homepage error', {
+        log.error('Get personalized homepage error', {
           error: error instanceof Error ? error.message : String(error),
           userId: (req as any).user?.id,
         });
@@ -134,7 +132,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
         message: 'User profile retrieved successfully',
       });
     } catch (error) {
-      logger.error('Get user profile error', {
+      log.error('Get user profile error', {
         error: error instanceof Error ? error.message : String(error),
         userId: (req as any).user?.id,
       });
@@ -167,7 +165,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'User profile regenerated successfully',
         });
       } catch (error) {
-        logger.error('Regenerate user profile error', {
+        log.error('Regenerate user profile error', {
           error: error instanceof Error ? error.message : String(error),
           userId: (req as any).user?.id,
         });
@@ -221,7 +219,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           },
         });
       } catch (error) {
-        logger.error('Get personalized recommendations error', {
+        log.error('Get personalized recommendations error', {
           error: error instanceof Error ? error.message : String(error),
           userId: (req as any).user?.id,
         });
@@ -274,7 +272,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'User preferences updated successfully',
         });
       } catch (error) {
-        logger.error('Update user preferences error:', error);
+        log.error('Update user preferences error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -299,7 +297,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
 
         // Record feedback for improving personalization
         // This would typically go to a personalization_feedback table
-        logger.info('Personalization feedback recorded', {
+        log.info('Personalization feedback recorded', {
           userId: user.id,
           recommendationId,
           recommendationType,
@@ -314,7 +312,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'Feedback recorded successfully',
         });
       } catch (error) {
-        logger.error('Record personalization feedback error:', error);
+        log.error('Record personalization feedback error:', error);
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -331,7 +329,7 @@ async function getUserProfile(_userId: string): Promise<UserProfile | null> {
     // For now, we'll return null to always generate fresh profiles
     return null;
   } catch (error) {
-    logger.error('Error getting user profile:', error);
+    log.error('Error getting user profile:', error);
     return null;
   }
 }
@@ -342,14 +340,14 @@ async function getUserProfile(_userId: string): Promise<UserProfile | null> {
 async function cacheUserProfile(userProfile: UserProfile): Promise<void> {
   try {
     // In a real implementation, this would save to a user_profiles table or cache
-    logger.info('User profile cached:', {
+    log.info('User profile cached:', {
       userId: userProfile.userId,
       lastUpdated: userProfile.lastUpdated,
       skillLevel: userProfile.skillLevel,
       interestCount: userProfile.interests.length,
     });
   } catch (error) {
-    logger.error('Error caching user profile:', error);
+    log.error('Error caching user profile:', error);
   }
 }
 
@@ -373,7 +371,7 @@ async function getRecentActivity(userId: string): Promise<any[]> {
 
     return recentActivity;
   } catch (error) {
-    logger.error('Error getting recent activity:', error);
+    log.error('Error getting recent activity:', error);
     return [];
   }
 }
@@ -403,7 +401,7 @@ async function getContinueLearning(userId: string): Promise<any[]> {
 
     return continueLearning;
   } catch (error) {
-    logger.error('Error getting continue learning data:', error);
+    log.error('Error getting continue learning data:', error);
     return [];
   }
 }

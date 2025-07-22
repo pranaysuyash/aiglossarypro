@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { authQueryKey } from '@/lib/authQueryOptions';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { api } from '@/lib/api';
 import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
 import type {
@@ -61,8 +62,8 @@ export default function FirebaseLoginPage() {
         localStorage.setItem('authToken', (response.data as any).token);
 
         // Update React Query cache with user data to maintain auth state
-        queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
-        await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        queryClient.setQueryData(authQueryKey, (response.data as any).user);
+        // Don't invalidate - the data is already set
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Broadcast login to other tabs
@@ -223,8 +224,8 @@ export default function FirebaseLoginPage() {
         localStorage.setItem('authToken', response.data?.token);
 
         // Update React Query cache with user data to maintain auth state
-        queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
-        await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        queryClient.setQueryData(authQueryKey, (response.data as any).user);
+        // Don't invalidate - the data is already set
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Broadcast login to other tabs

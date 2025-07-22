@@ -5,6 +5,7 @@ import {
   Cpu,
   DollarSign,
   Eye,
+  Loader2,
   RefreshCw,
   Sparkles,
   TrendingUp,
@@ -29,7 +30,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 
 // Enhanced interfaces for comprehensive content generation
 interface EnhancedGenerationRequest {

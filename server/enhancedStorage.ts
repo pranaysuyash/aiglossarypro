@@ -17,8 +17,6 @@ import OpenAI from 'openai';
 import type {
   AdminStats,
   AdvancedSearchOptions,
-  IEnhancedTerm,
-  ISection,
   ITerm,
 } from '../shared/types';
 import { redisCache as enhancedRedisCache } from './config/redis';
@@ -41,7 +39,6 @@ import type {
   FeedbackStatus,
   FeedbackUpdate,
   GeneralFeedback,
-  InteractiveElement,
   InteractiveElementState,
   LearningStreak,
   MaintenanceResult,
@@ -56,14 +53,12 @@ import type {
   SearchMetrics,
   SearchResult,
   SectionProgress,
-  StorageError,
   SystemHealth,
   Term,
   TermFeedback,
   TermSection,
   TermUpdate,
   User,
-  UserPreferences as UserPreferencesType,
   UserProgressStats,
 } from './types/storage.types';
 
@@ -272,7 +267,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   private context?: RequestContext;
 
   constructor(
-    private baseStorage: IStorage = optimizedStorage as IStorage,
+    private baseStorage = optimizedStorage,
     private termsStorage = enhancedTermsStorage
   ) {
     // Compose with both optimizedStorage and enhancedTermsStorage
@@ -537,6 +532,10 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       const metrics: ContentMetrics = {
         totalTerms: processingStats.totalTerms,
+        termsWithContent: processingStats.totalTerms, // TODO: Implement actual count
+        termsWithShortDefinitions: 0, // TODO: Implement actual count
+        termsWithCodeExamples: 0, // TODO: Implement actual count
+        termsWithVisuals: 0, // TODO: Implement actual count
         totalCategories: categories.length,
         totalSections: processingStats.totalSections,
         totalViews: 0, // TODO: Implement view tracking in Phase 2C
@@ -970,6 +969,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         total: 0,
         page,
         limit,
+        totalPages: 0,
         hasMore: false,
       };
     } catch (error) {
@@ -1012,8 +1012,8 @@ export class EnhancedStorage implements IEnhancedStorage {
                 id: feedback.id,
                 type: 'feedback' as const,
                 title: `Feedback for ${feedback.termName || 'Unknown Term'}`,
-                content: feedback.comment || feedback.message,
-                author: feedback.userEmail || feedback.userId || 'Anonymous',
+                content: { message: feedback.comment || feedback.message || '' },
+                submittedBy: feedback.userEmail || feedback.userId || 'Anonymous',
                 submittedAt: feedback.createdAt || new Date(),
                 status: 'pending' as const,
                 priority: (feedback.rating <= 2 ? 'high' : 'medium') as 'low' | 'medium' | 'high',
@@ -1036,8 +1036,8 @@ export class EnhancedStorage implements IEnhancedStorage {
                 id: suggestion.id,
                 type: 'term_suggestion' as const,
                 title: `New Term: ${suggestion.termName}`,
-                content: suggestion.definition,
-                author: suggestion.userEmail || suggestion.userId || 'Anonymous',
+                content: { definition: suggestion.definition || '' },
+                submittedBy: suggestion.userEmail || suggestion.userId || 'Anonymous',
                 submittedAt: suggestion.createdAt || new Date(),
                 status: 'pending' as const,
                 priority: 'medium' as const,
@@ -1059,8 +1059,8 @@ export class EnhancedStorage implements IEnhancedStorage {
                 id: aiContent.id,
                 type: 'ai_generated' as const,
                 title: `AI Content: ${aiContent.title || aiContent.termName}`,
-                content: aiContent.content,
-                author: `AI Model: ${aiContent.model || 'Unknown'}`,
+                content: typeof aiContent.content === 'object' ? aiContent.content : { generatedText: aiContent.content || '' },
+                submittedBy: `AI Model: ${aiContent.model || 'Unknown'}`,
                 submittedAt: aiContent.createdAt || new Date(),
                 status: 'pending' as const,
                 priority: (aiContent.confidenceLevel === 'low' ? 'high' : 'medium') as
@@ -1102,9 +1102,10 @@ export class EnhancedStorage implements IEnhancedStorage {
             id: `pending_${Date.now()}_1`,
             type: 'feedback',
             title: 'Feedback for Transformer Architecture',
-            content:
-              'The explanation of self-attention could be clearer. Consider adding more visual examples.',
-            author: 'user@example.com',
+            content: {
+              message: 'The explanation of self-attention could be clearer. Consider adding more visual examples.'
+            },
+            submittedBy: 'user@example.com',
             submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
             status: 'pending',
             priority: 'medium',
@@ -1118,9 +1119,10 @@ export class EnhancedStorage implements IEnhancedStorage {
             id: `pending_${Date.now()}_2`,
             type: 'term_suggestion',
             title: 'New Term: Mixture of Experts',
-            content:
-              'A neural network architecture that uses multiple expert networks and a gating mechanism to route inputs.',
-            author: 'researcher@university.edu',
+            content: {
+              description: 'A neural network architecture that uses multiple expert networks and a gating mechanism to route inputs.'
+            },
+            submittedBy: 'researcher@university.edu',
             submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
             status: 'pending',
             priority: 'medium',
@@ -1133,9 +1135,10 @@ export class EnhancedStorage implements IEnhancedStorage {
             id: `pending_${Date.now()}_3`,
             type: 'ai_generated',
             title: 'AI Content: Reinforcement Learning from Human Feedback',
-            content:
-              'RLHF is a technique that combines reinforcement learning with human feedback to train AI models...',
-            author: 'AI Model: GPT-4',
+            content: {
+              generatedText: 'RLHF is a technique that combines reinforcement learning with human feedback to train AI models...'
+            },
+            submittedBy: 'AI Model: GPT-4',
             submittedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
             status: 'pending',
             priority: 'high',
@@ -1386,8 +1389,10 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Use the top terms from analytics data
       if (analyticsData.topTerms && analyticsData.topTerms.length > 0) {
         const topTerms = analyticsData.topTerms.slice(0, limit).map((term: any, index: number) => ({
+          termId: term.id || term.termId || `term_${index}`,
           name: term.name,
           searchCount: term.viewCount || 0,
+          category: term.category || 'General',
           percentage: Math.max(100 - index * 10, 5), // Decreasing percentage
           lastSearched: new Date(),
         }));
@@ -1409,8 +1414,10 @@ export class EnhancedStorage implements IEnhancedStorage {
       ];
 
       return mockTerms.slice(0, limit).map((term: any, index: number) => ({
+        termId: `mock_term_${index}`,
         name: term.name,
         searchCount: term.searchCount,
+        category: 'General',
         percentage: Math.max(100 - index * 10, 5),
         lastSearched: new Date(),
       }));
@@ -1431,23 +1438,16 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Extract unique difficulty levels and tags from available data
       // In a real implementation, this would query the enhanced_terms table
-      const filters = {
-        categories: categories.map(cat => cat.name),
-        difficulties: ['beginner', 'intermediate', 'advanced'],
-        applicationDomains: [
-          'Computer Vision',
-          'Natural Language Processing',
-          'Robotics',
-          'Healthcare',
-          'Finance',
-          'Autonomous Vehicles',
-        ],
-        techniques: [
-          'Supervised Learning',
-          'Unsupervised Learning',
-          'Reinforcement Learning',
+      // Return SearchFilters type which has category, subcategory, difficulty, tags
+      const filters: SearchFilters = {
+        category: categories.length > 0 ? categories[0].name : undefined,
+        difficulty: 'intermediate',
+        tags: [
+          'Machine Learning',
           'Deep Learning',
-          'Transfer Learning',
+          'Neural Networks',
+          'Computer Vision',
+          'NLP',
         ],
       };
 
@@ -1458,10 +1458,9 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Return minimal filters on error
       return {
-        categories: ['Machine Learning', 'Deep Learning', 'AI'],
-        difficulties: ['beginner', 'intermediate', 'advanced'],
-        applicationDomains: ['General'],
-        techniques: ['Supervised Learning'],
+        category: 'General',
+        difficulty: 'beginner',
+        tags: ['AI', 'Machine Learning'],
       };
     }
   }

@@ -9,6 +9,7 @@ import {
   browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
+  getIdToken as firebaseGetIdToken,
   GithubAuthProvider,
   GoogleAuthProvider,
   inMemoryPersistence,
@@ -135,7 +136,7 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
 
       // Get ID token with timeout
       const idToken = await withTimeout(
-        () => result.user.getIdToken(),
+        () => firebaseGetIdToken(result.user),
         {
           ...DEFAULT_TIMEOUTS.tokenRefresh,
           operation: 'getIdToken',
@@ -208,7 +209,7 @@ export async function signInWithEmail(email: string, password: string) {
 
       // Get ID token with timeout
       const idToken = await withTimeout(
-        () => result.user.getIdToken(),
+        () => firebaseGetIdToken(result.user),
         {
           ...DEFAULT_TIMEOUTS.tokenRefresh,
           operation: 'getIdToken',
@@ -266,7 +267,7 @@ export async function createAccount(email: string, password: string) {
 
       // Get ID token with timeout
       const idToken = await withTimeout(
-        () => result.user.getIdToken(),
+        () => firebaseGetIdToken(result.user),
         {
           ...DEFAULT_TIMEOUTS.tokenRefresh,
           operation: 'getIdToken',
@@ -454,7 +455,7 @@ export async function getIdToken(): Promise<string | null> {
     if (!user) { return null; }
 
     return await withTimeout(
-      () => user.getIdToken(),
+      () => firebaseGetIdToken(user),
       {
         ...DEFAULT_TIMEOUTS.tokenRefresh,
         operation: 'getIdToken',
@@ -480,7 +481,7 @@ export async function refreshIdToken(): Promise<string | null> {
     if (!user) { return null; }
 
     return await withTimeout(
-      () => user.getIdToken(true), // Force refresh
+      () => firebaseGetIdToken(user, true), // Force refresh
       {
         ...DEFAULT_TIMEOUTS.tokenRefresh,
         operation: 'refreshIdToken',

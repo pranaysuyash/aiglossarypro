@@ -20,10 +20,13 @@ import type {
   PurchaseVerificationResponse,
 } from '@/types/api-responses';
 
-// Create a broadcast channel for cross-tab communication
+// Create a broadcast channel for cross-tab communication with tab filtering
 const authChannel = typeof BroadcastChannel !== 'undefined' 
   ? new BroadcastChannel('auth_state') 
   : null;
+
+// Generate unique tab ID for filtering
+const tabId = crypto.randomUUID();
 
 export default function FirebaseLoginPage() {
   const [, navigate] = useLocation();
@@ -67,7 +70,7 @@ export default function FirebaseLoginPage() {
 
         // Broadcast login to other tabs
         if (authChannel) {
-          authChannel.postMessage({ type: 'login', user: (response.data as any).user });
+          authChannel.postMessage({ type: 'login', user: (response.data as any).user, source: tabId });
           console.log('📡 Broadcasted login to other tabs');
         }
 
@@ -239,7 +242,7 @@ export default function FirebaseLoginPage() {
 
         // Broadcast login to other tabs
         if (authChannel) {
-          authChannel.postMessage({ type: 'login', user: (response.data as any).user });
+          authChannel.postMessage({ type: 'login', user: (response.data as any).user, source: tabId });
           console.log('📡 Broadcasted login to other tabs');
         }
 
@@ -266,15 +269,19 @@ export default function FirebaseLoginPage() {
         
         // Small delay to ensure auth state is fully propagated
         setTimeout(() => {
+          console.log('🔍 Testing navigation... current path:', window.location.pathname);
           if (userData?.isAdmin) {
-            console.log('🚀 Navigating to /admin');
+            console.log('🚀 Navigating to /admin via wouter');
             navigate('/admin');
+            console.log('✅ Navigation call completed for /admin');
           } else if (userData?.lifetimeAccess) {
-            console.log('🚀 Navigating to /dashboard?welcome=premium');
+            console.log('🚀 Navigating to /dashboard?welcome=premium via wouter');
             navigate('/dashboard?welcome=premium');
+            console.log('✅ Navigation call completed for /dashboard/premium');
           } else {
-            console.log('🚀 Navigating to /dashboard?welcome=true');
+            console.log('🚀 Navigating to /dashboard?welcome=true via wouter');
             navigate('/dashboard?welcome=true');
+            console.log('✅ Navigation call completed for /dashboard/true');
           }
         }, 200);
       }

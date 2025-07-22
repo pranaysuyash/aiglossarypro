@@ -199,6 +199,7 @@ export async function signInWithEmail(email: string, password: string) {
         console.log('⚠️ Found existing user session, signing out first...');
         try {
           await signOut(auth);
+          console.log('✅ signOut successful');
           // Wait a bit for the sign out to propagate
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (signOutError) {

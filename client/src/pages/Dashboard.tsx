@@ -59,6 +59,16 @@ export default function Dashboard() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPremiumWelcome, setShowPremiumWelcome] = useState(false);
 
+  // Dashboard mount logging for debugging
+  useEffect(() => {
+    console.log('🏠 Dashboard component mounted at', window.location.pathname);
+    console.log('📊 Dashboard user:', user?.email, 'type:', user?.lifetimeAccess ? 'premium' : 'free');
+    
+    return () => {
+      console.log('🏠 Dashboard component unmounted');
+    };
+  }, [user]);
+
   // Check for welcome parameters in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);

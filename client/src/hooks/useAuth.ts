@@ -12,6 +12,14 @@ import type { IUser } from '../../../shared/types';
 
 // Create a broadcast channel for cross-tab communication with proper cleanup
 let authChannel: BroadcastChannel | null = null;
+let tabId: string = '';
+
+function getTabId(): string {
+  if (!tabId) {
+    tabId = crypto.randomUUID();
+  }
+  return tabId;
+}
 
 function getAuthChannel(): BroadcastChannel | null {
   if (typeof BroadcastChannel === 'undefined') {
@@ -116,6 +124,11 @@ export function useAuth() {
   useEffect(() => {
     const handleAuthChange = (event: MessageEvent) => {
       if (isUnmountedRef.current) return; // Prevent actions after unmount
+
+      // Filter out messages from this tab
+      if (event.data?.source === getTabId()) {
+        return;
+      }
 
       if (event.data?.type === 'logout') {
         console.log('🔄 Logout detected from another tab');

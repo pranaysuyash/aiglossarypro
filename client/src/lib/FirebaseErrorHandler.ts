@@ -253,15 +253,21 @@ export class FirebaseErrorHandler {
      */
     public async testFirebaseConnectivity(): Promise<boolean> {
         try {
-            // Simple connectivity test - try to access Firebase config
-            const response = await fetch('https://firebase.googleapis.com/v1/projects', {
+            // Use a public Firebase JS file that always returns 200
+            const response = await fetch('https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js', {
                 method: 'HEAD',
                 mode: 'no-cors',
             });
             return true;
         } catch (error) {
-            console.warn('Firebase connectivity test failed:', error);
-            return false;
+            // Only treat actual network failures as offline
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                console.warn('Firebase connectivity test failed - network error:', error);
+                return false;
+            }
+            // Other errors (like CORS) don't mean Firebase is down
+            console.debug('Firebase connectivity test - non-network error, treating as UP:', error);
+            return true;
         }
     }
 

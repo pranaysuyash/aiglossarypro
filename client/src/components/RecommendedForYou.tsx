@@ -22,7 +22,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Skeleton } from './ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
-import { getIdToken } from 'firebase/auth';
+import { getIdToken } from '@/lib/firebase';
 
 interface PersonalizedRecommendation {
   type: 'term' | 'category' | 'learning_path' | 'trending';
@@ -60,7 +60,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
       const headers: HeadersInit = {};
       if (user) {
         try {
-          const token = await getIdToken(user as any);
+          const token = await getIdToken();
           headers['Authorization'] = `Bearer ${token}`;
         } catch (error) {
           console.error('Error getting ID token:', error);
@@ -116,7 +116,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (user) {
         try {
-          const token = await getIdToken(user as any);
+          const token = await getIdToken();
           headers['Authorization'] = `Bearer ${token}`;
         } catch (error) {
           console.error('Error getting ID token:', error);

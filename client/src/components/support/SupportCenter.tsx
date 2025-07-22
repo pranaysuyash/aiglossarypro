@@ -48,7 +48,7 @@ import { useToast } from '../../hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Progress } from '../ui/progress';
 import { ScrollArea } from '../ui/scroll-area';
-import { getIdToken } from 'firebase/auth';
+import { getIdToken } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 
@@ -93,7 +93,7 @@ export function SupportCenter() {
   const { data: tickets, isLoading: ticketsLoading } = useQuery({
     queryKey: ['support-tickets'],
     queryFn: async () => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch('/api/support/tickets', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -114,7 +114,7 @@ export function SupportCenter() {
   const { data: messages, isLoading: messagesLoading } = useQuery({
     queryKey: ['support-messages', selectedTicket?.id],
     queryFn: async () => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch(`/api/support/tickets/${selectedTicket!.id}/messages`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -140,7 +140,7 @@ export function SupportCenter() {
       priority?: string;
       attachments?: File[];
     }) => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const formData = new FormData();
       
       formData.append('subject', data.subject);
@@ -194,7 +194,7 @@ export function SupportCenter() {
       message: string;
       attachments?: File[];
     }) => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const formData = new FormData();
       
       formData.append('message', data.message);
@@ -244,7 +244,7 @@ export function SupportCenter() {
       rating: number;
       comment?: string;
     }) => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch(`/api/support/tickets/${data.ticketId}/satisfaction`, {
         method: 'POST',
         headers: {

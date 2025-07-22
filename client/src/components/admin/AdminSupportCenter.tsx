@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/use-toast';
-import { getIdToken } from 'firebase/auth';
+import { getIdToken } from '@/lib/firebase';
 import { 
   Card, 
   CardContent, 
@@ -140,7 +140,7 @@ export function AdminSupportCenter() {
   const { data: adminUsers } = useQuery<AdminUser[]>({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch('/api/admin/people', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -159,7 +159,7 @@ export function AdminSupportCenter() {
   const { data: stats } = useQuery<TicketStats>({
     queryKey: ['admin-support-stats'],
     queryFn: async () => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch('/api/admin/support/stats', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -177,7 +177,7 @@ export function AdminSupportCenter() {
   const { data: tickets, isLoading } = useQuery<SupportTicket[]>({
     queryKey: ['admin-support-tickets', filters],
     queryFn: async () => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const params = new URLSearchParams();
       
       Object.entries(filters).forEach(([key, value]) => {
@@ -203,7 +203,7 @@ export function AdminSupportCenter() {
     queryFn: async () => {
       if (!selectedTicket) {return [];}
       
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/support/tickets/${selectedTicket.id}/messages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -220,7 +220,7 @@ export function AdminSupportCenter() {
   // Update ticket status
   const updateStatusMutation = useMutation({
     mutationFn: async ({ ticketId, status }: { ticketId: string; status: string }) => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/support/tickets/${ticketId}/status`, {
         method: 'PUT',
         headers: {
@@ -254,7 +254,7 @@ export function AdminSupportCenter() {
   // Assign ticket
   const assignTicketMutation = useMutation({
     mutationFn: async ({ ticketId, assignToUserId }: { ticketId: string; assignToUserId: string }) => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/support/tickets/${ticketId}/assign`, {
         method: 'PUT',
         headers: {
@@ -287,7 +287,7 @@ export function AdminSupportCenter() {
   // Reply to ticket
   const replyMutation = useMutation({
     mutationFn: async ({ ticketId, message, isInternal }: { ticketId: string; message: string; isInternal: boolean }) => {
-      const token = await getIdToken(user as any);
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/support/tickets/${ticketId}/messages`, {
         method: 'POST',
         headers: {

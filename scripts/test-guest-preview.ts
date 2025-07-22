@@ -5,7 +5,7 @@
  *
  * This script tests the complete guest-to-premium conversion funnel:
  * 1. Guest visits site
- * 2. Views 1-2 terms in preview mode
+ * 2. Views 1-50 terms in preview mode
  * 3. Hits preview limit
  * 4. Sees conversion prompts
  * 5. Signs up for free account
@@ -174,7 +174,7 @@ class GuestPreviewTester {
       if (result.status === 200 && result.data.success) {
         const stats = result.data.data;
 
-        if (stats.previewsUsed === 2 && stats.previewsRemaining === 0) {
+        if (stats.previewsUsed === 50 && stats.previewsRemaining === 0) {
           this.addResult('Session Stats', true, 'Guest session stats are correct');
           return true;
         } else {

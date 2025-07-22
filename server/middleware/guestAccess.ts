@@ -1,5 +1,6 @@
 import type { Request, RequestHandler, Response } from 'express';
 import { log } from '../utils/logger';
+import { redisService, cacheKeys, cacheTTL } from '../services/redisService';
 
 /**
  * Guest access configuration
@@ -12,7 +13,7 @@ export interface GuestAccessConfig {
 }
 
 const DEFAULT_GUEST_CONFIG: GuestAccessConfig = {
-  allowedPreviews: 2,
+  allowedPreviews: parseInt(process.env.GUEST_PREVIEW_LIMIT || '50'),
   sessionDuration: 24 * 60 * 60 * 1000, // 24 hours
   allowedRoutes: [
     '/api/terms/:id/preview',
@@ -43,8 +44,11 @@ export interface GuestServerSession {
   userAgent: string;
 }
 
-// In-memory session store (consider Redis for production)
-const guestSessions = new Map<string, GuestServerSession>();
+// Session storage using Redis with in-memory fallback
+const inMemorySessions = new Map<string, GuestServerSession>();
+
+// Helper to get cache key for guest sessions
+const getGuestSessionKey = (sessionId: string) => `guest_session:${sessionId}`;
 
 /**
  * Generate a guest session ID
@@ -54,9 +58,48 @@ function generateGuestSessionId(): string {
 }
 
 /**
+ * Get guest session from Redis or in-memory fallback
+ */
+async function getGuestSessionFromStorage(sessionId: string): Promise<GuestServerSession | null> {
+  try {
+    // Try Redis first
+    if (redisService.isAvailable()) {
+      const cached = await redisService.get<GuestServerSession>(getGuestSessionKey(sessionId));
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    // Fallback to in-memory
+    return inMemorySessions.get(sessionId) || null;
+  } catch (error) {
+    log.error('Error getting guest session from storage:', error);
+    return inMemorySessions.get(sessionId) || null;
+  }
+}
+
+/**
+ * Save guest session to Redis and in-memory
+ */
+async function saveGuestSessionToStorage(session: GuestServerSession): Promise<void> {
+  try {
+    // Save to in-memory (always)
+    inMemorySessions.set(session.sessionId, session);
+    
+    // Save to Redis if available
+    if (redisService.isAvailable()) {
+      const ttl = Math.floor(DEFAULT_GUEST_CONFIG.sessionDuration / 1000); // Convert to seconds
+      await redisService.set(getGuestSessionKey(session.sessionId), session, ttl);
+    }
+  } catch (error) {
+    log.error('Error saving guest session to storage:', error);
+  }
+}
+
+/**
  * Get or create guest session
  */
-function getOrCreateGuestSession(req: Request): GuestServerSession {
+async function getOrCreateGuestSession(req: Request): Promise<GuestServerSession> {
   const sessionId =
     (req.headers['x-guest-session-id'] as string) ||
     req.cookies?.guest_session_id ||
@@ -67,7 +110,7 @@ function getOrCreateGuestSession(req: Request): GuestServerSession {
     .trim();
   const userAgent = req.headers['user-agent'] || '';
 
-  let session = guestSessions.get(sessionId);
+  let session = await getGuestSessionFromStorage(sessionId);
 
   if (!session) {
     session = {
@@ -79,7 +122,7 @@ function getOrCreateGuestSession(req: Request): GuestServerSession {
       ipAddress,
       userAgent,
     };
-    guestSessions.set(sessionId, session);
+    await saveGuestSessionToStorage(session);
   } else {
     // Update last activity
     session.lastActivity = Date.now();
@@ -91,6 +134,9 @@ function getOrCreateGuestSession(req: Request): GuestServerSession {
       session.viewedTerms = [];
       session.firstVisit = Date.now();
     }
+    
+    // Save updated session
+    await saveGuestSessionToStorage(session);
   }
 
   return session;
@@ -143,7 +189,7 @@ function isRouteAllowedForGuests(path: string): boolean {
 /**
  * Guest access middleware - allows limited access to certain endpoints
  */
-export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
+export const guestAccessMiddleware: RequestHandler = async (req, res, next) => {
   const isAuthenticated = req.user;
   const requestPath = req.path;
 
@@ -164,7 +210,7 @@ export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
 
   // For guest preview routes, check session limits
   if (requestPath.includes('preview') || requestPath.includes('term')) {
-    const guestSession = getOrCreateGuestSession(req);
+    const guestSession = await getOrCreateGuestSession(req);
 
     // Add guest session to request for use in route handlers
     (req as any).guestSession = guestSession;
@@ -220,7 +266,7 @@ export const guestPreviewLimitMiddleware: RequestHandler = (req, res, next) => {
 /**
  * Record guest term view
  */
-export function recordGuestTermView(guestSession: GuestServerSession, termId: string): boolean {
+export async function recordGuestTermView(guestSession: GuestServerSession, termId: string): Promise<boolean> {
   if (guestSession.viewedTerms.includes(termId)) {
     // Already viewed this term, don't count it again
     return true;
@@ -234,8 +280,8 @@ export function recordGuestTermView(guestSession: GuestServerSession, termId: st
   guestSession.viewedTerms.push(termId);
   guestSession.lastActivity = Date.now();
 
-  // Update session in store
-  guestSessions.set(guestSession.sessionId, guestSession);
+  // Update session in storage
+  await saveGuestSessionToStorage(guestSession);
 
   log.info('Guest term view recorded', {
     sessionId: guestSession.sessionId,
@@ -250,8 +296,8 @@ export function recordGuestTermView(guestSession: GuestServerSession, termId: st
 /**
  * Get guest session stats
  */
-export function getGuestSessionStats(sessionId: string) {
-  const session = guestSessions.get(sessionId);
+export async function getGuestSessionStats(sessionId: string) {
+  const session = await getGuestSessionFromStorage(sessionId);
 
   if (!session) {
     return null;
@@ -271,24 +317,34 @@ export function getGuestSessionStats(sessionId: string) {
 /**
  * Cleanup expired guest sessions (call periodically)
  */
-export function cleanupExpiredGuestSessions(): void {
+export async function cleanupExpiredGuestSessions(): Promise<void> {
   const now = Date.now();
   const expiredSessions: string[] = [];
 
-  for (const [sessionId, session] of guestSessions.entries()) {
+  // Clean up in-memory sessions
+  for (const [sessionId, session] of inMemorySessions.entries()) {
     if (now - session.lastActivity > DEFAULT_GUEST_CONFIG.sessionDuration) {
       expiredSessions.push(sessionId);
     }
   }
 
   for (const sessionId of expiredSessions) {
-    guestSessions.delete(sessionId);
+    inMemorySessions.delete(sessionId);
+    
+    // Also try to delete from Redis
+    if (redisService.isAvailable()) {
+      try {
+        await redisService.del(getGuestSessionKey(sessionId));
+      } catch (error) {
+        log.error('Error deleting session from Redis:', error);
+      }
+    }
   }
 
   if (expiredSessions.length > 0) {
     log.info('Cleaned up expired guest sessions', {
       count: expiredSessions.length,
-      totalSessions: guestSessions.size,
+      totalSessions: inMemorySessions.size,
     });
   }
 }
@@ -296,8 +352,10 @@ export function cleanupExpiredGuestSessions(): void {
 /**
  * Get all guest session analytics (for admin use)
  */
-export function getGuestAnalytics() {
-  const sessions = Array.from(guestSessions.values());
+export async function getGuestAnalytics() {
+  // For analytics, we'll use in-memory sessions as it's good enough for basic stats
+  // In production, you might want to implement a proper analytics aggregation in Redis
+  const sessions = Array.from(inMemorySessions.values());
   const now = Date.now();
 
   const analytics = {
@@ -311,10 +369,13 @@ export function getGuestAnalytics() {
     averageTimeOnSite:
       sessions.reduce((sum, s) => sum + (now - s.firstVisit), 0) / sessions.length || 0,
     sessionsByPreviewsUsed: {
-      0: sessions.filter(s => s.previewsUsed === 0).length,
-      1: sessions.filter(s => s.previewsUsed === 1).length,
-      2: sessions.filter(s => s.previewsUsed >= 2).length,
+      '0': sessions.filter(s => s.previewsUsed === 0).length,
+      '1-10': sessions.filter(s => s.previewsUsed >= 1 && s.previewsUsed <= 10).length,
+      '11-25': sessions.filter(s => s.previewsUsed >= 11 && s.previewsUsed <= 25).length,
+      '26-49': sessions.filter(s => s.previewsUsed >= 26 && s.previewsUsed <= 49).length,
+      '50+': sessions.filter(s => s.previewsUsed >= 50).length,
     },
+    redisEnabled: redisService.isAvailable(),
   };
 
   return analytics;

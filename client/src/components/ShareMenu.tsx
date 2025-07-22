@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { SHARE_MESSAGES } from '@/constants/messages';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 
 interface ShareMenuProps {
   isOpen: boolean;

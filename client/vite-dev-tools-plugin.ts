@@ -61,8 +61,8 @@ export function devToolsPlugin(options: DevToolsOptions = {}): Plugin {
     },
 
     transformIndexHtml: {
-      enforce: 'pre',
-      transform(html, context) {
+      order: 'pre',
+      handler(html, context) {
         if (context.server) {
           // Inject development tools initialization
           const devToolsScript = `

@@ -8,9 +8,10 @@
 import { EventEmitter } from 'node:events';
 import { desc, gte } from 'drizzle-orm';
 import { cacheMetrics } from '../../shared/schema';
-import { metricsCollector } from '../cache/CacheMetrics';
+
 import { db } from '../db';
 import { getCacheStats, queryCache, searchCache, userCache } from '../middleware/queryCache';
+import { metricsCollector } from '../cache/CacheMetrics';
 
 import logger from '../utils/logger';
 export interface CacheAlert {
@@ -273,7 +274,6 @@ export class CacheMonitoringService extends EventEmitter {
   async generateHealthReport(): Promise<any> {
     const checks = await this.runHealthChecks();
     const stats = getCacheStats();
-    const realTimeMetrics = metricsCollector.getRealTimeMetrics();
 
     // Get recent metrics from database
     const _endDate = new Date();
@@ -292,7 +292,6 @@ export class CacheMonitoringService extends EventEmitter {
       overallHealth: this.calculateOverallHealth(checks),
       checks,
       currentStats: stats,
-      realTimeMetrics,
       recentAlerts: this.alertHistory.slice(-10),
       performanceTrends: this.analyzePerformanceTrends(recentMetrics),
       recommendations: this.generateRecommendations(checks, stats),
@@ -447,10 +446,6 @@ cache_misses_total ${stats.misses}
 # HELP cache_evictions_total Total number of cache evictions
 # TYPE cache_evictions_total counter
 cache_evictions_total ${stats.evictions}
-
-# HELP cache_response_time_ms Average cache response time in milliseconds
-# TYPE cache_response_time_ms gauge
-cache_response_time_ms ${stats.averageResponseTime || 0}
 
 # HELP cache_health Cache health status (1=healthy, 0=unhealthy)
 # TYPE cache_health gauge

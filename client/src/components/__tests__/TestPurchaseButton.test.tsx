@@ -21,7 +21,7 @@ const mockStripe = {
 (global as any).Stripe = vi.fn(() => mockStripe);
 
 const mockToast = vi.fn();
-vi.mock('@/hooks/useToast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 

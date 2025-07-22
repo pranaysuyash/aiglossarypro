@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import { log } from './utils/log';
+import { log } from './utils/logger';
 dotenv.config();
 
 log.info('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
@@ -55,7 +55,7 @@ import { performanceMiddleware } from './middleware/compression';
 import { errorHandler, gracefulShutdown, notFoundHandler } from './middleware/errorHandler';
 import loggingMiddleware from './middleware/loggingMiddleware';
 import { setupMultiAuth } from './middleware/multiAuth';
-import { cacheStatsMiddleware } from './middleware/queryCache';
+
 import { responseLoggingMiddleware } from './middleware/responseLogging';
 import {
   apiRateLimit,
@@ -64,7 +64,7 @@ import {
   securityHeaders,
   securityMonitoring,
 } from './middleware/security';
-import { setupCacheMonitoring } from './monitoring/cacheMonitoring';
+
 import { registerFirebaseAuthRoutes } from './routes/firebaseAuth';
 import { registerRoutes } from './routes/index';
 import { registerSimpleAuthRoutes } from './routes/simpleAuth';
@@ -114,7 +114,7 @@ app.use(performanceMiddleware());
 app.use(cdnCacheMiddleware);
 
 // Apply cache stats middleware
-app.use(cacheStatsMiddleware);
+
 
 // Apply response logging middleware
 // Commented out to prevent duplicate logging - loggingMiddleware already handles this
@@ -278,8 +278,7 @@ app.use(cacheStatsMiddleware);
   await initializeAnalytics();
 
   // Initialize cache monitoring
-  setupCacheMonitoring(app);
-  log.info('✅ Cache monitoring system initialized');
+  
 
   // Start listening - use 0.0.0.0 in production for external access
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';

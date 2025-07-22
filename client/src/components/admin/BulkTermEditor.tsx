@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 
 interface BulkEditTerm {
   id: string;

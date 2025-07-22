@@ -48,12 +48,15 @@ class QueryCache {
     if (!entry) {
       this.missCount++;
       const duration = Date.now() - startTime;
+      
+      // Record miss in metrics collector
       metricsCollector.recordOperation({
         type: 'miss',
         key,
         duration,
         timestamp: new Date(),
       });
+
       return undefined;
     }
 
@@ -62,12 +65,15 @@ class QueryCache {
       this.cache.delete(key);
       this.missCount++;
       const duration = Date.now() - startTime;
+      
+      // Record miss due to expiration
       metricsCollector.recordOperation({
         type: 'miss',
         key,
         duration,
         timestamp: new Date(),
       });
+
       return undefined;
     }
 
@@ -80,6 +86,8 @@ class QueryCache {
     this.cache.set(key, entry);
 
     const duration = Date.now() - startTime;
+    
+    // Record hit in metrics collector
     metricsCollector.recordOperation({
       type: 'hit',
       key,
@@ -99,6 +107,8 @@ class QueryCache {
       if (firstKey !== undefined) {
         this.cache.delete(firstKey);
         this.evictionCount++;
+        
+        // Record eviction
         metricsCollector.recordOperation({
           type: 'eviction',
           key: firstKey,
@@ -118,6 +128,8 @@ class QueryCache {
 
     // Calculate approximate size
     const size = JSON.stringify(value).length;
+    
+    // Record set operation
     metricsCollector.recordOperation({
       type: 'set',
       key,
@@ -134,6 +146,8 @@ class QueryCache {
       if (this.matchesPattern(key, pattern)) {
         this.cache.delete(key);
         deletedCount++;
+        
+        // Record eviction due to invalidation
         metricsCollector.recordOperation({
           type: 'invalidation',
           key,
@@ -162,11 +176,6 @@ class QueryCache {
       enabled: this.enabled,
       cacheType: this.cacheType,
     };
-
-    // Update metrics collector with current cache size
-    const snapshot = metricsCollector.generateSnapshot();
-    snapshot.cacheSize = this.cache.size;
-    snapshot.maxCacheSize = this.maxItems;
 
     return stats;
   }

@@ -237,7 +237,7 @@ export function FreeTierGate({
                   className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{
                     width: isGuestContext
-                      ? `${Math.max(0, (guestPreview.previewsRemaining / 2) * 100)}%`
+                      ? `${Math.max(0, (guestPreview.previewsRemaining / (guestPreview.previewsLimit || 50)) * 100)}%`
                       : `${Math.max(0, (remainingViews / (accessStatus?.dailyLimit || 50)) * 100)}%`,
                   }}
                 />

@@ -228,13 +228,12 @@ describe('Database Storage Operations', () => {
       const results = await optimizedStorage.bulkCreateTerms(bulkTerms);
       const duration = Date.now() - startTime;
 
-      expect(results.length).toBe(10);
+      expect(results.success).toBe(10);
+      expect(results.failed).toBe(0);
       expect(duration).toBeLessThan(1000); // Should be efficient
 
-      // Clean up bulk test data
-      for (const result of results) {
-        await db.delete(terms).where(eq(terms.id, result.id));
-      }
+      // Note: Bulk cleanup would need to be implemented separately
+      // as the function doesn't return individual term IDs
     });
   });
 

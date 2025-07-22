@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/useToast';
+import { toast } from '@/lib/toast';
 import { api } from '@/lib/api';
 import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
 import type {
@@ -27,7 +27,6 @@ const authChannel = typeof BroadcastChannel !== 'undefined'
 
 export default function FirebaseLoginPage() {
   const [, navigate] = useLocation();
-  const { toast } = useToast();
   const { announce } = useLiveRegion();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
@@ -79,9 +78,7 @@ export default function FirebaseLoginPage() {
           ? `Welcome back, ${userData.email}! Your premium access is active.`
           : `Welcome back, ${userData.email}!`;
 
-        toast({
-          title: `${userType} User - Welcome back!`,
-          description: welcomeMessage,
+        toast.success(welcomeMessage, {
           duration: 5000,
         });
 
@@ -91,13 +88,23 @@ export default function FirebaseLoginPage() {
         );
 
         // Redirect based on user type and status
-        if (userData.isAdmin) {
-          navigate('/admin');
-        } else if (userData.lifetimeAccess) {
-          navigate('/dashboard?welcome=premium');
-        } else {
-          navigate('/dashboard?welcome=true');
-        }
+        console.log('🚀 OAuth Navigating after login - User data:', userData);
+        console.log('🚀 Is Admin:', userData.isAdmin);
+        console.log('🚀 Has Lifetime Access:', userData.lifetimeAccess);
+        
+        // Small delay to ensure auth state is fully propagated
+        setTimeout(() => {
+          if (userData.isAdmin) {
+            console.log('🚀 Navigating to /admin');
+            navigate('/admin');
+          } else if (userData.lifetimeAccess) {
+            console.log('🚀 Navigating to /dashboard?welcome=premium');
+            navigate('/dashboard?welcome=premium');
+          } else {
+            console.log('🚀 Navigating to /dashboard?welcome=true');
+            navigate('/dashboard?welcome=true');
+          }
+        }, 200);
       }
     } catch (err: any) {
       console.error(`${provider} OAuth error:`, err);
@@ -137,10 +144,7 @@ export default function FirebaseLoginPage() {
       announce(`OAuth sign-in error: ${errorMessage}`, 'assertive');
 
       // Show error toast as well
-      toast({
-        title: 'Sign-in Failed',
-        description: errorMessage,
-        variant: 'destructive',
+      toast.error(errorMessage, {
         duration: 7000,
       });
     } finally {
@@ -203,6 +207,7 @@ export default function FirebaseLoginPage() {
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('📧 Starting email login process');
 
     try {
       setLoading(true);
@@ -210,15 +215,19 @@ export default function FirebaseLoginPage() {
 
       // Provide immediate feedback
       announce('Signing in...', 'polite');
+      console.log('📧 Calling signInWithEmail...');
 
       // Sign in with Firebase
       const { idToken } = await signInWithEmail(email, password);
+      console.log('✅ Firebase sign in successful, got token:', idToken ? 'Yes' : 'No');
 
       // Show progress feedback
       announce('Completing authentication...', 'polite');
+      console.log('📧 Exchanging Firebase token for JWT...');
 
       // Exchange Firebase token for JWT
       const response: ApiResponse = await api.post('/auth/firebase/login', { idToken });
+      console.log('✅ JWT exchange response:', response);
 
       if (response.success && response.data) {
         localStorage.setItem('authToken', response.data?.token);
@@ -241,9 +250,7 @@ export default function FirebaseLoginPage() {
           ? `Welcome back! Your premium access is active.`
           : `Welcome back!`;
 
-        toast({
-          title: `${userType} User - Welcome back!`,
-          description: welcomeMessage,
+        toast.success(welcomeMessage, {
           duration: 5000,
         });
 
@@ -253,13 +260,23 @@ export default function FirebaseLoginPage() {
         );
 
         // Redirect based on user type and status
-        if (userData?.isAdmin) {
-          navigate('/admin');
-        } else if (userData?.lifetimeAccess) {
-          navigate('/dashboard?welcome=premium');
-        } else {
-          navigate('/dashboard?welcome=true');
-        }
+        console.log('🚀 Navigating after login - User data:', userData);
+        console.log('🚀 Is Admin:', userData?.isAdmin);
+        console.log('🚀 Has Lifetime Access:', userData?.lifetimeAccess);
+        
+        // Small delay to ensure auth state is fully propagated
+        setTimeout(() => {
+          if (userData?.isAdmin) {
+            console.log('🚀 Navigating to /admin');
+            navigate('/admin');
+          } else if (userData?.lifetimeAccess) {
+            console.log('🚀 Navigating to /dashboard?welcome=premium');
+            navigate('/dashboard?welcome=premium');
+          } else {
+            console.log('🚀 Navigating to /dashboard?welcome=true');
+            navigate('/dashboard?welcome=true');
+          }
+        }, 200);
       }
     } catch (err: any) {
       console.error('Email login error:', err);
@@ -302,10 +319,7 @@ export default function FirebaseLoginPage() {
       announce(`Sign-in error: ${errorMessage}`, 'assertive');
 
       // Show error toast as well
-      toast({
-        title: 'Sign-in Failed',
-        description: errorMessage,
-        variant: 'destructive',
+      toast.error(errorMessage, {
         duration: 7000,
       });
     } finally {
@@ -332,9 +346,7 @@ export default function FirebaseLoginPage() {
       });
 
       if (response.success) {
-        toast({
-          title: 'Account created successfully!',
-          description: 'Welcome to AI/ML Glossary! You can now sign in with your new account.',
+        toast.success('Welcome to AI/ML Glossary! You can now sign in with your new account.', {
           duration: 6000,
         });
 
@@ -385,10 +397,7 @@ export default function FirebaseLoginPage() {
       announce(`Registration error: ${errorMessage}`, 'assertive');
 
       // Show error toast as well
-      toast({
-        title: 'Registration Failed',
-        description: errorMessage,
-        variant: 'destructive',
+      toast.error(errorMessage, {
         duration: 7000,
       });
     } finally {

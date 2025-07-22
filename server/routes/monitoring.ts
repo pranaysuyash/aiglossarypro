@@ -1,5 +1,5 @@
-import apiOptimizer from '@server/utils/apiOptimization';
-import queryOptimizer from '@server/utils/queryOptimization';
+import apiOptimizer from '../utils/apiOptimization';
+import queryOptimizer from '../utils/queryOptimization';
 import { Router } from 'express';
 import { monitoringService } from '../monitoring/monitoringService';
 import { log } from '../utils/logger';

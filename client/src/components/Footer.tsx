@@ -2,7 +2,7 @@ import { Github, Linkedin, Twitter } from 'lucide-react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
@@ -43,7 +43,7 @@ export default function Footer({ className, onSubscribe }: FooterProps = {}) {
 
   return (
     <footer
-      className={cn('bg-gray-900 text-gray-100 dark:bg-gray-950 dark:text-gray-50', className)}
+      className={cn('bg-gray-900 text-gray-100 dark:bg-gray-950 dark:text-gray-50 min-h-[200px]', className)}
       role="contentinfo"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">

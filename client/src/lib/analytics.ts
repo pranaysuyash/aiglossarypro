@@ -32,15 +32,45 @@ export const initAnalytics = () => {
     return;
   }
 
-  // Initialize PostHog
+  // Initialize PostHog with minimal overhead
   if (typeof window !== 'undefined' && import.meta.env.VITE_POSTHOG_KEY) {
     posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
       api_host: 'https://app.posthog.com',
-      autocapture: true,
-      capture_pageview: true,
-      capture_pageleave: true,
-      loaded: posthog => {
-        if (import.meta.env.DEV) {posthog.debug();}
+      // Disable heavy features initially for faster load
+      autocapture: false,
+      capture_pageview: false,
+      capture_pageleave: false,
+      disable_session_recording: true,
+      loaded: (posthog) => {
+        // Enable features after page is interactive
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            posthog.capture('$pageview');
+            posthog.setPersonPropertiesForFlags({
+              environment: import.meta.env.MODE,
+            });
+            
+            // Enable autocapture after 2 seconds
+            setTimeout(() => {
+              posthog.config.autocapture = true;
+              posthog.config.capture_pageleave = true;
+              if (!import.meta.env.DEV) {
+                posthog.startSessionRecording();
+              }
+            }, 2000);
+          });
+        } else {
+          // Fallback for browsers without requestIdleCallback
+          setTimeout(() => {
+            posthog.capture('$pageview');
+            posthog.config.autocapture = true;
+            posthog.config.capture_pageleave = true;
+          }, 1000);
+        }
+        
+        if (import.meta.env.DEV) {
+          console.log('📊 PostHog initialized (minimal mode)');
+        }
       },
     });
   }

@@ -56,7 +56,7 @@ describe('Guest Session Management', () => {
 
       expect(session).toBeDefined();
       expect(session.previewsUsed).toBe(0);
-      expect(session.previewsLimit).toBe(2);
+      expect(session.previewsLimit).toBe(50);
       expect(session.viewedTerms).toEqual([]);
       expect(session.sessionId).toMatch(/^guest_/);
       expect(session.conversionTracking.landingPage).toBe('/test-path');
@@ -65,7 +65,7 @@ describe('Guest Session Management', () => {
     it('retrieves existing session from localStorage', () => {
       const existingSession = {
         previewsUsed: 1,
-        previewsLimit: 2,
+        previewsLimit: 50,
         viewedTerms: ['term1'],
         sessionId: 'test-session',
         firstVisit: Date.now() - 1000,
@@ -89,7 +89,7 @@ describe('Guest Session Management', () => {
     it('creates new session if existing session is expired', () => {
       const expiredSession = {
         previewsUsed: 1,
-        previewsLimit: 2,
+        previewsLimit: 50,
         viewedTerms: ['term1'],
         sessionId: 'expired-session',
         firstVisit: Date.now() - 25 * 60 * 60 * 1000, // 25 hours ago
@@ -119,7 +119,7 @@ describe('Guest Session Management', () => {
 
     it('returns false when preview limit is reached', () => {
       const session = getGuestSession();
-      session.previewsUsed = 2; // Reached limit
+      session.previewsUsed = 50; // Reached limit
       expect(canGuestPreview(session)).toBe(false);
     });
   });
@@ -156,13 +156,13 @@ describe('Guest Session Management', () => {
   describe('getRemainingPreviews', () => {
     it('returns correct remaining previews', () => {
       resetGuestSession();
-      expect(getRemainingPreviews()).toBe(2);
+      expect(getRemainingPreviews()).toBe(50);
 
       recordGuestPreview('term1');
-      expect(getRemainingPreviews()).toBe(1);
+      expect(getRemainingPreviews()).toBe(49);
 
       recordGuestPreview('term2');
-      expect(getRemainingPreviews()).toBe(0);
+      expect(getRemainingPreviews()).toBe(48);
     });
   });
 
@@ -177,8 +177,10 @@ describe('Guest Session Management', () => {
 
     it('returns true when limit is reached', () => {
       resetGuestSession();
-      recordGuestPreview('term1');
-      recordGuestPreview('term2');
+      // Simulate reaching the 50 term limit
+      const session = getGuestSession();
+      session.previewsUsed = 50;
+      saveGuestSession(session);
       expect(hasReachedPreviewLimit()).toBe(true);
     });
   });
@@ -192,7 +194,7 @@ describe('Guest Session Management', () => {
       const analytics = getSessionAnalytics();
 
       expect(analytics.previewsUsed).toBe(2);
-      expect(analytics.hasReachedLimit).toBe(true);
+      expect(analytics.hasReachedLimit).toBe(false); // With 50 limit, 2 previews shouldn't reach limit
       expect(analytics.termsViewed).toBe(2);
       expect(analytics.engagementScore).toBeGreaterThan(0);
     });

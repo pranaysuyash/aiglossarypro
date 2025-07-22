@@ -24,7 +24,7 @@ vi.mock('../../client/src/lib/FirebaseErrorHandler', () => ({
 
 // Mock Firebase Timeout Wrapper
 vi.mock('../../client/src/lib/FirebaseTimeoutWrapper', () => ({
-    withTimeout: vi.fn().mockImplementation((fn) => fn()),
+    withTimeout: vi.fn().mockImplementation((fn: () => any) => fn()),
     DEFAULT_TIMEOUTS: {
         tokenRefresh: {
             timeout: 5000,

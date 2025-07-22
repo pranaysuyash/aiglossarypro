@@ -45,7 +45,7 @@ import {
   getEssentialColumns,
   searchColumns,
 } from '@/constants/columns';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 
 interface GenerationRequest {
   termId: string;

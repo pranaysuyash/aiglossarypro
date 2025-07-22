@@ -30,12 +30,12 @@ async function checkFirebaseUsers() {
     
     // Check specific test users
     const testEmails = [
-      'admin@aiglossarypro',
+      'free@aiglossarypro.com',
+      'premium@aiglossarypro.com',
       'admin@aiglossarypro.com',
-      'admin@aimlglossary.com',
       'test@aimlglossary.com',
       'premium@aimlglossary.com',
-      'demo@aiglosspro.com'
+      'admin@aimlglossary.com'
     ];
     
     console.log(chalk.yellow('\n🔍 Checking specific test users:'));

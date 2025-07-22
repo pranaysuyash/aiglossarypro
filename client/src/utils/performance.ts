@@ -73,7 +73,7 @@ export class PerformanceMonitor {
   }
 }
 
-// Web Vitals monitoring
+// Web Vitals monitoring with enhanced tracking
 export const reportWebVitals = (onPerfEntry?: (metric: any) => void) => {
   if (onPerfEntry && onPerfEntry instanceof Function) {
     import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
@@ -86,21 +86,111 @@ export const reportWebVitals = (onPerfEntry?: (metric: any) => void) => {
   }
 };
 
+// Enhanced performance tracking
+export const trackPerformanceMetrics = () => {
+  const monitor = PerformanceMonitor.getInstance();
+  
+  // Track navigation timing
+  if ('performance' in window && 'timing' in performance) {
+    const timing = performance.timing;
+    const navigationStart = timing.navigationStart;
+    
+    // Key metrics
+    const metrics = {
+      domContentLoaded: timing.domContentLoadedEventEnd - navigationStart,
+      loadComplete: timing.loadEventEnd - navigationStart,
+      domInteractive: timing.domInteractive - navigationStart,
+      firstPaint: 0,
+      firstContentfulPaint: 0,
+    };
+    
+    // Get paint timing
+    const paintEntries = performance.getEntriesByType('paint') as PerformancePaintTiming[];
+    paintEntries.forEach(entry => {
+      if (entry.name === 'first-paint') {
+        metrics.firstPaint = entry.startTime;
+      } else if (entry.name === 'first-contentful-paint') {
+        metrics.firstContentfulPaint = entry.startTime;
+      }
+    });
+    
+    // Log metrics
+    console.group('🚀 Performance Metrics');
+    console.log(`DOM Content Loaded: ${metrics.domContentLoaded}ms`);
+    console.log(`Page Load Complete: ${metrics.loadComplete}ms`);
+    console.log(`DOM Interactive: ${metrics.domInteractive}ms`);
+    console.log(`First Paint: ${metrics.firstPaint}ms`);
+    console.log(`First Contentful Paint: ${metrics.firstContentfulPaint}ms`);
+    console.groupEnd();
+    
+    // Send to analytics if available
+    if (window.gtag) {
+      Object.entries(metrics).forEach(([key, value]) => {
+        window.gtag('event', 'performance_timing', {
+          event_category: 'Performance',
+          event_label: key,
+          value: Math.round(value),
+        });
+      });
+    }
+  }
+  
+  // Track long tasks
+  if ('PerformanceObserver' in window) {
+    try {
+      const longTaskObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          console.warn(`⚠️ Long Task detected: ${entry.duration}ms`, entry);
+          
+          // Send to analytics
+          if (window.gtag) {
+            window.gtag('event', 'long_task', {
+              event_category: 'Performance',
+              event_label: 'Long Task',
+              value: Math.round(entry.duration),
+            });
+          }
+        }
+      });
+      longTaskObserver.observe({ entryTypes: ['longtask'] });
+    } catch (e) {
+      // Long task observer not supported
+    }
+  }
+  
+  // Track memory usage (Chrome only)
+  if ('memory' in performance && (performance as any).memory) {
+    const memory = (performance as any).memory;
+    console.log('💾 Memory Usage:', {
+      usedJSHeapSize: `${(memory.usedJSHeapSize / 1048576).toFixed(2)} MB`,
+      totalJSHeapSize: `${(memory.totalJSHeapSize / 1048576).toFixed(2)} MB`,
+      jsHeapSizeLimit: `${(memory.jsHeapSizeLimit / 1048576).toFixed(2)} MB`,
+    });
+  }
+};
+
 // Resource hints for critical assets
 export const preloadCriticalAssets = () => {
+  // Since we're using Google Fonts, we don't need to preload local font files
+  // Google Fonts handles its own optimization and preloading
+  // Preloading non-existent local fonts causes console warnings
+  
+  // Instead, we can prefetch critical app assets that will be needed soon
   const criticalAssets = [
-    { href: '/fonts/inter-var.woff2', as: 'font', type: 'font/woff2' },
-    { href: '/fonts/jetbrains-mono.woff2', as: 'font', type: 'font/woff2' },
+    { href: '/assets/logo.svg', as: 'image' },
   ];
 
   criticalAssets.forEach(({ href, as, type }) => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = href;
-    link.as = as;
-    if (type) {link.type = type;}
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
+    // Check if asset exists before preloading
+    const existingLink = document.querySelector(`link[rel="prefetch"][href="${href}"]`);
+    if (!existingLink) {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = href;
+      link.as = as;
+      if (type) {link.type = type;}
+      document.head.appendChild(link);
+    }
   });
 };
 

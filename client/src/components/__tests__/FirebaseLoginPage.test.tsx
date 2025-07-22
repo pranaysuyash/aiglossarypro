@@ -23,7 +23,7 @@ vi.mock('wouter', () => ({
 
 // Mock toast
 const mockToast = vi.fn();
-vi.mock('@/hooks/useToast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 

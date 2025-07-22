@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 
 interface LearningPath {
   id: string;

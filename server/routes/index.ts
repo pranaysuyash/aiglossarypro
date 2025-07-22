@@ -17,7 +17,7 @@ import { registerAnalyticsRoutes } from './analytics';
 // Import modular route handlers
 import { registerAuthRoutes } from './auth';
 // Import existing specialized route modules
-import cacheRoutes from './cache';
+
 import cacheAnalyticsRoutes from './cacheAnalytics';
 import { registerCategoryRoutes } from './categories';
 import { registerCodeExamplesRoutes } from './codeExamples';
@@ -187,8 +187,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     logger.info('✅ Enhanced 295-column content generation routes registered');
 
     // Register cache management routes
-    app.use('/api/cache', cacheRoutes);
-    logger.info('✅ Cache management routes registered');
+    
 
     // Register cache analytics routes
     app.use('/api/cache-analytics', cacheAnalyticsRoutes);

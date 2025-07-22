@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import SkipLinks from '@/components/accessibility/SkipLinks';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
@@ -43,7 +43,7 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { StickyUrgencyBar, UrgencyBanner } from '@/components/UrgencyIndicators';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { PageTransitionLoader } from '@/components/PageTransitionLoader';
 import { useAuth } from '@/hooks/useAuth';
@@ -63,7 +63,7 @@ import {
 import { queryClient } from './lib/queryClient';
 import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
 import { LandingPageGuard } from '@/components/LandingPageGuard';
-import { initAnalytics } from '@/lib/analytics';
+// Analytics initialization moved to main.tsx for better performance
 import { posthogExperiments } from '@/services/posthogExperiments';
 
 // Smart Term Detail component that chooses between enhanced and regular view with guest support
@@ -163,11 +163,10 @@ function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
 
-  // Initialize analytics, experiments, and performance monitoring
+  // Initialize experiments and performance monitoring
   useEffect(() => {
-    // Initialize analytics (PostHog, GA4)
-    initAnalytics();
-
+    // Analytics initialization moved to main.tsx for better performance
+    
     // Initialize PostHog experiments with user context
     const userProperties = {
       is_authenticated: isAuthenticated,
@@ -211,10 +210,27 @@ function Router() {
     }
   }, [isAuthenticated, user, location]);
 
+  // Debounced analytics tracking
+  const analyticsTimeoutRef = useRef<NodeJS.Timeout>();
+  
   // Track page views with GA4
   useEffect(() => {
-    // Track page view whenever location changes
-    ga4Analytics.trackPageView(document.title, window.location.href);
+    // Clear any pending analytics calls
+    if (analyticsTimeoutRef.current) {
+      clearTimeout(analyticsTimeoutRef.current);
+    }
+    
+    // Debounce analytics tracking to avoid rapid-fire events
+    analyticsTimeoutRef.current = setTimeout(() => {
+      // Track page view whenever location changes
+      ga4Analytics.trackPageView(document.title, window.location.href);
+    }, 100); // 100ms debounce
+    
+    return () => {
+      if (analyticsTimeoutRef.current) {
+        clearTimeout(analyticsTimeoutRef.current);
+      }
+    };
   }, [location]);
 
   // Preload components based on authentication status
@@ -357,7 +373,7 @@ function AppContent() {
 
   return (
     <>
-      <Toaster />
+      <Toaster position="top-right" richColors />
       <Router />
       <GuestConversionFab />
       <PWAInstallBanner />

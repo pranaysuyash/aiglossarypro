@@ -24,7 +24,7 @@ export interface GuestPreviewConfig {
 }
 
 const DEFAULT_CONFIG: GuestPreviewConfig = {
-  maxPreviews: 2,
+  maxPreviews: 50,
   sessionDuration: 24 * 60 * 60 * 1000, // 24 hours
   resetInterval: 24 * 60 * 60 * 1000, // 24 hours
 };

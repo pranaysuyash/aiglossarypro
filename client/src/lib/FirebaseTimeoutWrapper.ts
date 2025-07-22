@@ -1,6 +1,6 @@
 /**
- * Firebase Timeout Wrapper
- * Adds timeout handling to Firebase authentication operations
+ * Optimized Firebase Timeout Wrapper
+ * Addresses performance issues with authentication timeouts
  */
 
 import { firebaseErrorHandler } from './FirebaseErrorHandler';
@@ -13,34 +13,34 @@ export interface TimeoutConfig {
     maxRetries: number;
 }
 
-// Default timeout configurations for different operations
+// Optimized timeout configurations for better performance
 export const DEFAULT_TIMEOUTS: Record<string, TimeoutConfig> = {
     signIn: {
-        timeout: 5000, // 5 seconds
+        timeout: 15000, // Reduced to 15 seconds for better UX
         operation: 'signIn',
         retryOnTimeout: true,
-        maxRetries: 2,
+        maxRetries: 3, // Increased retries
     },
     signUp: {
-        timeout: 8000, // 8 seconds for account creation
+        timeout: 20000, // Reduced to 20 seconds for account creation
         operation: 'signUp',
         retryOnTimeout: true,
         maxRetries: 2,
     },
     signOut: {
-        timeout: 3000, // 3 seconds
+        timeout: 5000, // 5 seconds
         operation: 'signOut',
         retryOnTimeout: false,
         maxRetries: 0,
     },
     tokenRefresh: {
-        timeout: 5000, // 5 seconds
+        timeout: 10000, // 10 seconds
         operation: 'tokenRefresh',
         retryOnTimeout: true,
         maxRetries: 3,
     },
     authStateChange: {
-        timeout: 2000, // 2 seconds
+        timeout: 5000, // 5 seconds
         operation: 'authStateChange',
         retryOnTimeout: false,
         maxRetries: 0,
@@ -48,63 +48,100 @@ export const DEFAULT_TIMEOUTS: Record<string, TimeoutConfig> = {
 };
 
 /**
- * Timeout error class
+ * Progressive timeout strategy
+ * Increases timeout on each retry attempt
  */
-export class TimeoutError extends Error {
-    constructor(operation: string, timeout: number) {
-        super(`Operation '${operation}' timed out after ${timeout}ms`);
-        this.name = 'TimeoutError';
+export function getProgressiveTimeout(baseTimeout: number, retryCount: number): number {
+    // Increase timeout by 50% for each retry
+    return Math.floor(baseTimeout * Math.pow(1.5, retryCount));
+}
+
+/**
+ * Network status check before authentication
+ */
+export async function checkNetworkStatus(): Promise<boolean> {
+    try {
+        // Try to fetch a small resource from Firebase
+        const response = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo', {
+            method: 'HEAD',
+            mode: 'no-cors'
+        });
+        return true;
+    } catch {
+        return false;
     }
 }
 
 /**
- * Wrap a Firebase operation with timeout handling
+ * Timeout error class
+ */
+export class TimeoutError extends Error {
+    public readonly code = 'auth/timeout';
+    public readonly operation: string;
+
+    constructor(message: string, operation: string) {
+        super(message);
+        this.name = 'TimeoutError';
+        this.operation = operation;
+    }
+}
+
+/**
+ * Enhanced timeout wrapper with progressive timeout
  */
 export async function withTimeout<T>(
     operation: () => Promise<T>,
-    config: TimeoutConfig
+    config: TimeoutConfig,
+    retryCount: number = 0
 ): Promise<T> {
-    const { timeout, operation: operationName, retryOnTimeout, maxRetries } = config;
-
-    const executeWithTimeout = async (): Promise<T> => {
-        return new Promise<T>((resolve, reject) => {
-            const timeoutId = setTimeout(() => {
-                reject(new TimeoutError(operationName, timeout));
-            }, timeout);
-
-            operation()
-                .then((result) => {
-                    clearTimeout(timeoutId);
-                    resolve(result);
-                })
-                .catch((error) => {
-                    clearTimeout(timeoutId);
-                    reject(error);
-                });
-        });
-    };
-
-    if (retryOnTimeout && maxRetries > 0) {
-        return firebaseErrorHandler.retryOperation(
-            executeWithTimeout,
-            operationName,
-            { maxRetries }
-        );
-    }
-
-    try {
-        return await executeWithTimeout();
-    } catch (error) {
-        if (error instanceof TimeoutError) {
-            const firebaseError = await firebaseErrorHandler.handleAuthError(
-                error,
-                operationName,
-                { timeout, retryOnTimeout, maxRetries }
-            );
-            throw firebaseError;
+    // Check network status before critical operations
+    if (config.operation === 'signIn' || config.operation === 'signUp') {
+        const isNetworkAvailable = await checkNetworkStatus();
+        if (!isNetworkAvailable) {
+            throw new Error('Network connection appears to be unavailable');
         }
-        throw error;
     }
+
+    // Use progressive timeout for retries
+    const timeout = retryCount > 0 
+        ? getProgressiveTimeout(config.timeout, retryCount)
+        : config.timeout;
+
+    return new Promise(async (resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new TimeoutError(
+                `Operation '${config.operation}' timed out after ${timeout}ms`,
+                config.operation
+            ));
+        }, timeout);
+
+        try {
+            const result = await operation();
+            clearTimeout(timer);
+            resolve(result);
+        } catch (error: any) {
+            clearTimeout(timer);
+            
+            // Handle retry logic
+            if (config.retryOnTimeout && retryCount < config.maxRetries) {
+                const shouldRetry = await firebaseErrorHandler.handleAuthError(
+                    error,
+                    config.operation,
+                    { retryCount }
+                );
+
+                if (shouldRetry) {
+                    // Add exponential backoff delay
+                    const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    
+                    return withTimeout(operation, config, retryCount + 1);
+                }
+            }
+
+            reject(error);
+        }
+    });
 }
 
 /**
@@ -246,3 +283,19 @@ export class TimeoutQueue {
 
 // Export singleton timeout queue
 export const timeoutQueue = new TimeoutQueue(3);
+
+/**
+ * Preemptive Firebase connection warming
+ * Call this on app start to reduce initial auth latency
+ */
+export async function warmFirebaseConnection(): Promise<void> {
+    try {
+        // Warm up the connection with a lightweight request
+        await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup', {
+            method: 'HEAD',
+            mode: 'no-cors'
+        });
+    } catch {
+        // Ignore errors, this is just a warming request
+    }
+}

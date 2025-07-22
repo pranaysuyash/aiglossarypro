@@ -1,165 +1,167 @@
 #!/usr/bin/env tsx
 
-// Note: Excel processing functionality has been removed
-// import { AdvancedExcelParser } from '../server/advancedExcelParser';
-import { enhancedStorage } from '../server/enhancedStorage';
+/**
+ * Import All Terms - Wrapper for Bulk Import System
+ * 
+ * This script provides backward compatibility for the old import-all-terms.ts
+ * It now uses the new bulk import system that supports CSV and JSON formats.
+ * 
+ * Usage:
+ * npx tsx scripts/import-all-terms.ts
+ * npx tsx scripts/import-all-terms.ts --source data/aiml.csv
+ * npx tsx scripts/import-all-terms.ts --help
+ */
+
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import { BulkTermImporter, type ImportOptions } from './import-bulk-terms';
 
 async function importAllTerms() {
-  console.log('🚀 Starting full import - Excel processing functionality has been removed\n');
+  console.log('🚀 AI Glossary Pro - Import All Terms\n');
+  
+  const args = process.argv.slice(2);
+  
+  // Show help if requested
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(`
+This script imports AI/ML terms into the glossary database.
+
+Usage: npx tsx scripts/import-all-terms.ts [options]
+
+Options:
+  --source <file>    Path to CSV or JSON file (default: auto-detect)
+  --dry-run          Preview import without making changes
+  --verbose          Show detailed progress
+  --help             Show this help message
+
+The script will automatically look for these files in order:
+1. data/aiml.csv
+2. data/aiml2_sample.csv
+3. data/test_sample.csv
+4. data/row1.csv (converted from Excel)
+5. Any .json files in data directory
+
+For more options, use the full bulk import script:
+npx tsx scripts/import-bulk-terms.ts --help
+    `);
+    return;
+  }
 
   try {
-    // Excel processing functionality has been removed
-    console.log('⚠️  Excel processing functionality has been removed');
-    console.log(
-      'This script is no longer functional and should be replaced with alternative data processing methods'
-    );
-
-    // const filePath = path.join(process.cwd(), 'data', 'row1.xlsx');
-    // const buffer = await readFile(filePath);
-
-    // Initialize parser
-    // const parser = new AdvancedExcelParser();
-
-    // Parse with AI disabled for now (to speed up the process)
-    // console.log('📊 Parsing Excel file with 295 columns...');
-    // const parsedTerms = await parser.parseComplexExcel(
-    //   buffer,
-    //   {
-    //     enableAI: false,
-    //     mode: 'none',
-    //     costOptimization: true
-    //   },
-    //   'row1.xlsx'
-    // );
-
-    // console.log(`\n✅ Successfully parsed ${parsedTerms.length} terms\n`);
-
-    // Mock empty array for now
-    const parsedTerms: any[] = [];
-
-    // Import each term
-    for (let i = 0; i < parsedTerms.length; i++) {
-      const term = parsedTerms[i];
-      console.log(`\n📝 Importing term ${i + 1}/${parsedTerms.length}: ${term.name}`);
-
-      try {
-        // Create enhanced term
-        const enhancedTerm = {
-          term_id: crypto.randomUUID(),
-          term_name: term.name,
-          basic_definition: term.sections.get('Introduction')?.['Definition and Overview'] || '',
-          technical_definition:
-            term.sections.get('Theoretical Concepts')?.[
-              'Key Mathematical and Statistical Foundations'
-            ] || '',
-          historical_context:
-            term.sections.get('Introduction')?.['Brief History or Background'] || '',
-          importance_in_ai:
-            term.sections.get('Introduction')?.['Importance and Relevance in AI/ML'] || '',
-          main_categories: term.categories.main || [],
-          sub_categories: term.categories.sub || [],
-          related_categories: term.categories.related || [],
-          application_domains: term.categories.domains || [],
-          techniques: term.categories.techniques || [],
-          implementation_status: term.sections.get('Implementation')?.[
-            'Code Snippets or Pseudocode'
-          ]
-            ? 'implemented'
-            : 'theoretical',
-          complexity_level: 'intermediate', // Default for now
-          prerequisites:
-            term.sections
-              .get('Prerequisites')
-              ?.['Prior Knowledge or Skills Required']?.split(',') || [],
-          related_terms:
-            term.sections
-              .get('Related Concepts')
-              ?.['Connection to Other AI/ML Terms or Topics']?.split(',') || [],
-          metadata: {
-            parsed_sections: Array.from(term.sections.keys()),
-            total_sections: term.sections.size,
-            has_interactive_elements:
-              !!term.sections.get('Introduction')?.['Interactive Element: Mermaid Diagram'],
-            has_code_examples:
-              !!term.sections.get('Implementation')?.['Code Snippets or Pseudocode'],
-            has_mathematical_content:
-              !!term.sections.get('Theoretical Concepts')?.['Mathematical Derivations or Proofs'],
-            last_updated: new Date().toISOString(),
-          },
-        };
-
-        // Store the enhanced term
-        await enhancedStorage.createEnhancedTerm(enhancedTerm);
-
-        // Store all sections
-        let sectionCount = 0;
-        for (const [sectionName, sectionContent] of term.sections) {
-          if (sectionContent && Object.keys(sectionContent).length > 0) {
-            await enhancedStorage.createTermSection({
-              term_id: enhancedTerm.term_id,
-              section_id: `${sectionName.toLowerCase().replace(/\s+/g, '_')}`,
-              section_name: sectionName,
-              content: sectionContent,
-              display_type: term.displayData.mainContent[sectionName]
-                ? 'main'
-                : term.displayData.sidebarContent[sectionName]
-                  ? 'sidebar'
-                  : term.displayData.filterData[sectionName]
-                    ? 'filter'
-                    : 'metadata',
-              order_index: sectionCount++,
-              is_required: ['Introduction', 'Prerequisites', 'How It Works'].includes(sectionName),
-              version: 1,
-            });
-          }
+    // Check for source argument
+    let sourceFile = args.find((arg, i) => args[i - 1] === '--source');
+    
+    // Auto-detect source file if not specified
+    if (!sourceFile) {
+      console.log('🔍 Auto-detecting data source...\n');
+      
+      const dataDir = path.join(process.cwd(), 'data');
+      const possibleFiles = [
+        'aiml.csv',
+        'aiml2_sample.csv',
+        'test_sample.csv',
+        'row1.csv',
+      ];
+      
+      // Check for CSV files
+      for (const file of possibleFiles) {
+        const filePath = path.join(dataDir, file);
+        try {
+          await fs.access(filePath);
+          sourceFile = filePath;
+          console.log(`✅ Found: ${file}`);
+          break;
+        } catch {
+          // File doesn't exist, continue
         }
-
-        console.log(`  ✅ Imported with ${sectionCount} sections`);
-
-        // Store interactive elements if any
-        const mermaidDiagram =
-          term.sections.get('Introduction')?.['Interactive Element: Mermaid Diagram'];
-        if (mermaidDiagram) {
-          await enhancedStorage.createInteractiveElement({
-            term_id: enhancedTerm.term_id,
-            element_type: 'mermaid_diagram',
-            content: { diagram: mermaidDiagram },
-            section_id: 'introduction',
-            order_index: 0,
-          });
+      }
+      
+      // If no CSV found, check for JSON files
+      if (!sourceFile) {
+        const files = await fs.readdir(dataDir);
+        const jsonFile = files.find(f => f.endsWith('.json') && f.includes('term'));
+        if (jsonFile) {
+          sourceFile = path.join(dataDir, jsonFile);
+          console.log(`✅ Found: ${jsonFile}`);
         }
-
-        const codeSnippet = term.sections.get('Implementation')?.['Code Snippets or Pseudocode'];
-        if (codeSnippet) {
-          await enhancedStorage.createInteractiveElement({
-            term_id: enhancedTerm.term_id,
-            element_type: 'code_example',
-            content: { code: codeSnippet, language: 'python' },
-            section_id: 'implementation',
-            order_index: 0,
-          });
-        }
-      } catch (error) {
-        console.error(`  ❌ Error importing term ${term.name}:`, error);
+      }
+      
+      if (!sourceFile) {
+        console.error('❌ No data file found!');
+        console.log('\nPlease ensure one of these files exists:');
+        possibleFiles.forEach(f => console.log(`  - data/${f}`));
+        console.log('  - Or any .json file with terms');
+        console.log('\nTo convert Excel files to CSV, run:');
+        console.log('  npx tsx scripts/convert-excel-to-csv.ts');
+        process.exit(1);
       }
     }
-
-    console.log('\n🎉 Import complete!');
-
+    
+    // Determine format from extension
+    const format = sourceFile.endsWith('.json') ? 'json' : 'csv';
+    
+    console.log(`\n📄 Source: ${path.relative(process.cwd(), sourceFile)}`);
+    console.log(`📊 Format: ${format.toUpperCase()}\n`);
+    
+    // Build import options
+    const options: Partial<ImportOptions> = {
+      source: sourceFile,
+      format,
+      batchSize: 100,
+      maxConcurrent: 5,
+      skipDuplicates: true,
+      validateData: true,
+      dryRun: args.includes('--dry-run'),
+      verbose: args.includes('--verbose'),
+      progressInterval: 5000, // Update every 5 seconds
+    };
+    
+    // Create importer
+    const importer = new BulkTermImporter(options);
+    
+    // Handle graceful shutdown
+    process.on('SIGINT', () => {
+      console.log('\n\n⚠️  Import interrupted by user');
+      importer.shutdown();
+      process.exit(1);
+    });
+    
+    // Run import
+    const stats = await importer.import();
+    
     // Show summary
-    const stats = await enhancedStorage.getEnhancedTermsStats();
-    console.log('\n📊 Database Summary:');
-    console.log(`  - Total enhanced terms: ${stats.totalTerms}`);
-    console.log(`  - Total sections: ${stats.totalSections}`);
-    console.log(`  - Interactive elements: ${stats.totalInteractiveElements}`);
+    console.log('\n📊 Import Summary:');
+    console.log('═════════════════');
+    console.log(`✅ Successfully imported: ${stats.successfulImports} terms`);
+    console.log(`⏭️  Skipped duplicates: ${stats.skippedDuplicates}`);
+    console.log(`❌ Errors: ${stats.importErrors}`);
+    console.log(`📁 Categories created: ${stats.categoriesCreated}`);
+    console.log(`📄 Sections created: ${stats.sectionsCreated}`);
+    
+    if (stats.successfulImports > 0) {
+      console.log('\n🎉 Import completed successfully!');
+      console.log('\nNext steps:');
+      console.log('1. Check the application to verify imported terms');
+      console.log('2. Review any error logs if errors occurred');
+      console.log('3. Run search indexing if needed');
+    } else if (stats.skippedDuplicates > 0) {
+      console.log('\n⚠️  All terms were already imported (duplicates skipped)');
+    } else {
+      console.log('\n❌ No terms were imported. Check the error logs.');
+    }
+    
   } catch (error) {
-    console.error('❌ Import failed:', error);
+    console.error('\n❌ Import failed:', error);
     process.exit(1);
   }
 }
 
-// Add missing import
-import crypto from 'node:crypto';
+// Show deprecation notice
+console.log('⚠️  Note: This script now uses the new bulk import system.');
+console.log('   For advanced options, use: npx tsx scripts/import-bulk-terms.ts --help\n');
 
 // Run the import
-importAllTerms().catch(console.error);
+importAllTerms().catch(error => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

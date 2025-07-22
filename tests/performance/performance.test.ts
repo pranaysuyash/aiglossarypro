@@ -3,15 +3,15 @@
  * Ensures performance optimizations don't regress over time
  */
 
-import { beforeAll, describe, expect, test } from '@jest/globals';
+import { beforeAll, describe, expect, test, vi } from 'vitest';
 
 // Mock performance API for testing
 const mockPerformance = {
-  now: jest.fn(() => Date.now()),
-  mark: jest.fn(),
-  measure: jest.fn(),
-  getEntriesByType: jest.fn(() => []),
-  getEntriesByName: jest.fn(() => []),
+  now: vi.fn(() => Date.now()),
+  mark: vi.fn(),
+  measure: vi.fn(),
+  getEntriesByType: vi.fn(() => []),
+  getEntriesByName: vi.fn(() => []),
 };
 
 global.performance = mockPerformance as any;
@@ -19,7 +19,7 @@ global.performance = mockPerformance as any;
 describe('Performance Regression Tests', () => {
   beforeAll(() => {
     // Setup performance baselines
-    jest.setTimeout(10000);
+    vi.setConfig({ testTimeout: 10000 });
   });
 
   describe('Component Render Performance', () => {
@@ -204,7 +204,7 @@ describe('Performance Regression Tests', () => {
 });
 
 // Performance benchmark helper
-export const runPerformanceBenchmark = (name: string, fn: () => void, iterations = 100) => {
+export const runPerformanceBenchmark = (name: string, fn: () => void, iterations: number = 100) => {
   const times: number[] = [];
 
   for (let i = 0; i < iterations; i++) {

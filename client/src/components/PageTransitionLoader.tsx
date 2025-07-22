@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useLocation } from 'wouter';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -8,48 +8,65 @@ export function PageTransitionLoader() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [previousLocation, setPreviousLocation] = useState(location);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     // Detect route change
     if (location !== previousLocation) {
-      setIsLoading(true);
-      setProgress(0);
-      
-      // Simulate progress
-      const startTime = Date.now();
-      const duration = 800; // 800ms total duration
-      
-      const updateProgress = () => {
-        const elapsed = Date.now() - startTime;
-        const newProgress = Math.min((elapsed / duration) * 100, 100);
+      // Only show loader for actual navigation, not for initial load
+      if (previousLocation !== location) {
+        setIsLoading(true);
+        setProgress(0);
         
-        setProgress(newProgress);
+        // Much shorter duration - 200ms instead of 800ms
+        const duration = 200;
+        const startTime = Date.now();
         
-        if (newProgress < 100) {
-          requestAnimationFrame(updateProgress);
-        } else {
-          // Complete the transition
-          setTimeout(() => {
+        const updateProgress = () => {
+          const elapsed = Date.now() - startTime;
+          const newProgress = Math.min((elapsed / duration) * 100, 100);
+          
+          setProgress(newProgress);
+          
+          if (newProgress < 100) {
+            requestAnimationFrame(updateProgress);
+          } else {
+            // Complete immediately without additional delay
             setIsLoading(false);
             setPreviousLocation(location);
-          }, 100);
-        }
-      };
-      
-      requestAnimationFrame(updateProgress);
+          }
+        };
+        
+        // Use React's startTransition for non-urgent update
+        startTransition(() => {
+          requestAnimationFrame(updateProgress);
+        });
+      } else {
+        setPreviousLocation(location);
+      }
     }
   }, [location, previousLocation]);
 
-  if (!isLoading) return null;
+  // Don't show loader for very quick transitions (< 100ms)
+  const [showLoader, setShowLoader] = useState(false);
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => setShowLoader(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      setShowLoader(false);
+    }
+  }, [isLoading]);
+
+  if (!showLoader || !isLoading) return null;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100]">
       <Progress 
         value={progress} 
-        className="h-1 rounded-none"
-        indicatorClassName="bg-primary transition-all duration-300 ease-out"
+        className="h-0.5 rounded-none" // Thinner progress bar
+        indicatorClassName="bg-primary transition-transform duration-200 ease-out" // Faster transition
       />
-      <div className="absolute top-0 right-0 h-1 w-20 bg-gradient-to-l from-primary/50 to-transparent animate-pulse" />
     </div>
   );
 }
@@ -57,26 +74,39 @@ export function PageTransitionLoader() {
 // Hook to manually trigger page transition loading
 export function usePageTransition() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  const startTransition = () => {
+  const startPageTransition = (callback?: () => void) => {
     setIsLoading(true);
-    // Auto-complete after a timeout as fallback
-    setTimeout(() => setIsLoading(false), 1000);
+    
+    // Use React's concurrent features
+    startTransition(() => {
+      callback?.();
+      // Auto-complete after a short timeout as fallback
+      setTimeout(() => setIsLoading(false), 300);
+    });
   };
 
   const endTransition = () => {
     setIsLoading(false);
   };
 
-  return { isLoading, startTransition, endTransition };
+  return { 
+    isLoading: isLoading || isPending, 
+    startTransition: startPageTransition, 
+    endTransition 
+  };
 }
 
-// Skeleton loader for page content
+// Optimized skeleton loader with CSS containment
 export function PageSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("animate-pulse space-y-4", className)}>
+    <div 
+      className={cn("animate-pulse space-y-4", className)}
+      style={{ contain: 'layout style paint' }} // CSS containment for better performance
+    >
       {/* Header skeleton */}
-      <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+      <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg will-change-auto" />
       
       {/* Content skeleton */}
       <div className="space-y-3">

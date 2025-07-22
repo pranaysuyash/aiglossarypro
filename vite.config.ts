@@ -23,6 +23,7 @@ export default defineConfig({
           'useExperiment',
           'ComparisonTable',
           'Pricing',
+          'Footer',
         ],
       },
     }),

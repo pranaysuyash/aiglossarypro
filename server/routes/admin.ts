@@ -2,7 +2,7 @@ import path from 'node:path';
 import type { Express, Request, Response } from 'express';
 import express from 'express';
 import type { AdminStats, ApiResponse } from '../../shared/types';
-import { cacheManager } from '../cacheManager';
+
 import { enhancedStorage as storage } from '../enhancedStorage';
 import { authenticateToken, requireAdmin } from '../middleware/adminAuth';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../middleware/firebaseAuth';
@@ -469,75 +469,11 @@ export function registerAdminRoutes(app: Express): void {
     }
   );
 
-  // Get cache status and information
-  router.get('/cache/status', authenticateToken, requireAdmin, async (_req, res) => {
-    try {
-      const cacheEntries = await cacheManager.listCache();
+  
 
-      const status = {
-        totalCacheEntries: cacheEntries.length,
-        cacheEntries: cacheEntries.map(entry => ({
-          fileName: path.basename(entry.filePath),
-          fileSizeMB: (entry.fileSize / (1024 * 1024)).toFixed(2),
-          termCount: entry.termCount,
-          categoryCount: entry.categoryCount,
-          subcategoryCount: entry.subcategoryCount,
-          processedAt: new Date(entry.processedAt).toISOString(),
-          processingTimeSeconds: (entry.processingTime / 1000).toFixed(2),
-          ageHours: Math.round((Date.now() - entry.processedAt) / (1000 * 60 * 60)),
-          cacheVersion: entry.cacheVersion,
-        })),
-      };
+  
 
-      res.json({ success: true, data: status });
-    } catch (error) {
-      logger.error('Error getting cache status:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get cache status',
-      });
-    }
-  });
-
-  // Clear specific cache entry
-  router.delete('/cache/:fileName', authenticateToken, requireAdmin, async (req, res) => {
-    try {
-      const { fileName } = req.params;
-      const dataDir = path.join(process.cwd(), 'data');
-      const filePath = path.join(dataDir, fileName);
-
-      await cacheManager.clearCache(filePath);
-
-      res.json({
-        success: true,
-        message: `Cache cleared for ${fileName}`,
-      });
-    } catch (error) {
-      logger.error('Error clearing cache:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to clear cache',
-      });
-    }
-  });
-
-  // Clear all cache entries
-  router.delete('/cache', authenticateToken, requireAdmin, async (_req, res) => {
-    try {
-      await cacheManager.clearAllCache();
-
-      res.json({
-        success: true,
-        message: 'All cache cleared successfully',
-      });
-    } catch (error) {
-      logger.error('Error clearing all cache:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to clear all cache',
-      });
-    }
-  });
+  
 
   // Schedule automatic reprocessing (placeholder for future cron implementation)
   router.post('/schedule/reprocess', authenticateToken, requireAdmin, (req, res) => {

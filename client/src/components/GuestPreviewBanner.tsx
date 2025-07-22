@@ -135,13 +135,13 @@ export function GuestPreviewBanner({
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
                     <span>Preview progress</span>
-                    <span>{guestPreview.previewsUsed}/2 used</span>
+                    <span>{guestPreview.previewsUsed}/{guestPreview.previewsLimit || 50} used</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                       style={{
-                        width: `${(guestPreview.previewsUsed / 2) * 100}%`,
+                        width: `${(guestPreview.previewsUsed / (guestPreview.previewsLimit || 50)) * 100}%`,
                       }}
                     />
                   </div>

@@ -1,17 +1,19 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import InteractiveDemo from '../client/src/components/interactive/InteractiveDemo';
 
 // Mock the CodeBlock component since it might have complex dependencies
-jest.mock('../client/src/components/interactive/CodeBlock', () => {
-  return function MockCodeBlock({ title, code, language, description }: any) {
-    return (
-      <div data-testid="code-block">
-        <h3>{title}</h3>
-        <code>{code}</code>
-        <p>{description}</p>
-      </div>
-    );
+vi.mock('../client/src/components/interactive/CodeBlock', () => {
+  return {
+    default: function MockCodeBlock({ title, code, description }: any) {
+      return (
+        <div data-testid="code-block">
+          <h3>{title}</h3>
+          <code>{code}</code>
+          <p>{description}</p>
+        </div>
+      );
+    }
   };
 });
 

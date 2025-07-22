@@ -31,7 +31,7 @@ describe('Firebase Authentication Integration', () => {
         auth = getAuth(app);
 
         // Connect to emulator in test environment
-        if (process.env.NODE_ENV === 'test' && !auth.config.emulator) {
+        if (process.env.NODE_ENV === 'test' && !(auth as any).config?.emulator) {
             try {
                 connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
             } catch (error) {
@@ -90,21 +90,25 @@ describe('Firebase Authentication Integration', () => {
             expect(auth.app).toBe(app);
         });
 
-        it('should handle auth state changes', (done) => {
-            const unsubscribe = auth.onAuthStateChanged((user) => {
-                // Initial state should be null (no user signed in)
-                expect(user).toBeNull();
-                unsubscribe();
-                done();
+        it('should handle auth state changes', async () => {
+            return new Promise<void>((resolve) => {
+                const unsubscribe = auth.onAuthStateChanged((user) => {
+                    // Initial state should be null (no user signed in)
+                    expect(user).toBeNull();
+                    unsubscribe();
+                    resolve();
+                });
             });
         });
 
-        it('should handle ID token changes', (done) => {
-            const unsubscribe = auth.onIdTokenChanged((user) => {
-                // Initial state should be null (no user signed in)
-                expect(user).toBeNull();
-                unsubscribe();
-                done();
+        it('should handle ID token changes', async () => {
+            return new Promise<void>((resolve) => {
+                const unsubscribe = auth.onIdTokenChanged((user) => {
+                    // Initial state should be null (no user signed in)
+                    expect(user).toBeNull();
+                    unsubscribe();
+                    resolve();
+                });
             });
         });
     });
@@ -245,11 +249,11 @@ describe('Firebase Authentication Integration', () => {
 
             if (process.env.NODE_ENV === 'production') {
                 expect(jwtSecret).toBeDefined();
-                expect(jwtSecret.length).toBeGreaterThanOrEqual(32);
+                expect(jwtSecret!.length).toBeGreaterThanOrEqual(32);
             }
 
             if (jwtSecret) {
-                expect(jwtSecret.length).toBeGreaterThan(10);
+                expect(jwtSecret!.length).toBeGreaterThan(10);
             }
         });
     });

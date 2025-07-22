@@ -363,17 +363,7 @@ export class AnalyticsService {
       const queries = [...this.searchQueries];
       this.searchQueries = [];
 
-      // Create table if it doesn't exist
-      await db.execute(sql`
-        CREATE TABLE IF NOT EXISTS search_analytics (
-          id SERIAL PRIMARY KEY,
-          query TEXT NOT NULL,
-          results_count INTEGER NOT NULL,
-          response_time_ms INTEGER NOT NULL,
-          user_ip TEXT,
-          timestamp TIMESTAMP DEFAULT NOW()
-        )
-      `);
+      
 
       // Batch insert search analytics
       for (const query of queries) {
@@ -396,19 +386,7 @@ export class AnalyticsService {
       const pageViews = [...this.pageViews];
       this.pageViews = [];
 
-      // Create table if it doesn't exist
-      await db.execute(sql`
-        CREATE TABLE IF NOT EXISTS page_view_analytics (
-          id SERIAL PRIMARY KEY,
-          page TEXT NOT NULL,
-          term_id TEXT,
-          user_ip TEXT,
-          referrer TEXT,
-          user_agent TEXT,
-          session_duration_ms INTEGER,
-          timestamp TIMESTAMP DEFAULT NOW()
-        )
-      `);
+      
 
       // Batch insert page view analytics
       for (const view of pageViews) {
@@ -435,19 +413,7 @@ export class AnalyticsService {
       const metrics = [...this.performanceMetrics];
       this.performanceMetrics = [];
 
-      // Create table if it doesn't exist
-      await db.execute(sql`
-        CREATE TABLE IF NOT EXISTS performance_metrics (
-          id SERIAL PRIMARY KEY,
-          endpoint TEXT NOT NULL,
-          method TEXT NOT NULL,
-          response_time_ms INTEGER NOT NULL,
-          status_code INTEGER NOT NULL,
-          memory_usage_mb FLOAT,
-          cpu_usage_percent FLOAT,
-          timestamp TIMESTAMP DEFAULT NOW()
-        )
-      `);
+      
 
       // Batch insert performance metrics
       for (const metric of metrics) {
@@ -471,18 +437,7 @@ export class AnalyticsService {
       const interactions = [...this.userInteractions];
       this.userInteractions = [];
 
-      // Create table if it doesn't exist
-      await db.execute(sql`
-        CREATE TABLE IF NOT EXISTS user_interaction_analytics (
-          id SERIAL PRIMARY KEY,
-          action TEXT NOT NULL,
-          term_id TEXT,
-          query TEXT,
-          user_ip TEXT,
-          session_id TEXT,
-          timestamp TIMESTAMP DEFAULT NOW()
-        )
-      `);
+      
 
       // Batch insert user interactions
       for (const interaction of interactions) {

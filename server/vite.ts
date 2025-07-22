@@ -1,18 +1,18 @@
-import fs from 'node:fs';
-import type { Server } from 'node:http';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import express, { type Express } from 'express';
+import type { Express } from 'express';
+import * as express from 'express';
 import { nanoid } from 'nanoid';
-import { createLogger, createServer as createViteServer } from 'vite';
-import viteConfig from '../scripts/vite.config';
+import * as fs from 'node:fs';
+import type { Server } from 'node:http';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import * as vite from 'vite';
 import { log as logger } from './utils/logger';
 
 // Get current directory in a way that works with both CommonJS and ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const viteLogger = createLogger();
+// Logger is now handled internally by Vite
 
 export function log(message: string, source = 'express') {
   logger.info(message, { source });
@@ -25,21 +25,21 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true as true,
   };
 
-  const vite = await createViteServer({
-    ...viteConfig,
+  const viteServer = await (vite as any).createServer({
     configFile: false,
-    customLogger: {
-      ...viteLogger,
-      error: (msg, options) => {
-        viteLogger.error(msg, options);
-        process.exit(1);
+    root: path.resolve(__dirname, '../client'),
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '../client/src'),
+        '@shared': path.resolve(__dirname, '../shared'),
+        '@assets': path.resolve(__dirname, '../attached_assets'),
       },
     },
     server: serverOptions,
     appType: 'custom',
   });
 
-  app.use(vite.middlewares);
+  app.use(viteServer.middlewares);
   // Only serve HTML for non-API routes
   app.get('*', async (req, res, next) => {
     const url = req.originalUrl;
@@ -55,10 +55,10 @@ export async function setupVite(app: Express, server: Server) {
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, 'utf-8');
       template = template.replace(`src="/src/main.tsx"`, `src="/src/main.tsx?v=${nanoid()}"`);
-      const page = await vite.transformIndexHtml(url, template);
+      const page = await viteServer.transformIndexHtml(url, template);
       res.status(200).set({ 'Content-Type': 'text/html' }).end(page);
     } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
+      viteServer.ssrFixStacktrace(e as Error);
       next(e);
     }
   });

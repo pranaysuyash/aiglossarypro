@@ -51,10 +51,20 @@ if (missingKeys.length > 0) {
 let app: ReturnType<typeof initializeApp> | undefined;
 let auth: ReturnType<typeof getAuth> | undefined;
 
+console.log('🔥 Initializing Firebase with config:', {
+  hasApiKey: !!firebaseConfig.apiKey,
+  hasAuthDomain: !!firebaseConfig.authDomain,
+  hasProjectId: !!firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId
+});
+
 try {
   if (missingKeys.length === 0) {
+    console.log('🔥 All Firebase config keys present, initializing app...');
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
+    console.log('✅ Firebase app and auth initialized successfully');
 
     // Check if user just logged out
     const justLoggedOut = sessionStorage.getItem('just_logged_out') === 'true';
@@ -166,21 +176,35 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
  */
 export async function signInWithEmail(email: string, password: string) {
   const operationKey = `signInWithEmail-${email}`;
+  console.log('🔐 Starting signInWithEmail for:', email.substring(0, 3) + '***');
+  console.log('🔐 Firebase auth initialized:', !!auth);
+  console.log('🔐 Firebase config:', {
+    hasApiKey: !!firebaseConfig.apiKey,
+    hasAuthDomain: !!firebaseConfig.authDomain,
+    hasProjectId: !!firebaseConfig.projectId,
+    authDomain: firebaseConfig.authDomain
+  });
 
   return timeoutQueue.add(operationKey, async () => {
     try {
       if (!auth) {
+        console.error('❌ Firebase authentication is not initialized');
         throw new Error('Firebase authentication is not initialized');
       }
 
+      console.log('🔐 Calling signInWithEmailAndPassword...');
       // Wrap the sign in operation with timeout
       const result = await withTimeout(
-        () => signInWithEmailAndPassword(auth!, email, password),
+        () => {
+          console.log('🔐 Inside withTimeout, calling Firebase signInWithEmailAndPassword');
+          return signInWithEmailAndPassword(auth!, email, password);
+        },
         {
           ...DEFAULT_TIMEOUTS.signIn,
           operation: 'signInWithEmail',
         }
       );
+      console.log('✅ signInWithEmailAndPassword successful');
 
       // Get ID token with timeout
       const idToken = await withTimeout(
@@ -483,3 +507,18 @@ export const signInWithGoogle = async () => {
   }
   return signInWithPopup(auth, googleProvider);
 };
+
+/**
+ * Warm Firebase connection by making a lightweight request
+ * This helps reduce cold start latency for subsequent auth operations
+ */
+export async function warmFirebaseConnection(): Promise<void> {
+  try {
+    // Make a lightweight request to warm up the connection
+    // This primes the Firebase SDK and establishes the connection
+    await auth.authStateReady();
+  } catch (error) {
+    // Silently fail - this is just an optimization
+    console.debug('Firebase connection warming failed:', error);
+  }
+}

@@ -122,52 +122,61 @@ describe('MemoryMonitor', () => {
     });
 
     describe('Memory Alerts', () => {
-        it('should trigger warning alert for high memory usage', (done) => {
+        it('should trigger warning alert for high memory usage', async () => {
             mockMemory.usedJSHeapSize = 300 * 1024 * 1024; // 300MB (above warning threshold)
 
-            const unsubscribe = MemoryMonitor.onMemoryAlert((alert) => {
-                expect(alert.level).toBe('warning');
-                expect(alert.message).toContain('Warning');
-                expect(alert.metrics.usedJSHeapSize).toBe(300 * 1024 * 1024);
-                unsubscribe();
-                done();
+            const alertPromise = new Promise((resolve) => {
+                const unsubscribe = MemoryMonitor.onMemoryAlert((alert) => {
+                    expect(alert.level).toBe('warning');
+                    expect(alert.message).toContain('Warning');
+                    expect(alert.metrics.usedJSHeapSize).toBe(300 * 1024 * 1024);
+                    unsubscribe();
+                    resolve(alert);
+                });
             });
 
             MemoryMonitor['checkMemoryUsage']();
+            await alertPromise;
         });
 
-        it('should trigger critical alert for very high memory usage', (done) => {
+        it('should trigger critical alert for very high memory usage', async () => {
             mockMemory.usedJSHeapSize = 600 * 1024 * 1024; // 600MB (above critical threshold)
 
-            const unsubscribe = MemoryMonitor.onMemoryAlert((alert) => {
-                expect(alert.level).toBe('critical');
-                expect(alert.message).toContain('Critical');
-                unsubscribe();
-                done();
+            const alertPromise = new Promise((resolve) => {
+                const unsubscribe = MemoryMonitor.onMemoryAlert((alert) => {
+                    expect(alert.level).toBe('critical');
+                    expect(alert.message).toContain('Critical');
+                    unsubscribe();
+                    resolve(alert);
+                });
             });
 
             MemoryMonitor['checkMemoryUsage']();
+            await alertPromise;
         });
 
-        it('should trigger emergency alert and cleanup', (done) => {
+        it('should trigger emergency alert and cleanup', async () => {
             mockMemory.usedJSHeapSize = 800 * 1024 * 1024; // 800MB (above emergency threshold)
 
             const cleanupSpy = vi.fn();
             MemoryMonitor.registerCleanupFunction(cleanupSpy);
 
-            const unsubscribe = MemoryMonitor.onMemoryAlert((alert) => {
-                expect(alert.level).toBe('emergency');
-                expect(alert.message).toContain('Emergency');
+            const alertPromise = new Promise((resolve) => {
+                const unsubscribe = MemoryMonitor.onMemoryAlert((alert) => {
+                    expect(alert.level).toBe('emergency');
+                    expect(alert.message).toContain('Emergency');
 
-                // Emergency cleanup should be triggered
-                setTimeout(() => {
-                    expect(cleanupSpy).toHaveBeenCalled();
-                    unsubscribe();
-                    done();
-                }, 10);
+                    // Emergency cleanup should be triggered
+                    setTimeout(() => {
+                        expect(cleanupSpy).toHaveBeenCalled();
+                        unsubscribe();
+                        resolve(alert);
+                    }, 10);
+                });
             });
 
             MemoryMonitor['checkMemoryUsage']();
+            await alertPromise;
         });
     });
 

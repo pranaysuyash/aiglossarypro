@@ -24,6 +24,7 @@ export interface GuestPreviewState {
   isGuest: boolean;
   canPreview: boolean;
   previewsUsed: number;
+  previewsLimit: number;
   previewsRemaining: number;
   hasReachedLimit: boolean;
   session: GuestSession | null;
@@ -149,6 +150,7 @@ export function useGuestPreview(): GuestPreviewState & GuestPreviewActions {
 
   const canPreview = isAuthenticated || (session ? canGuestPreview(session) : false);
   const previewsUsed = session?.previewsUsed || 0;
+  const previewsLimit = session?.previewsLimit || 50;
   const previewsRemaining = isAuthenticated ? Infinity : getRemainingPreviews();
   const hasReachedLimit = !isAuthenticated && hasReachedPreviewLimit();
   const analytics = getSessionAnalytics();
@@ -157,6 +159,7 @@ export function useGuestPreview(): GuestPreviewState & GuestPreviewActions {
     isGuest,
     canPreview,
     previewsUsed,
+    previewsLimit,
     previewsRemaining,
     hasReachedLimit,
     session,

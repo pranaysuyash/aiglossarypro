@@ -23,6 +23,7 @@ export {
   ArrowRight,
   ArrowUpDown,
   // Analytics & Charts
+  Award,
   BarChart3,
   Bell,
   Bold,
@@ -32,6 +33,7 @@ export {
   // Additional missing icons
   Bot,
   Brain,
+  Briefcase,
   Calendar,
   Check,
   CheckCircle,
@@ -80,6 +82,7 @@ export {
   HelpCircle,
   History,
   Home,
+  Image,
   Info,
   Info as InfoIcon,
   Italic,
@@ -105,6 +108,7 @@ export {
   MoreVertical,
   Network,
   // Navigation Icons
+  Package,
   PanelLeft,
   Pause,
   // Media Icons
@@ -134,6 +138,7 @@ export {
   Square,
   Star,
   Target,
+  Terminal,
   TestTube,
   Trash2,
   TrendingDown,
@@ -152,6 +157,8 @@ export {
   Wand2,
   Wifi,
   WifiOff,
+  Wrench,
+  Wrench as Tool,
   X,
   XCircle,
   XCircle as ErrorIcon,

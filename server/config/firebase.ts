@@ -49,14 +49,30 @@ export function initializeFirebaseAdmin() {
 // Verify Firebase ID token
 export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdToken | null> {
   try {
+    logger.info('🔐 verifyFirebaseToken called', { 
+      tokenLength: idToken?.length,
+      adminInitialized 
+    });
+    
     if (!adminInitialized) {
+      logger.info('🔐 Initializing Firebase Admin SDK...');
       initializeFirebaseAdmin();
     }
 
+    logger.info('🔐 Calling getAdminAuth().verifyIdToken...');
     const decodedToken = await getAdminAuth().verifyIdToken(idToken);
+    logger.info('✅ Token verified successfully', { 
+      uid: decodedToken.uid,
+      email: decodedToken.email 
+    });
     return decodedToken;
   } catch (error) {
-    logger.error('Error verifying Firebase token:', error);
+    logger.error('❌ Error verifying Firebase token:', error);
+    logger.error('❌ Error details:', {
+      message: (error as any).message,
+      code: (error as any).code,
+      stack: (error as any).stack?.split('\n').slice(0, 3)
+    });
     return null;
   }
 }

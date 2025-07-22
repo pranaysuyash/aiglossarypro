@@ -18,18 +18,29 @@ export function registerFirebaseAuthRoutes(app: Express): void {
    * POST /api/auth/firebase/login
    */
   app.post('/api/auth/firebase/login', async (req: Request, res: Response) => {
+    logger.info('🔐 Firebase login endpoint hit', { 
+      hasIdToken: !!req.body.idToken,
+      tokenLength: req.body.idToken?.length 
+    });
+    
     try {
       const { idToken } = req.body;
 
       if (!idToken) {
+        logger.error('❌ No ID token provided');
         return res.status(400).json({
           success: false,
           message: 'ID token is required',
         });
       }
 
+      logger.info('🔐 Verifying Firebase token...');
       // Verify Firebase token
       const decodedToken = await verifyFirebaseToken(idToken);
+      logger.info('🔐 Token verification result:', { 
+        success: !!decodedToken,
+        email: decodedToken?.email 
+      });
 
       if (!decodedToken) {
         return res.status(401).json({

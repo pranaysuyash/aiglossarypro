@@ -41,11 +41,15 @@ async function testAuthFlow() {
       await page.waitForTimeout(2000);
       
       // Handle cookie consent if present
-      const cookieAcceptButton = await page.$('button:has-text("Accept"), button:has-text("I Accept"), button:has-text("Accept All")');
-      if (cookieAcceptButton) {
-        console.log('🍪 Accepting cookie consent...');
-        await cookieAcceptButton.click();
-        await page.waitForTimeout(1000);
+      try {
+        const cookieAcceptButton = await page.waitForSelector('button:has-text("Accept"), button:has-text("I Accept"), button:has-text("Accept All")', { timeout: 3000 });
+        if (cookieAcceptButton) {
+          console.log('🍪 Accepting cookie consent...');
+          await cookieAcceptButton.click();
+          await page.waitForTimeout(1000);
+        }
+      } catch (e) {
+        console.log('ℹ️  No cookie consent banner found (or already accepted)');
       }
       
       // Take screenshot

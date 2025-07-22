@@ -161,7 +161,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
   return (
     <header
       id="navigation"
-      className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`}
+      className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 min-h-[56px] sm:min-h-[64px] lg:min-h-[72px] ${className || ''}`}
     >
       <div className="container mx-auto px-2 sm:px-4 lg:px-6 xl:px-8">
         <div className="flex justify-between items-center py-2 sm:py-3 lg:py-4 gap-1 sm:gap-2">
@@ -297,12 +297,13 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                       className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 h-8 w-8 lg:h-10 lg:w-10 relative"
                       aria-label={`User menu for ${userObj?.firstName || 'User'}`}
                     >
-                      <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
+                      <Avatar className="h-6 w-6 lg:h-8 lg:w-8 flex-shrink-0">
                         {userObj?.profileImageUrl && (
                           <AvatarImage
                             src={userObj.profileImageUrl}
                             alt={userObj.firstName || 'User'}
                             className="object-cover"
+                            loading="eager"
                           />
                         )}
                         <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 text-xs lg:text-sm">
@@ -533,12 +534,13 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                 <div className="flex items-center space-x-3">
                   {isAuthenticated && (
                     <>
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
                         {userObj?.profileImageUrl && (
                           <AvatarImage
                             src={userObj.profileImageUrl}
                             alt={userObj.firstName || 'User'}
                             className="object-cover"
+                            loading="eager"
                           />
                         )}
                         <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">

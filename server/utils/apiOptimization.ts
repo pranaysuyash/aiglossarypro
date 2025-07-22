@@ -31,7 +31,7 @@ interface ResponseTimeMetrics {
 }
 
 class APIOptimizer {
-    private cache = new Map<string, CacheEntry>();
+    private cacheStore = new Map<string, CacheEntry>();
     private responseMetrics: ResponseTimeMetrics[] = [];
     private readonly maxCacheSize = 1000;
     private readonly maxMetricsSize = 10000;
@@ -183,7 +183,7 @@ class APIOptimizer {
      * Get data from cache
      */
     private getFromCache(key: string): CacheEntry | null {
-        const entry = this.cache.get(key);
+        const entry = this.cacheStore.get(key);
 
         if (!entry) {
             return null;
@@ -191,7 +191,7 @@ class APIOptimizer {
 
         // Check if expired
         if (Date.now() - entry.timestamp > entry.ttl * 1000) {
-            this.cache.delete(key);
+            this.cacheStore.delete(key);
             return null;
         }
 
@@ -209,7 +209,7 @@ class APIOptimizer {
         compress: boolean
     ): void {
         // Prevent cache from growing too large
-        if (this.cache.size >= this.maxCacheSize) {
+        if (this.cacheStore.size >= this.maxCacheSize) {
             this.evictOldestEntries();
         }
 
@@ -221,7 +221,7 @@ class APIOptimizer {
             compressed: compress
         };
 
-        this.cache.set(key, entry);
+        this.cacheStore.set(key, entry);
     }
 
     /**
@@ -230,9 +230,9 @@ class APIOptimizer {
     invalidateByTags(tags: string[]): number {
         let invalidated = 0;
 
-        for (const [key, entry] of this.cache.entries()) {
+        for (const [key, entry] of this.cacheStore.entries()) {
             if (entry.tags.some(tag => tags.includes(tag))) {
-                this.cache.delete(key);
+                this.cacheStore.delete(key);
                 invalidated++;
             }
         }
@@ -245,8 +245,8 @@ class APIOptimizer {
      * Clear all cache
      */
     clearCache(): void {
-        const size = this.cache.size;
-        this.cache.clear();
+        const size = this.cacheStore.size;
+        this.cacheStore.clear();
         console.log(`🗑️ Cleared ${size} cache entries`);
     }
 
@@ -316,7 +316,7 @@ class APIOptimizer {
         oldestEntry: number;
         newestEntry: number;
     } {
-        const entries = Array.from(this.cache.values());
+        const entries = Array.from(this.cacheStore.values());
         const now = Date.now();
 
         if (entries.length === 0) {
@@ -330,10 +330,10 @@ class APIOptimizer {
         }
 
         const timestamps = entries.map(e => e.timestamp);
-        const memoryUsage = JSON.stringify(Array.from(this.cache.entries())).length;
+        const memoryUsage = JSON.stringify(Array.from(this.cacheStore.entries())).length;
 
         return {
-            size: this.cache.size,
+            size: this.cacheStore.size,
             hitRate: this.calculateHitRate(),
             memoryUsage,
             oldestEntry: Math.min(...timestamps),
@@ -356,7 +356,7 @@ class APIOptimizer {
      * Evict oldest cache entries
      */
     private evictOldestEntries(): void {
-        const entries = Array.from(this.cache.entries());
+        const entries = Array.from(this.cacheStore.entries());
         entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
 
         // Remove oldest 25% of entries
@@ -384,9 +384,9 @@ class APIOptimizer {
         const now = Date.now();
         let cleaned = 0;
 
-        for (const [key, entry] of this.cache.entries()) {
+        for (const [key, entry] of this.cacheStore.entries()) {
             if (now - entry.timestamp > entry.ttl * 1000) {
-                this.cache.delete(key);
+                this.cacheStore.delete(key);
                 cleaned++;
             }
         }
@@ -404,7 +404,7 @@ class APIOptimizer {
             clearInterval(this.cleanupInterval);
             this.cleanupInterval = null;
         }
-        this.cache.clear();
+        this.cacheStore.clear();
         this.responseMetrics = [];
     }
 }

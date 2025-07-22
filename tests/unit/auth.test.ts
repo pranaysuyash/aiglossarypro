@@ -11,7 +11,6 @@ import { features } from '../../server/config';
 import { app } from '../../server/index';
 import { requireAdmin } from '../../server/middleware/adminAuth';
 import { mockIsAuthenticated } from '../../server/middleware/dev/mockAuth';
-import { isAuthenticated } from '../../server/middleware/firebaseAuth';
 
 // Mock Express request/response for middleware testing
 const mockRequest = (overrides = {}): any => ({
@@ -189,8 +188,8 @@ describe('Authentication System', () => {
       const res = mockResponse();
       const next = vi.fn();
 
-      if (features.authEnabled) {
-        await isAuthenticated(req, res, next);
+      if (features.firebaseAuthEnabled) {
+        await authenticateFirebaseToken(req, res, next);
         expect(res.status).toHaveBeenCalledWith(401);
       }
     });

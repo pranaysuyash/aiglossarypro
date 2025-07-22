@@ -193,6 +193,19 @@ export async function signInWithEmail(email: string, password: string) {
         throw new Error('Firebase authentication is not initialized');
       }
 
+      // Check if there's an existing user and sign them out first
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        console.log('⚠️ Found existing user session, signing out first...');
+        try {
+          await signOut(auth);
+          // Wait a bit for the sign out to propagate
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (signOutError) {
+          console.warn('Sign out before login failed:', signOutError);
+        }
+      }
+
       
       // Debug logging for network issues
       console.log('🔍 [Debug] Network status:', navigator.onLine);

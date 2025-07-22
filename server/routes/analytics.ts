@@ -4,8 +4,14 @@ import { terms, termViews } from '../../shared/schema';
 import { ERROR_MESSAGES } from '../constants';
 import { db } from '../db';
 import { enhancedStorage as storage } from '../enhancedStorage';
-import { requireAdmin } from '../middleware/adminAuth';
-import { mockAuthenticateToken, mockIsAuthenticated } from '../middleware/dev/mockAuth';
+import { requireAdmin, authenticateToken } from '../middleware/adminAuth';
+// import { multiAuthMiddleware } from '../middleware/multiAuth';
+// Temporarily disable auth middleware to fix server startup
+const multiAuthMiddleware = (req: any, res: any, next: any) => {
+  // Mock middleware for now
+  req.user = { claims: { sub: 'anonymous' } };
+  next();
+};
 import {
   type CategoryAnalyticsQuery,
   CategoryAnalyticsQuerySchema,
@@ -34,8 +40,8 @@ import { log as logger } from '../utils/logger';
  */
 export function registerAnalyticsRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
+  const authMiddleware = multiAuthMiddleware;
+  const tokenMiddleware = authenticateToken;
 
   // General analytics (public - basic metrics only)
   app.get(

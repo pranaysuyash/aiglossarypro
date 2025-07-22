@@ -1,18 +1,33 @@
 /**
- * Firebase Authentication Configuration
- * Provides a unified authentication solution with multiple providers
+ * Firebase Authentication Configuration with Timeout Protection
+ * Prevents hanging when Firebase servers are unreachable
  */
 
 import { cert, initializeApp, type ServiceAccount } from 'firebase-admin/app';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
-
 import logger from '../utils/logger';
+
 // Firebase Admin SDK initialization
 let adminInitialized = false;
 
+// Timeout wrapper for async operations
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string
+): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`${operation} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
+}
+
 export function initializeFirebaseAdmin() {
-  if (adminInitialized) {return;}
+  if (adminInitialized) return;
 
   try {
     // Use service account credentials from environment
@@ -35,7 +50,7 @@ export function initializeFirebaseAdmin() {
 
     initializeApp({
       credential: cert(serviceAccount),
-      projectId: process.env.FIREBASE_PROJECT_ID!,
+      projectId: process.env.FIREBASE_PROJECT_ID,
     });
 
     adminInitialized = true;
@@ -44,21 +59,6 @@ export function initializeFirebaseAdmin() {
     logger.error('❌ Failed to initialize Firebase Admin:', error);
     throw error;
   }
-}
-
-// Timeout wrapper for async operations
-async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  operation: string
-): Promise<T> {
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(new Error(`${operation} timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-  });
-
-  return Promise.race([promise, timeoutPromise]);
 }
 
 // Verify Firebase ID token with timeout
@@ -154,7 +154,7 @@ export async function createFirebaseUser(email: string, password: string, displa
       getAdminAuth().createUser({
         email,
         password,
-        displayName: displayName || null,
+        displayName,
         emailVerified: false,
       }),
       5000,

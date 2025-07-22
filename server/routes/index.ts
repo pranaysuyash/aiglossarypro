@@ -18,7 +18,7 @@ import { registerAnalyticsRoutes } from './analytics';
 import { registerAuthRoutes } from './auth';
 // Import existing specialized route modules
 
-import cacheAnalyticsRoutes from './cacheAnalytics';
+// import cacheAnalyticsRoutes from './cacheAnalytics';
 import { registerCategoryRoutes } from './categories';
 import { registerCodeExamplesRoutes } from './codeExamples';
 import { registerContentRoutes } from './content';
@@ -90,10 +90,11 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerSearchRoutes(app);
     registerAdaptiveSearchRoutes(app);
     logger.info('✅ Adaptive search routes registered - AI-powered semantic search now available');
-    registerUserRoutes(app);
-    registerUserProgressRoutes(app);
+    // Register progress routes BEFORE user routes to ensure /api/progress/stats is handled correctly
     registerProgressRoutes(app);
     logger.info('✅ Progress tracking routes registered');
+    registerUserRoutes(app);
+    registerUserProgressRoutes(app);
 
     // Register support routes
     setupSupportRoutes(app);
@@ -186,12 +187,14 @@ export async function registerRoutes(app: Express): Promise<void> {
     app.use('/api/enhanced-295', enhanced295Routes);
     logger.info('✅ Enhanced 295-column content generation routes registered');
 
-    // Register cache management routes
+    // Register cache management routes (currently disabled - cache.ts is empty)
+    // app.use('/api/cache', cacheRoutes);
     
 
     // Register cache analytics routes
-    app.use('/api/cache-analytics', cacheAnalyticsRoutes);
-    logger.info('✅ Cache analytics routes registered');
+    // Temporarily disabled - causing server startup issues
+    // app.use('/api/cache-analytics', cacheAnalyticsRoutes);
+    // logger.info('✅ Cache analytics routes registered');
 
     // Register job management routes
     registerJobRoutes(app);

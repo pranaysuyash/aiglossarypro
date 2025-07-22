@@ -193,6 +193,33 @@ export async function signInWithEmail(email: string, password: string) {
         throw new Error('Firebase authentication is not initialized');
       }
 
+      
+      // Debug logging for network issues
+      console.log('🔍 [Debug] Network status:', navigator.onLine);
+      console.log('🔍 [Debug] Current time:', new Date().toISOString());
+      
+      // Check service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        console.log('🔍 [Debug] Active service workers:', registrations.length);
+        registrations.forEach((reg, i) => {
+          console.log(`  SW${i}: ${reg.scope} (active: ${!!reg.active})`);
+        });
+      }
+      
+      // Test connectivity with a valid Firebase endpoint
+      try {
+        const testStart = Date.now();
+        // Use a valid Firebase endpoint that allows CORS
+        const testResponse = await fetch(`https://www.googleapis.com/identitytoolkit/v3/relyingparty/getProjectConfig?key=${import.meta.env.VITE_FIREBASE_API_KEY}`, {
+          method: 'GET',
+          mode: 'cors'
+        });
+        console.log(`🔍 [Debug] Firebase connectivity test: ${testResponse.status} in ${Date.now() - testStart}ms`);
+      } catch (e) {
+        console.error('🔍 [Debug] Firebase connectivity test failed:', e.message);
+      }
+
       console.log('🔐 Calling signInWithEmailAndPassword...');
       // Wrap the sign in operation with timeout
       const result = await withTimeout(

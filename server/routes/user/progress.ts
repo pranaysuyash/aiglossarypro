@@ -1,12 +1,13 @@
 import type { Express } from 'express';
 import { enhancedStorage } from '../../enhancedStorage';
+import { multiAuthMiddleware } from '../../middleware/multiAuth';
 import type { AuthenticatedRequest } from '../../types/express';
 import { getLastNDaysRange } from '../../utils/dateHelpers';
 import { log } from '../../utils/logger';
 
 export function registerUserProgressRoutes(app: Express): void {
   // Get user progress statistics
-  app.get('/api/user/progress/stats', async (req, res) => {
+  app.get('/api/user/progress/stats', multiAuthMiddleware as any, async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
@@ -164,7 +165,7 @@ export function registerUserProgressRoutes(app: Express): void {
   });
 
   // Get detailed section progress
-  app.get('/api/user/progress/sections', async (req, res) => {
+  app.get('/api/user/progress/sections', multiAuthMiddleware as any, async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
@@ -253,7 +254,7 @@ export function registerUserProgressRoutes(app: Express): void {
   });
 
   // Get user recommendations
-  app.get('/api/user/recommendations', async (req, res) => {
+  app.get('/api/user/recommendations', multiAuthMiddleware as any, async (req, res) => {
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {

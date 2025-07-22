@@ -224,12 +224,12 @@ export function registerUserRoutes(app: Express): void {
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
 
-        const allProgress = await storage.getUserProgress(userId);
-        const progress = allProgress?.find((p: any) => p.termId === termId);
+        // Check if the term is learned
+        const isLearned = await storage.isTermLearned(userId, termId);
 
         res.json({
           success: true,
-          data: progress,
+          data: isLearned ? { termId, learned: true } : null,
         });
       } catch (error) {
         log.error('Error fetching term progress', {

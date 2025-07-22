@@ -3,6 +3,7 @@ import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { verifyToken } from '../auth/simpleAuth';
+import { verifyFirebaseToken } from '../config/firebase';
 import { storage } from '../storage';
 import { log } from '../utils/logger';
 import { captureAuthEvent } from '../utils/sentry';
@@ -252,7 +253,7 @@ export async function setupMultiAuth(app: Express) {
 // Enhanced authentication middleware that works with all providers
 export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
   // First check for JWT token authentication
-  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token || req.cookies?.authToken;
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token || req.cookies?.authToken || req.cookies?.firebaseToken;
 
   if (token) {
     // Check if token is blacklisted
@@ -263,10 +264,58 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
         availableProviders: {
           google: !!process.env.GOOGLE_CLIENT_ID,
           github: !!process.env.GITHUB_CLIENT_ID,
+          firebase: !!process.env.FIREBASE_PROJECT_ID,
         },
       });
     }
 
+    // Try Firebase token verification first
+    try {
+      const firebaseUser = await verifyFirebaseToken(token);
+      if (firebaseUser) {
+        // Get or create user in our database
+        let user = await storage.getUserByEmail(firebaseUser.email!);
+        
+        if (!user) {
+          // Create new user from Firebase data
+          user = await storage.upsertUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email!,
+            firstName: firebaseUser.name?.split(' ')[0] || '',
+            lastName: firebaseUser.name?.split(' ').slice(1).join(' ') || '',
+            profileImageUrl: firebaseUser.picture || undefined,
+            authProvider: firebaseUser.firebase?.sign_in_provider || 'firebase',
+            firebaseUid: firebaseUser.uid,
+          });
+        }
+
+        // Update Firebase UID if not set
+        if (user && !user.firebaseUid) {
+          await storage.updateUser(user.id, { firebaseUid: firebaseUser.uid });
+        }
+
+        // Set user on request
+        (req as any).user = {
+          ...user,
+          provider: 'firebase',
+          claims: {
+            sub: firebaseUser.uid,
+            email: firebaseUser.email,
+            name: firebaseUser.name,
+          },
+          isAdmin: user?.isAdmin || firebaseUser.admin === true,
+        };
+        (req as any).firebaseUser = firebaseUser;
+        return next();
+      }
+    } catch (firebaseError) {
+      // Firebase token verification failed, try JWT
+      log.debug('Firebase token verification failed, trying JWT', {
+        error: firebaseError instanceof Error ? firebaseError.message : 'Unknown error'
+      });
+    }
+
+    // Try JWT token verification
     const decoded = verifyToken(token);
     if (decoded) {
       // Set user on request from JWT token
@@ -293,6 +342,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
         availableProviders: {
           google: !!process.env.GOOGLE_CLIENT_ID,
           github: !!process.env.GITHUB_CLIENT_ID,
+          firebase: !!process.env.FIREBASE_PROJECT_ID,
         },
       });
     }
@@ -306,6 +356,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
       availableProviders: {
         google: !!process.env.GOOGLE_CLIENT_ID,
         github: !!process.env.GITHUB_CLIENT_ID,
+        firebase: !!process.env.FIREBASE_PROJECT_ID,
       },
     });
   }

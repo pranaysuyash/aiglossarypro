@@ -1,32 +1,36 @@
+console.log('🚀 [DEBUG] Server index.ts loaded - very first line');
+
 import dotenv from 'dotenv';
 
 import { log } from './utils/logger';
 dotenv.config();
 
-log.info('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
-log.info('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
+console.log('🚀 [DEBUG] Server index.ts started - after imports');
+
+log.info('FIREBASE_PROJECT_ID:', { value: process.env.FIREBASE_PROJECT_ID });
+log.info('FIREBASE_CLIENT_EMAIL:', { value: process.env.FIREBASE_CLIENT_EMAIL });
 log.info(
   'FIREBASE_PRIVATE_KEY_BASE64:',
-  process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set'
+  { value: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set' }
 );
 
 // Debug: Check Firebase environment variables at server startup
 log.info('🔍 Server Startup - Firebase Environment Check:');
-log.info('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');
+log.info('- FIREBASE_PROJECT_ID:', { status: process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing' });
 log.info(
   '- FIREBASE_CLIENT_EMAIL:',
-  process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing'
+  { status: process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing' }
 );
 log.info(
   '- FIREBASE_PRIVATE_KEY_BASE64:',
-  process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing'
+  { status: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing' }
 );
 const firebaseEnabled = !!(
   process.env.FIREBASE_PROJECT_ID &&
   process.env.FIREBASE_CLIENT_EMAIL &&
   (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64)
 );
-log.info('- Firebase Auth Enabled:', firebaseEnabled ? '✅ TRUE' : '❌ FALSE');
+log.info('- Firebase Auth Enabled:', { enabled: firebaseEnabled ? '✅ TRUE' : '❌ FALSE' });
 
 // Initialize error monitoring first
 import {
@@ -120,9 +124,12 @@ app.use(cdnCacheMiddleware);
 // Commented out to prevent duplicate logging - loggingMiddleware already handles this
 // app.use(responseLoggingMiddleware);
 
+console.log('🚀 [DEBUG] About to enter async IIFE');
 (async () => {
+  console.log('🚀 [DEBUG] Inside async IIFE');
   // Load and validate configuration
   logConfigStatus();
+  console.log('🚀 [DEBUG] Config logged');
 
   // Setup authentication based on configuration priority
   try {

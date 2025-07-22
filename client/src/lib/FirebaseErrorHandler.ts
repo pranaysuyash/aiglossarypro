@@ -290,13 +290,9 @@ export class FirebaseErrorHandler {
             canRecover: (error) => error.type === ErrorType.AUTHENTICATION && this.shouldRetry(error.originalError || error),
             recover: async (error) => {
                 if (this.isFirebaseError(error.originalError)) {
-                    // Enable fallback if Firebase is completely unavailable
-                    if (error.originalError.code === 'auth/network-request-failed') {
-                        const isConnected = await this.testFirebaseConnectivity();
-                        if (!isConnected) {
-                            this.enableFallbackAuth('Firebase service unavailable');
-                        }
-                    }
+                    // Don't enable fallback auth - let Firebase handle retries
+                    // The connectivity check was causing false positives
+                    console.debug('Firebase network error, but not enabling fallback auth');
                 }
             },
         });
@@ -440,11 +436,11 @@ export class FirebaseErrorHandler {
         this.notifyNetworkListeners(true);
 
         // Test Firebase connectivity when network comes back
-        this.testFirebaseConnectivity().then(isConnected => {
-            if (isConnected && this.fallbackState.enabled) {
-                this.disableFallbackAuth();
-            }
-        });
+        // Skip connectivity test - it was causing false positives
+        // Just check if we're online
+        if (navigator.onLine && this.fallbackState.enabled) {
+            this.disableFallbackAuth();
+        }
     }
 
     private handleNetworkOffline(): void {
@@ -516,8 +512,9 @@ export class FirebaseErrorHandler {
             this.circuitBreaker.state = 'open';
             console.warn('🔴 Firebase circuit breaker opened due to repeated failures');
 
-            // Enable fallback after circuit breaker opens
-            this.enableFallbackAuth('Circuit breaker opened due to repeated failures');
+            // Don't enable fallback auth - it causes more problems
+            // Just log the issue and let Firebase handle retries
+            console.warn('Circuit breaker open but not enabling fallback auth');
         }
     }
 

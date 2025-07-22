@@ -1,13 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import type { ApiResponse, ITerm, PaginatedResponse } from '../../shared/types';
 import { DEFAULT_LIMITS, SORT_ORDERS } from '../constants';
-// import { multiAuthMiddleware } from '../middleware/multiAuth';
-// Temporarily disable auth middleware to fix server startup
-const multiAuthMiddleware = (req: any, res: any, next: any) => {
-  // Mock middleware for now
-  req.user = { claims: { sub: 'anonymous' } };
-  next();
-};
+import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { initializeRateLimiting, rateLimitMiddleware } from '../middleware/rateLimiting';
 import { termIdSchema } from '../middleware/security';
 import { optimizedStorage as storage } from '../optimizedStorage';

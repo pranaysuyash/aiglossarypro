@@ -5,13 +5,7 @@ import {
   behaviorTrackingMiddleware,
   trackUserAction,
 } from '../middleware/behaviorTrackingMiddleware';
-// import { multiAuthMiddleware } from '../middleware/multiAuth';
-// Temporarily disable auth middleware to fix server startup
-const multiAuthMiddleware = (req: any, res: any, next: any) => {
-  // Mock middleware for now
-  req.user = { claims: { sub: 'anonymous' } };
-  next();
-};
+import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { personalizationService } from '../services/personalizationService';
 import { log as logger } from '../utils/logger';
 

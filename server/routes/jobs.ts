@@ -7,13 +7,7 @@ import type { Express, Request, Response } from 'express';
 import { JobType, jobQueue, jobQueueManager } from '../jobs/queue';
 import { JobPriority } from '../jobs/types';
 import { requireAdmin } from '../middleware/adminAuth';
-// import { multiAuthMiddleware } from '../middleware/multiAuth';
-// Temporarily disable auth middleware to fix server startup
-const multiAuthMiddleware = (req: any, res: any, next: any) => {
-  // Mock middleware for now
-  req.user = { claims: { sub: 'anonymous' } };
-  next();
-};
+import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { log as logger } from '../utils/logger';
 
 export function registerJobRoutes(app: Express): void {

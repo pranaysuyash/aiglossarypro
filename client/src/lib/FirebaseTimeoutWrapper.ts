@@ -16,13 +16,13 @@ export interface TimeoutConfig {
 // Optimized timeout configurations for better performance
 export const DEFAULT_TIMEOUTS: Record<string, TimeoutConfig> = {
     signIn: {
-        timeout: 15000, // Reduced to 15 seconds for better UX
+        timeout: 30000, // 30 seconds to handle cold starts and network latency
         operation: 'signIn',
         retryOnTimeout: true,
-        maxRetries: 3, // Increased retries
+        maxRetries: 2, // Reduced retries to avoid excessive delays
     },
     signUp: {
-        timeout: 20000, // Reduced to 20 seconds for account creation
+        timeout: 30000, // 30 seconds for account creation
         operation: 'signUp',
         retryOnTimeout: true,
         maxRetries: 2,
@@ -60,16 +60,9 @@ export function getProgressiveTimeout(baseTimeout: number, retryCount: number): 
  * Network status check before authentication
  */
 export async function checkNetworkStatus(): Promise<boolean> {
-    try {
-        // Try to fetch a small resource from Firebase
-        const response = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo', {
-            method: 'HEAD',
-            mode: 'no-cors'
-        });
-        return true;
-    } catch {
-        return false;
-    }
+    // Simply check if browser is online
+    // The old endpoint always returned 404
+    return navigator.onLine;
 }
 
 /**

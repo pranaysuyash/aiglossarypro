@@ -15,6 +15,16 @@ function removeInitialLoader() {
   }
 }
 
+// In development, always unregister service workers to avoid caching issues
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      registration.unregister();
+      console.log('🔥 [Dev] Unregistered service worker:', registration.scope);
+    });
+  });
+}
+
 // Render React app immediately
 const root = createRoot(document.getElementById('root')!);
 root.render(

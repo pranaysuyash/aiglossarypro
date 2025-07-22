@@ -3,6 +3,9 @@
  * Addresses performance issues with authentication timeouts
  */
 
+// Verify this file is being loaded
+console.log('🔥 [FirebaseTimeoutWrapper] Loaded with 60s timeout - v3');
+
 import { firebaseErrorHandler } from './FirebaseErrorHandler';
 
 // Timeout configuration
@@ -16,16 +19,16 @@ export interface TimeoutConfig {
 // Optimized timeout configurations for better performance
 export const DEFAULT_TIMEOUTS: Record<string, TimeoutConfig> = {
     signIn: {
-        timeout: 30000, // 30 seconds to handle cold starts and network latency
+        timeout: 60000, // 60 seconds for testing - handle cold starts and network latency
         operation: 'signIn',
         retryOnTimeout: true,
-        maxRetries: 2, // Reduced retries to avoid excessive delays
+        maxRetries: 1, // Only one retry to keep total time reasonable
     },
     signUp: {
-        timeout: 30000, // 30 seconds for account creation
+        timeout: 60000, // 60 seconds for account creation
         operation: 'signUp',
         retryOnTimeout: true,
-        maxRetries: 2,
+        maxRetries: 1,
     },
     signOut: {
         timeout: 5000, // 5 seconds
@@ -87,6 +90,8 @@ export async function withTimeout<T>(
     config: TimeoutConfig,
     retryCount: number = 0
 ): Promise<T> {
+    console.log(`🔥 [withTimeout] Starting ${config.operation} with timeout: ${config.timeout}ms (retry: ${retryCount})`);
+    
     // Check network status before critical operations
     if (config.operation === 'signIn' || config.operation === 'signUp') {
         const isNetworkAvailable = await checkNetworkStatus();

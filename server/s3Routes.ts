@@ -4,7 +4,6 @@ import logger from './utils/logger';
 import { features } from './config';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from './middleware/firebaseAuth';
 import { multiAuthMiddleware } from './middleware/multiAuth';
-import { processAndImportFromS3 } from './pythonProcessor';
 import { getS3Client, initS3Client, listFiles } from './s3Service';
 
 const router = Router();
@@ -91,37 +90,5 @@ router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, asyn
   }
 });
 
-// General file processing - REQUIRES ADMIN
-router.get('/process-file', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const bucketName = process.env.S3_BUCKET_NAME;
-    const fileKey = req.query.fileKey as string | undefined;
-    const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : undefined;
-
-    if (!bucketName) {
-      return res.status(400).json({
-        success: false,
-        message: 'S3 bucket name not configured',
-      });
-    }
-
-    if (!fileKey) {
-      return res.status(400).json({
-        success: false,
-        message: 'No file key provided',
-      });
-    }
-
-    const result = await processAndImportFromS3(bucketName, fileKey, 'ap-south-1', maxChunks);
-    return res.json(result);
-  } catch (error) {
-    logger.error('Error in file processing:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error during file processing',
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-});
 
 export default router;

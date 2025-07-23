@@ -2,7 +2,6 @@ import type { Express, Request, Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import logger from './utils/logger';
-// import { processExcelUpload } from './dataTransformationPipeline'; // File removed
 import { enhancedStorage } from './enhancedTermsStorage';
 import { multiAuthMiddleware } from './middleware/multiAuth';
 import { isUserAdmin } from './utils/authUtils';
@@ -109,8 +108,6 @@ export function registerEnhancedRoutes(app: Express): void {
 
         logger.info(`Processing enhanced Excel upload: ${req.file.originalname}`);
 
-        // Process the Excel file through the enhanced pipeline
-        // const result = await processExcelUpload(req.file.buffer); // Function removed
         logger.info('⚠️  Excel upload functionality has been disabled');
 
         res.json({

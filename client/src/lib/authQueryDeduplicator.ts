@@ -21,9 +21,9 @@ class AuthQueryDeduplicator {
     lastResultHash: null
   };
 
-  private readonly MIN_QUERY_INTERVAL = 5000; // 5 seconds
-  private readonly MAX_CONSECUTIVE_QUERIES = 3; // Max consecutive queries before forcing delay
-  private readonly FORCED_DELAY = 30000; // 30 seconds forced delay after too many queries
+  private readonly MIN_QUERY_INTERVAL = 1000; // 1 second - reduced for faster auth updates
+  private readonly MAX_CONSECUTIVE_QUERIES = 5; // Increased limit for login flows
+  private readonly FORCED_DELAY = 10000; // 10 seconds - reduced for better UX
 
   private constructor() { }
 
@@ -53,8 +53,11 @@ class AuthQueryDeduplicator {
       return this.state.promise;
     }
 
-    // Check for too many consecutive queries
-    if (this.state.consecutiveQueries >= this.MAX_CONSECUTIVE_QUERIES) {
+    // Always allow the first request through (no cooldown on attempt 0)
+    const isFirstRequest = this.state.lastQueryTime === 0;
+
+    // Check for too many consecutive queries (but not for the first request)
+    if (!isFirstRequest && this.state.consecutiveQueries >= this.MAX_CONSECUTIVE_QUERIES) {
       const timeSinceLastQuery = now - this.state.lastQueryTime;
       if (timeSinceLastQuery < this.FORCED_DELAY) {
         console.log(`🚫 Too many consecutive auth queries (${this.state.consecutiveQueries}), forcing delay`);
@@ -65,9 +68,10 @@ class AuthQueryDeduplicator {
       }
     }
 
-    // If we have a recent result, return it (caching)
-    if (this.state.result !== undefined &&
-      now - this.state.lastQueryTime < this.MIN_QUERY_INTERVAL) {
+    // If we have a recent result, return it (caching) - but not for the first request
+    if (!isFirstRequest && 
+        this.state.result !== undefined &&
+        now - this.state.lastQueryTime < this.MIN_QUERY_INTERVAL) {
       console.log(`✅ Returning cached auth result (${now - this.state.lastQueryTime}ms old)`);
       return this.state.result;
     }

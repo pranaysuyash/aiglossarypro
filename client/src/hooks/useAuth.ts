@@ -7,42 +7,14 @@ import IndexedDBManager from '@/lib/IndexedDBManager';
 import { MemoryMonitor } from '@/lib/MemoryMonitor';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import type { IUser } from '../../../shared/types';
 
-// Create a broadcast channel for cross-tab communication with proper cleanup
-let authChannel: BroadcastChannel | null = null;
-let tabId: string = '';
-
-function getTabId(): string {
-  if (!tabId) {
-    tabId = crypto.randomUUID();
-  }
-  return tabId;
-}
-
-function getAuthChannel(): BroadcastChannel | null {
-  if (typeof BroadcastChannel === 'undefined') {
-    return null;
-  }
-
-  if (!authChannel) {
-    authChannel = new BroadcastChannel('auth_state');
-  }
-
-  return authChannel;
-}
-
-function closeAuthChannel(): void {
-  if (authChannel) {
-    authChannel.close();
-    authChannel = null;
-  }
-}
+import { getAuthChannel, getTabId } from '@/lib/authChannel';
 
 export function useAuth() {
   const queryClient = useQueryClient();
-  const [, navigate] = useLocation();
+  const navigate = useNavigate();
   const authStateManager = AuthStateManager.getInstance();
   const [authState, setAuthState] = useState(authStateManager.getState());
 
@@ -116,6 +88,12 @@ export function useAuth() {
     enabled: !isInLogoutState() && getAuthQueryOptions().enabled,
     refetchInterval: false as const, // Fix TypeScript error
   });
+
+  // Manual refresh function to force auth state update
+  const refreshAuth = useCallback(() => {
+    authQueryDeduplicator.resetConsecutiveQueries();
+    refetch();
+  }, [refetch]);
 
   // Use auth state manager's loading state
   const isLoading = authState.isLoading || queryLoading;
@@ -208,8 +186,7 @@ export function useAuth() {
       });
       cleanupFunctionsRef.current.clear();
 
-      // Close broadcast channel if this is the last useAuth instance
-      closeAuthChannel();
+      // Don't close global channel - managed by global handler
 
       memoryCleanup();
     };
@@ -310,5 +287,6 @@ export function useAuth() {
     isAuthenticated: !!user,
     logout,
     refetch,
+    refreshAuth,
   };
 }

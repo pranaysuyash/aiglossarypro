@@ -203,10 +203,16 @@ class ComprehensivePlaywrightTest {
       await this.captureScreenshot(page, `login-${user.type}-before`);
       
       // Submit login form
-      await Promise.all([
-        page.waitForNavigation({ url: /\/(dashboard|home)/, timeout: 10000 }),
-        page.click('button[type="submit"]')
-      ]);
+      await page.click('button[type="submit"]');
+      
+      // Wait for navigation or auth state change
+      try {
+        await page.waitForURL(/\/(dashboard|admin|app)/, { timeout: 10000 });
+      } catch (navError) {
+        // If navigation doesn't happen, check if we're still on login but authenticated
+        const currentUrl = page.url();
+        console.log(chalk.gray(`   Current URL after login: ${currentUrl}`));
+      }
       
       // Handle any post-login modals
       await this.handleBlockingModals(page);
@@ -214,9 +220,33 @@ class ComprehensivePlaywrightTest {
       // Wait for authentication to complete
       await page.waitForTimeout(2000);
       
-      // Verify login success
-      const userMenuVisible = await page.locator('[data-testid="user-menu"], .user-menu, .user-dropdown').isVisible();
-      if (!userMenuVisible) {
+      // Verify login success - look for user avatar or dropdown trigger
+      const userIndicators = [
+        'button[aria-haspopup="menu"]:has-text("U")', // User avatar button
+        'button[aria-haspopup="menu"]:has-text("A")', // Admin avatar
+        'button[aria-haspopup="menu"]:has-text("P")', // Premium avatar
+        'button[aria-haspopup="menu"]:has-text("F")', // Free avatar
+        '[role="button"]:has(.avatar)', // Avatar element
+        'button:has-text("Sign out")', // If dropdown is open
+        'a[href="/dashboard"]', // Dashboard link
+      ];
+      
+      let userMenuFound = false;
+      for (const selector of userIndicators) {
+        try {
+          const element = await page.locator(selector).first();
+          if (await element.isVisible({ timeout: 2000 })) {
+            userMenuFound = true;
+            break;
+          }
+        } catch (e) {
+          // Continue to next selector
+        }
+      }
+      
+      if (!userMenuFound) {
+        // Take debug screenshot
+        await this.captureScreenshot(page, `login-${user.type}-no-user-menu`);
         throw new Error('User menu not visible after login');
       }
       
@@ -255,12 +285,13 @@ class ComprehensivePlaywrightTest {
       const context = await this.browser.newContext();
       const page = await this.authenticateUser(context, TEST_USERS[0]);
       
-      // Find and click logout
-      const userMenu = page.locator('[data-testid="user-menu"], .user-menu, .user-dropdown').first();
-      await userMenu.click();
+      // Find and click user avatar to open dropdown
+      const avatarButton = await page.locator('button[aria-haspopup="menu"]').first();
+      await avatarButton.click();
       await page.waitForTimeout(500);
       
-      const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign Out"), [data-testid="logout-button"]').first();
+      // Click Sign Out in dropdown
+      const logoutButton = await page.locator('text="Sign out"').first();
       await logoutButton.click();
       
       // Verify logged out
@@ -270,6 +301,55 @@ class ComprehensivePlaywrightTest {
       await page.close();
       await context.close();
     });
+  }
+
+  // Test Progress Dashboard (for our specific fix)
+  async testProgressDashboard() {
+    console.log(chalk.yellow('\n📋 PROGRESS DASHBOARD TESTS'));
+    
+    await this.runTest('Progress stats API - free user', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]); // Free user
+      
+      // Navigate to dashboard
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await this.handleBlockingModals(page);
+      
+      // Wait for progress visualization to load
+      await page.waitForSelector('.progress-visualization, [class*="progress"], text=/Terms Explored|Bookmarks|Streak/', { timeout: 10000 });
+      
+      // Check if progress stats loaded without 500 error
+      const errorElement = await page.locator('text=/error|failed|500/i').count();
+      if (errorElement > 0) {
+        throw new Error('Progress stats showing error');
+      }
+      
+      await this.captureScreenshot(page, 'dashboard-progress-free');
+      await page.close();
+      await context.close();
+    }, TEST_USERS[0].email);
+    
+    await this.runTest('Progress stats API - premium user', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]); // Premium user
+      
+      // Navigate to dashboard
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await this.handleBlockingModals(page);
+      
+      // Wait for progress visualization to load
+      await page.waitForSelector('.progress-visualization, [class*="progress"], text=/Terms Explored|Bookmarks|Streak/', { timeout: 10000 });
+      
+      // Check if progress stats loaded without 500 error
+      const errorElement = await page.locator('text=/error|failed|500/i').count();
+      if (errorElement > 0) {
+        throw new Error('Progress stats showing error');
+      }
+      
+      await this.captureScreenshot(page, 'dashboard-progress-premium');
+      await page.close();
+      await context.close();
+    }, TEST_USERS[1].email);
   }
 
   // Test Suite 2: Access Control Tests
@@ -404,6 +484,254 @@ class ComprehensivePlaywrightTest {
     });
   }
 
+  // Test Suite: Term Detail Features
+  async testTermDetailFeatures() {
+    console.log(chalk.yellow('\n📋 TERM DETAIL FEATURES TESTS'));
+    
+    await this.runTest('Term sections and navigation', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]); // Premium user
+      
+      // Navigate to a term
+      await page.goto(`${this.baseUrl}/glossary`);
+      await this.handleBlockingModals(page);
+      
+      const firstTerm = await page.locator('a[href*="/glossary/"]').first();
+      await firstTerm.click();
+      await page.waitForLoadState('networkidle');
+      
+      // Check for term sections
+      const sections = await page.locator('.section-tab, [role="tab"], button:has-text("Examples")').count();
+      if (sections === 0) throw new Error('No term sections found');
+      
+      // Test section navigation
+      const examplesTab = await page.locator('button:has-text("Examples"), [role="tab"]:has-text("Examples")').first();
+      if (await examplesTab.isVisible()) {
+        await examplesTab.click();
+        await page.waitForTimeout(1000);
+        await this.captureScreenshot(page, 'term-examples-section');
+      }
+      
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Bookmarking functionality', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]); // Free user
+      
+      // Navigate to a term
+      await page.goto(`${this.baseUrl}/glossary`);
+      await this.handleBlockingModals(page);
+      
+      const firstTerm = await page.locator('a[href*="/glossary/"]').first();
+      await firstTerm.click();
+      await page.waitForLoadState('networkidle');
+      
+      // Find bookmark button
+      const bookmarkButton = await page.locator('button[aria-label*="bookmark" i], button:has-text("Bookmark"), .bookmark-button').first();
+      if (await bookmarkButton.isVisible()) {
+        await bookmarkButton.click();
+        await page.waitForTimeout(1000);
+        await this.captureScreenshot(page, 'bookmark-added');
+      }
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: User Account Features
+  async testUserAccountFeatures() {
+    console.log(chalk.yellow('\n📋 USER ACCOUNT FEATURES TESTS'));
+    
+    await this.runTest('User profile page', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]); // Premium user
+      
+      // Navigate to profile
+      await page.goto(`${this.baseUrl}/profile`);
+      await this.handleBlockingModals(page);
+      
+      // Check profile elements
+      const profileElements = await page.locator('h1:has-text("Profile"), .profile-section, [data-testid="profile"]').count();
+      if (profileElements === 0) throw new Error('Profile page not loading');
+      
+      await this.captureScreenshot(page, 'user-profile');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Bookmarks page', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]); // Free user
+      
+      // Navigate to bookmarks
+      await page.goto(`${this.baseUrl}/bookmarks`);
+      await this.handleBlockingModals(page);
+      
+      // Check bookmarks page
+      const bookmarksTitle = await page.locator('h1:has-text("Bookmarks"), .bookmarks-list').count();
+      if (bookmarksTitle === 0) throw new Error('Bookmarks page not loading');
+      
+      await this.captureScreenshot(page, 'bookmarks-page');
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Dashboard Components
+  async testDashboardComponents() {
+    console.log(chalk.yellow('\n📋 DASHBOARD COMPONENTS TESTS'));
+    
+    await this.runTest('Recent activity widget', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]);
+      
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await this.handleBlockingModals(page);
+      
+      // Check for recent activity
+      const recentActivity = await page.locator('text=/Recent Activity|Recently Viewed/i').count();
+      if (recentActivity === 0) throw new Error('Recent activity widget not found');
+      
+      await this.captureScreenshot(page, 'dashboard-recent-activity');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Recommendations widget', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]);
+      
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await this.handleBlockingModals(page);
+      
+      // Check for recommendations
+      const recommendations = await page.locator('text=/Recommended|Suggestions|For You/i').count();
+      if (recommendations === 0) throw new Error('Recommendations widget not found');
+      
+      await this.captureScreenshot(page, 'dashboard-recommendations');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Learning path widget', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]);
+      
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await this.handleBlockingModals(page);
+      
+      // Check for learning paths
+      const learningPaths = await page.locator('text=/Learning Path|Continue Learning|Progress/i').count();
+      if (learningPaths === 0) console.log(chalk.gray('   Learning path widget not found'));
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Interactive Components
+  async testInteractiveComponents() {
+    console.log(chalk.yellow('\n📋 INTERACTIVE COMPONENTS TESTS'));
+    
+    await this.runTest('Theme toggle', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(this.baseUrl);
+      await this.handleCookieConsent(page);
+      await this.handleBlockingModals(page);
+      
+      // Find theme toggle
+      const themeToggle = await page.locator('button[aria-label*="theme" i], .theme-toggle').first();
+      if (await themeToggle.isVisible()) {
+        // Get initial theme
+        const htmlElement = await page.locator('html');
+        const initialTheme = await htmlElement.getAttribute('class');
+        
+        await themeToggle.click();
+        await page.waitForTimeout(500);
+        
+        const newTheme = await htmlElement.getAttribute('class');
+        if (initialTheme === newTheme) throw new Error('Theme toggle not working');
+        
+        await this.captureScreenshot(page, 'theme-toggled');
+      }
+      
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Interactive quiz component', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]); // Premium user
+      
+      // Find a term with quiz
+      await page.goto(`${this.baseUrl}/glossary`);
+      await this.handleBlockingModals(page);
+      
+      // Click on a popular term likely to have quiz
+      const termWithQuiz = await page.locator('a[href*="machine-learning"], a[href*="neural-network"]').first();
+      if (await termWithQuiz.isVisible()) {
+        await termWithQuiz.click();
+        await page.waitForLoadState('networkidle');
+        
+        // Look for quiz section
+        const quizSection = await page.locator('.quiz-section, button:has-text("Take Quiz"), [data-testid="quiz"]').first();
+        if (await quizSection.isVisible()) {
+          await this.captureScreenshot(page, 'interactive-quiz');
+        }
+      }
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Error Handling
+  async testErrorHandling() {
+    console.log(chalk.yellow('\n📋 ERROR HANDLING TESTS'));
+    
+    await this.runTest('404 page', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(`${this.baseUrl}/non-existent-page-12345`);
+      await this.handleCookieConsent(page);
+      
+      // Check for 404 content
+      const notFoundElements = await page.locator('text=/404|not found/i').count();
+      if (notFoundElements === 0) throw new Error('404 page not showing');
+      
+      await this.captureScreenshot(page, '404-page');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Offline handling', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(this.baseUrl);
+      await this.handleCookieConsent(page);
+      
+      // Go offline
+      await context.setOffline(true);
+      
+      // Try to navigate
+      await page.click('a[href="/glossary"]').catch(() => {});
+      await page.waitForTimeout(2000);
+      
+      await this.captureScreenshot(page, 'offline-state');
+      await context.setOffline(false);
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
   // Test Suite 4: Navigation Tests
   async testNavigation() {
     console.log(chalk.yellow('\n📋 NAVIGATION TESTS'));
@@ -462,6 +790,301 @@ class ComprehensivePlaywrightTest {
       if (!mobileMenu) throw new Error('Mobile menu not visible');
       
       await this.captureScreenshot(page, 'mobile-view');
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Accessibility Tests
+  async testAccessibility() {
+    console.log(chalk.yellow('\n📋 ACCESSIBILITY TESTS'));
+    
+    await this.runTest('Keyboard navigation', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(this.baseUrl);
+      await this.handleCookieConsent(page);
+      
+      // Test tab navigation
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Tab');
+      
+      // Check if focused element is visible
+      const focusedElement = await page.locator(':focus');
+      const isVisible = await focusedElement.isVisible();
+      if (!isVisible) throw new Error('Keyboard navigation not working properly');
+      
+      await this.captureScreenshot(page, 'keyboard-navigation');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Screen reader labels', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(this.baseUrl);
+      await this.handleCookieConsent(page);
+      
+      // Check for ARIA labels
+      const ariaLabels = await page.locator('[aria-label], [aria-describedby], [role]').count();
+      if (ariaLabels < 5) throw new Error('Insufficient ARIA labels for accessibility');
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Data Persistence Tests
+  async testDataPersistence() {
+    console.log(chalk.yellow('\n📋 DATA PERSISTENCE TESTS'));
+    
+    await this.runTest('User preferences persistence', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]);
+      
+      // Change theme
+      const themeToggle = await page.locator('button[aria-label*="theme" i], .theme-toggle').first();
+      if (await themeToggle.isVisible()) {
+        await themeToggle.click();
+        await page.waitForTimeout(500);
+      }
+      
+      // Refresh page
+      await page.reload();
+      await this.handleBlockingModals(page);
+      
+      // Check if theme persisted
+      const htmlElement = await page.locator('html');
+      const currentTheme = await htmlElement.getAttribute('class');
+      if (!currentTheme?.includes('dark')) {
+        console.log(chalk.gray('   Theme preference may not have persisted'));
+      }
+      
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Bookmark persistence', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]);
+      
+      // Navigate to bookmarks
+      await page.goto(`${this.baseUrl}/bookmarks`);
+      await this.handleBlockingModals(page);
+      
+      // Count bookmarks
+      const bookmarkCount = await page.locator('.bookmark-item, [data-testid="bookmark-item"]').count();
+      console.log(chalk.gray(`   Found ${bookmarkCount} persisted bookmarks`));
+      
+      await this.captureScreenshot(page, 'persisted-bookmarks');
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Security Features
+  async testSecurityFeatures() {
+    console.log(chalk.yellow('\n📋 SECURITY FEATURES TESTS'));
+    
+    await this.runTest('Protected routes', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      // Try to access protected route without auth
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await this.handleCookieConsent(page);
+      
+      // Should redirect to login
+      await page.waitForURL(/login/, { timeout: 5000 });
+      const currentUrl = page.url();
+      if (!currentUrl.includes('login')) throw new Error('Protected route not redirecting to login');
+      
+      await this.captureScreenshot(page, 'protected-route-redirect');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Admin route protection', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]); // Free user
+      
+      // Try to access admin route
+      await page.goto(`${this.baseUrl}/admin`);
+      
+      // Should not have access
+      const adminContent = await page.locator('h1:has-text("Admin Dashboard")').count();
+      if (adminContent > 0) throw new Error('Non-admin user accessing admin content');
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Form Validation
+  async testFormValidation() {
+    console.log(chalk.yellow('\n📋 FORM VALIDATION TESTS'));
+    
+    await this.runTest('Login form validation', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(`${this.baseUrl}/login`);
+      await this.handleCookieConsent(page);
+      
+      // Try empty submission
+      await page.click('button[type="submit"]');
+      
+      // Check for validation messages
+      const validationMessages = await page.locator('text=/required|invalid|enter/i').count();
+      if (validationMessages === 0) throw new Error('Form validation not working');
+      
+      await this.captureScreenshot(page, 'form-validation-errors');
+      await page.close();
+      await context.close();
+    });
+    
+    await this.runTest('Email format validation', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(`${this.baseUrl}/login`);
+      await this.handleCookieConsent(page);
+      
+      // Enter invalid email
+      await page.fill('input[type="email"]', 'notanemail');
+      await page.fill('input[type="password"]', 'password123');
+      await page.click('button[type="submit"]');
+      
+      // Check for email validation
+      const emailError = await page.locator('text=/valid email|email format/i').count();
+      if (emailError === 0) console.log(chalk.gray('   Email validation message not shown'));
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Social Features
+  async testSocialFeatures() {
+    console.log(chalk.yellow('\n📋 SOCIAL FEATURES TESTS'));
+    
+    await this.runTest('Share functionality', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]);
+      
+      // Navigate to a term
+      await page.goto(`${this.baseUrl}/glossary`);
+      await this.handleBlockingModals(page);
+      
+      const firstTerm = await page.locator('a[href*="/glossary/"]').first();
+      await firstTerm.click();
+      await page.waitForLoadState('networkidle');
+      
+      // Look for share button
+      const shareButton = await page.locator('button[aria-label*="share" i], button:has-text("Share")').first();
+      if (await shareButton.isVisible()) {
+        await shareButton.click();
+        await page.waitForTimeout(1000);
+        await this.captureScreenshot(page, 'share-dialog');
+      }
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Notifications
+  async testNotifications() {
+    console.log(chalk.yellow('\n📋 NOTIFICATIONS TESTS'));
+    
+    await this.runTest('Toast notifications', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[0]);
+      
+      // Trigger an action that shows a toast
+      await page.goto(`${this.baseUrl}/glossary`);
+      await this.handleBlockingModals(page);
+      
+      // Try bookmarking
+      const firstTerm = await page.locator('a[href*="/glossary/"]').first();
+      await firstTerm.click();
+      await page.waitForLoadState('networkidle');
+      
+      const bookmarkButton = await page.locator('button[aria-label*="bookmark" i]').first();
+      if (await bookmarkButton.isVisible()) {
+        await bookmarkButton.click();
+        
+        // Check for toast notification
+        await page.waitForTimeout(500);
+        const toast = await page.locator('.toast, [role="alert"], .notification').count();
+        if (toast > 0) {
+          await this.captureScreenshot(page, 'toast-notification');
+        }
+      }
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: API Integration
+  async testAPIIntegration() {
+    console.log(chalk.yellow('\n📋 API INTEGRATION TESTS'));
+    
+    await this.runTest('API response handling', async () => {
+      const context = await this.browser.newContext();
+      const page = await this.authenticateUser(context, TEST_USERS[1]);
+      
+      // Monitor network requests
+      const apiCalls: string[] = [];
+      page.on('response', response => {
+        if (response.url().includes('/api/')) {
+          apiCalls.push(`${response.status()} - ${response.url()}`);
+        }
+      });
+      
+      // Navigate and trigger API calls
+      await page.goto(`${this.baseUrl}/dashboard`);
+      await page.waitForLoadState('networkidle');
+      
+      // Check if APIs were called successfully
+      const failedCalls = apiCalls.filter(call => call.startsWith('4') || call.startsWith('5'));
+      if (failedCalls.length > 0) {
+        console.log(chalk.red('   Failed API calls:'), failedCalls);
+      }
+      
+      await page.close();
+      await context.close();
+    });
+  }
+
+  // Test Suite: Real-time Features
+  async testRealTimeFeatures() {
+    console.log(chalk.yellow('\n📋 REAL-TIME FEATURES TESTS'));
+    
+    await this.runTest('Live search suggestions', async () => {
+      const context = await this.browser.newContext();
+      const page = await context.newPage();
+      
+      await page.goto(this.baseUrl);
+      await this.handleCookieConsent(page);
+      
+      // Type in search
+      const searchInput = await page.locator('input[type="search"], input[placeholder*="search" i]').first();
+      await searchInput.type('mach', { delay: 100 });
+      
+      // Wait for suggestions
+      await page.waitForTimeout(1000);
+      
+      // Check for suggestions dropdown
+      const suggestions = await page.locator('.suggestions, .autocomplete, [role="listbox"]').count();
+      if (suggestions > 0) {
+        await this.captureScreenshot(page, 'search-suggestions');
+      }
+      
       await page.close();
       await context.close();
     });
@@ -544,12 +1167,37 @@ class ComprehensivePlaywrightTest {
       await this.initialize();
       
       // Run all test suites
+      console.log(chalk.blue('\n🏁 Running Comprehensive Test Suite\n'));
+      
+      // Core functionality
       await this.testAuthentication();
+      await this.testProgressDashboard(); // Test our specific fix
       await this.testAccessControl();
+      await this.testSecurityFeatures();
+      
+      // UI Components
+      await this.testDashboardComponents();
+      await this.testTermDetailFeatures();
+      await this.testUserAccountFeatures();
+      await this.testInteractiveComponents();
+      await this.testFormValidation();
+      
+      // Features
       await this.testSearchFunctionality();
       await this.testNavigation();
+      await this.testSocialFeatures();
+      await this.testNotifications();
+      
+      // Quality
+      await this.testErrorHandling();
       await this.testMobileResponsiveness();
+      await this.testAccessibility();
       await this.testPerformance();
+      await this.testDataPersistence();
+      
+      // Advanced
+      await this.testAPIIntegration();
+      await this.testRealTimeFeatures();
       
       await this.generateReport();
       

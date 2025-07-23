@@ -3,7 +3,7 @@
  * Handles authentication on the client side with timeout handling
  */
 
-import { initializeApp } from 'firebase/app';
+import { initializeApp, setLogLevel } from 'firebase/app';
 import {
   type AuthProvider,
   browserLocalPersistence,
@@ -23,6 +23,13 @@ import {
 import { authStatePersistence } from './AuthStatePersistence';
 import { firebaseErrorHandler } from './FirebaseErrorHandler';
 import { DEFAULT_TIMEOUTS, timeoutQueue, withTimeout } from './FirebaseTimeoutWrapper';
+import { authQueryDeduplicator } from './authQueryDeduplicator';
+
+// Enable Firebase debug logging in development
+if (import.meta.env.DEV) {
+  setLogLevel('debug');
+  console.log('🔍 Firebase debug logging enabled');
+}
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -155,6 +162,9 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
       };
 
       await authStatePersistence.storeAuthState(userData, idToken);
+      
+      // Reset deduplicator to allow immediate auth queries after token exchange
+      authQueryDeduplicator.resetConsecutiveQueries();
 
       return {
         user: result.user,
@@ -269,6 +279,9 @@ export async function signInWithEmail(email: string, password: string) {
       };
 
       await authStatePersistence.storeAuthState(userData, idToken);
+      
+      // Reset deduplicator to allow immediate auth queries after token exchange
+      authQueryDeduplicator.resetConsecutiveQueries();
 
       return {
         user: result.user,
@@ -327,6 +340,9 @@ export async function createAccount(email: string, password: string) {
       };
 
       await authStatePersistence.storeAuthState(userData, idToken);
+      
+      // Reset deduplicator to allow immediate auth queries after token exchange
+      authQueryDeduplicator.resetConsecutiveQueries();
 
       return {
         user: result.user,

@@ -47,6 +47,12 @@ class ServiceWorkerManager {
       return;
     }
 
+    // Only register service worker in production
+    if (import.meta.env.DEV) {
+      console.log('⚠️ Service Worker registration skipped in development mode');
+      return;
+    }
+
     try {
       // Register service worker
       this.swRegistration = await navigator.serviceWorker.register('/service-worker.js', {

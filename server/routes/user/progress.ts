@@ -5,14 +5,37 @@ import type { AuthenticatedRequest } from '../../types/express';
 import { getLastNDaysRange } from '../../utils/dateHelpers';
 import { log } from '../../utils/logger';
 
+// Debug logging for module loading
+console.log('[progress.ts] Module loading - enhancedStorage:', !!enhancedStorage);
+console.log('[progress.ts] enhancedStorage methods:', enhancedStorage ? Object.getOwnPropertyNames(Object.getPrototypeOf(enhancedStorage)).filter(m => typeof enhancedStorage[m] === 'function').slice(0, 5) : 'N/A');
+
 export function registerUserProgressRoutes(app: Express): void {
+  console.log('[registerUserProgressRoutes] Function called');
+  console.log('[registerUserProgressRoutes] enhancedStorage available:', !!enhancedStorage);
+  console.log('[registerUserProgressRoutes] enhancedStorage methods:', Object.keys(enhancedStorage || {}));
+  
   // Get user progress statistics
   app.get('/api/user/progress/stats', multiAuthMiddleware as any, async (req, res) => {
+    console.log('[api/user/progress/stats] Request received');
+    console.log('[api/user/progress/stats] enhancedStorage available:', !!enhancedStorage);
+    console.log('[api/user/progress/stats] Headers:', req.headers);
+    console.log('[api/user/progress/stats] User object:', (req as AuthenticatedRequest).user);
+    
     try {
       const userId = (req as AuthenticatedRequest).user?.id;
+      console.log('[api/user/progress/stats] Extracted userId:', userId);
+      
       if (!userId) {
+        console.log('[api/user/progress/stats] No userId found, returning 401');
         return res.status(401).json({ error: 'Authentication required' });
       }
+      
+      // Set the context for enhancedStorage
+      console.log('[api/user/progress/stats] Setting enhancedStorage context');
+      enhancedStorage.setContext({
+        user: (req as AuthenticatedRequest).user,
+        requestId: req.headers['x-request-id'] as string || 'unknown'
+      });
 
       try {
         // Use our new Phase 2D getUserProgressStats method
@@ -20,11 +43,61 @@ export function registerUserProgressRoutes(app: Express): void {
           component: 'UserProgressRoute',
           userId,
         });
-        const userStats = await enhancedStorage.getUserProgressStats(userId);
+        
+        let userStats;
+        let learningStreak;
+        
+        try {
+          console.log('[api/user/progress/stats] Calling enhancedStorage.getUserProgressStats');
+          console.log('[api/user/progress/stats] enhancedStorage type:', typeof enhancedStorage);
+          console.log('[api/user/progress/stats] getUserProgressStats type:', typeof enhancedStorage?.getUserProgressStats);
+          
+          if (!enhancedStorage) {
+            throw new Error('enhancedStorage is not initialized');
+          }
+          
+          if (typeof enhancedStorage.getUserProgressStats !== 'function') {
+            throw new Error('getUserProgressStats is not a function on enhancedStorage');
+          }
+          
+          userStats = await enhancedStorage.getUserProgressStats(userId);
+          console.log('[api/user/progress/stats] userStats result:', userStats);
+        } catch (statsError) {
+          console.error('[api/user/progress/stats] getUserProgressStats ERROR:', statsError);
+          console.error('[api/user/progress/stats] Error type:', statsError?.constructor?.name);
+          console.error('[api/user/progress/stats] Error message:', statsError?.message);
+          console.error('[api/user/progress/stats] Error stack:', statsError?.stack);
+          
+          log.error('Error getting user progress stats:', {
+            error: statsError instanceof Error ? statsError.message : statsError,
+            errorType: statsError?.constructor?.name,
+            stack: statsError instanceof Error ? statsError.stack : undefined,
+            userId,
+            enhancedStorageExists: !!enhancedStorage,
+            methodExists: !!enhancedStorage?.getUserProgressStats,
+          });
+          throw statsError;
+        }
 
-        // Also get learning streak using our Phase 2D updateLearningStreak method
-        const learningStreak = await enhancedStorage.updateLearningStreak(userId);
+        try {
+          learningStreak = await enhancedStorage.updateLearningStreak(userId);
+        } catch (streakError) {
+          log.error('Error updating learning streak:', {
+            error: streakError instanceof Error ? streakError.message : streakError,
+            stack: streakError instanceof Error ? streakError.stack : undefined,
+            userId,
+          });
+          // Use default values if streak update fails
+          learningStreak = {
+            currentStreak: 0,
+            longestStreak: 0,
+            lastActivityDate: new Date(),
+          };
+        }
 
+        console.log('[api/user/progress/stats] Building API response');
+        console.log('[api/user/progress/stats] userStats.categoryProgress:', userStats.categoryProgress);
+        
         // Transform the data to match the expected API format
         const apiResponse = {
           totalTermsViewed: userStats.totalTermsViewed,
@@ -39,7 +112,8 @@ export function registerUserProgressRoutes(app: Express): void {
             advanced: Math.floor(userStats.totalTermsViewed * 0.2),
             expert: Math.floor(userStats.totalTermsViewed * 0.05),
           },
-          categoryProgress: Object.entries(userStats.categoryProgress)
+          upgradePromptTriggers: [], // Empty array for now, can be populated based on user activity
+          categoryProgress: Object.entries(userStats.categoryProgress || {})
             .slice(0, 5)
             .map(([category, progress]) => {
               const completed =
@@ -79,31 +153,72 @@ export function registerUserProgressRoutes(app: Express): void {
             longestStreak: learningStreak.longestStreak,
             lastActive: learningStreak.lastActivityDate.toISOString(),
           },
-          achievements: userStats.achievements
-            .map(achievement => ({
-              id: achievement.id || achievement.name.toLowerCase().replace(/\s+/g, '-'),
-              name: achievement.name,
-              description: achievement.description || `Achievement: ${achievement.name}`,
-              unlockedAt: achievement.unlockedAt?.toISOString() || userStats.lastActivity?.toISOString(),
-              icon: achievement.icon || '🏆',
-            }))
-            .concat([
-              {
-                id: 'first-term',
-                name: 'First Steps',
-                description: 'Viewed your first term',
-                unlockedAt: getLastNDaysRange(7).startDate.toISOString(),
-                icon: '🎯',
-              },
-            ]),
+          achievements: [
+            // Daily streak achievement
+            {
+              id: 'daily-streak',
+              type: 'daily_streak',
+              value: userStats.streakDays || 0,
+              currentStreak: userStats.streakDays || 0,
+              bestStreak: learningStreak.longestStreak || 0,
+              progress: userStats.streakDays || 0,
+              nextMilestone: Math.ceil((userStats.streakDays || 0) / 10) * 10 + 10,
+              unlockedAt: new Date(),
+              isActive: userStats.streakDays > 0,
+              metadata: {}
+            },
+            // Terms viewed achievement
+            {
+              id: 'terms-viewed',
+              type: 'terms_viewed',
+              value: userStats.totalTermsViewed || 0,
+              currentStreak: 0,
+              bestStreak: 0,
+              progress: userStats.totalTermsViewed || 0,
+              nextMilestone: Math.ceil((userStats.totalTermsViewed || 0) / 25) * 25 + 25,
+              unlockedAt: new Date(),
+              isActive: true,
+              metadata: {}
+            },
+            // Bookmarks achievement
+            {
+              id: 'bookmarks-created',
+              type: 'bookmarks_created',
+              value: userStats.favoriteTerms || 0,
+              currentStreak: 0,
+              bestStreak: 0,
+              progress: userStats.favoriteTerms || 0,
+              nextMilestone: Math.ceil((userStats.favoriteTerms || 0) / 10) * 10 + 10,
+              unlockedAt: new Date(),
+              isActive: true,
+              metadata: {}
+            },
+            // Categories explored achievement
+            {
+              id: 'categories-explored',
+              type: 'categories_explored',
+              value: Object.keys(userStats.categoryProgress || {}).length,
+              currentStreak: 0,
+              bestStreak: 0,
+              progress: Object.keys(userStats.categoryProgress || {}).length,
+              nextMilestone: Math.ceil(Object.keys(userStats.categoryProgress || {}).length / 5) * 5 + 5,
+              unlockedAt: new Date(),
+              isActive: true,
+              metadata: {}
+            }
+          ].filter(achievement => achievement.value > 0), // Only show achievements with progress
         };
 
         log.info(`Successfully retrieved progress stats for user: ${userId}`, {
           component: 'UserProgressRoute',
           userId,
         });
+        console.log('[api/user/progress/stats] Sending response');
         res.json(apiResponse);
       } catch (storageError) {
+        console.error('[api/user/progress/stats] Storage/processing ERROR:', storageError);
+        console.error('[api/user/progress/stats] Error stack:', storageError instanceof Error ? storageError.stack : 'No stack');
+        
         log.error('Enhanced storage error', {
           component: 'UserProgressRoute',
           error: storageError,
@@ -123,6 +238,7 @@ export function registerUserProgressRoutes(app: Express): void {
             advanced: Math.floor(Math.random() * 10) + 3,
             expert: Math.floor(Math.random() * 5) + 1,
           },
+          upgradePromptTriggers: [],
           categoryProgress: [
             { category: 'Machine Learning', completed: 12, total: 25, percentage: 48 },
             { category: 'Deep Learning', completed: 8, total: 20, percentage: 40 },
@@ -146,12 +262,29 @@ export function registerUserProgressRoutes(app: Express): void {
           },
           achievements: [
             {
-              id: 'first-term',
-              name: 'First Steps',
-              description: 'Viewed your first term',
-              unlockedAt: getLastNDaysRange(7).startDate.toISOString(),
-              icon: '🎯',
+              id: 'daily-streak',
+              type: 'daily_streak',
+              value: Math.floor(Math.random() * 10) + 1,
+              currentStreak: Math.floor(Math.random() * 10) + 1,
+              bestStreak: Math.floor(Math.random() * 20) + 5,
+              progress: Math.floor(Math.random() * 10) + 1,
+              nextMilestone: 10,
+              unlockedAt: new Date(),
+              isActive: true,
+              metadata: {}
             },
+            {
+              id: 'terms-viewed',
+              type: 'terms_viewed',
+              value: Math.floor(Math.random() * 50) + 10,
+              currentStreak: 0,
+              bestStreak: 0,
+              progress: Math.floor(Math.random() * 50) + 10,
+              nextMilestone: 50,
+              unlockedAt: new Date(),
+              isActive: true,
+              metadata: {}
+            }
           ],
         };
 
@@ -159,8 +292,17 @@ export function registerUserProgressRoutes(app: Express): void {
         res.json(fallbackStats);
       }
     } catch (error) {
+      console.error('[api/user/progress/stats] OUTER ERROR:', error);
+      console.error('[api/user/progress/stats] OUTER ERROR stack:', error instanceof Error ? error.stack : 'No stack');
+      console.error('[api/user/progress/stats] OUTER ERROR type:', typeof error);
+      console.error('[api/user/progress/stats] OUTER ERROR details:', JSON.stringify(error, null, 2));
+      
       log.error('Error fetching user progress stats', { error, component: 'UserProgressRoute' });
-      res.status(500).json({ error: 'Failed to fetch progress statistics' });
+      res.status(500).json({ 
+        error: 'Failed to fetch progress statistics',
+        message: error instanceof Error ? error.message : String(error),
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      });
     }
   });
 
@@ -171,6 +313,12 @@ export function registerUserProgressRoutes(app: Express): void {
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
+      
+      // Set the context for enhancedStorage
+      enhancedStorage.setContext({
+        user: (req as AuthenticatedRequest).user,
+        requestId: req.headers['x-request-id'] as string || 'unknown'
+      });
 
       try {
         // Use our new Phase 2D getUserSectionProgress method
@@ -260,6 +408,12 @@ export function registerUserProgressRoutes(app: Express): void {
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
+      
+      // Set the context for enhancedStorage
+      enhancedStorage.setContext({
+        user: (req as AuthenticatedRequest).user,
+        requestId: req.headers['x-request-id'] as string || 'unknown'
+      });
 
       try {
         // Use our Phase 2D methods to generate intelligent recommendations
@@ -310,7 +464,7 @@ export function registerUserProgressRoutes(app: Express): void {
         }
 
         // 3. Recommend popular terms in user's favorite categories
-        const userTopCategories = Object.entries(userStats.categoryProgress)
+        const userTopCategories = Object.entries(userStats.categoryProgress || {})
           .sort(([, a], [, b]) => b.completionPercentage - a.completionPercentage)
           .slice(0, 2);
 

@@ -7,6 +7,7 @@ import type { IUser } from '../../../shared/types';
 import { firebaseErrorHandler } from './FirebaseErrorHandler';
 import { DEFAULT_TIMEOUTS, withTimeout } from './FirebaseTimeoutWrapper';
 import { getCurrentUser, getIdToken, refreshIdToken } from './firebase';
+import { authQueryDeduplicator } from './authQueryDeduplicator';
 
 // Token storage interface
 export interface TokenStorage {
@@ -243,6 +244,9 @@ export class AuthStatePersistence {
                 await this.storeSecurely(currentTokenData);
                 this.scheduleTokenRefresh(currentTokenData.expiresAt);
 
+                // Reset deduplicator to allow immediate auth queries after token refresh
+                authQueryDeduplicator.resetConsecutiveQueries();
+
                 return {
                     success: true,
                     token: newToken,
@@ -311,6 +315,9 @@ export class AuthStatePersistence {
 
                     // Store the recovered state
                     await this.storeAuthState(user, freshToken);
+                    
+                    // Reset deduplicator to allow immediate auth queries after recovery
+                    authQueryDeduplicator.resetConsecutiveQueries();
 
                     console.log('✅ Auth state recovered from Firebase');
                     return {

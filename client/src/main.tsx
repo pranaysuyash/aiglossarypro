@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -15,23 +16,45 @@ function removeInitialLoader() {
   }
 }
 
-// In development, always unregister service workers to avoid caching issues
-if (import.meta.env.DEV && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(registration => {
-      registration.unregister();
-      console.log('🔥 [Dev] Unregistered service worker:', registration.scope);
-    });
+// Import and setup development cleanup utilities
+if (import.meta.env.DEV) {
+  import('./utils/devCleanup').then(({ setupAutoCleanup }) => {
+    setupAutoCleanup();
   });
+  
+  // Setup auth debugging utilities
+  import('./utils/authDebug').then(({ setupNetworkDebugger }) => {
+    setupNetworkDebugger();
+  });
+  
+  // Always unregister service workers in development
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      if (registrations.length > 0) {
+        console.log(`🔍 Found ${registrations.length} service worker(s) to unregister`);
+        registrations.forEach(registration => {
+          registration.unregister().then(success => {
+            if (success) {
+              console.log('🔥 [Dev] Unregistered service worker:', registration.scope);
+            } else {
+              console.error('❌ Failed to unregister service worker:', registration.scope);
+            }
+          });
+        });
+      }
+    });
+  }
 }
 
 // Render React app immediately
 const root = createRoot(document.getElementById('root')!);
 root.render(
   <ErrorBoundary>
-    <Suspense fallback={<div>Loading...</div>}>
-      <App />
-    </Suspense>
+    <BrowserRouter>
+      <Suspense fallback={<div>Loading...</div>}>
+        <App />
+      </Suspense>
+    </BrowserRouter>
   </ErrorBoundary>
 );
 
@@ -49,8 +72,10 @@ if ('requestIdleCallback' in window) {
       setupGlobalErrorHandlers();
     });
 
-    // Initialize PWA Service Worker after initial render
-    import('./utils/serviceWorkerRegistration');
+    // Initialize PWA Service Worker after initial render (only in production)
+    if (import.meta.env.PROD) {
+      import('./utils/serviceWorkerRegistration');
+    }
     
     // Warm Firebase connection to reduce authentication latency
     import('./lib/firebase').then(({ warmFirebaseConnection }) => {
@@ -72,7 +97,10 @@ if ('requestIdleCallback' in window) {
     import('./utils/errorTracking').then(({ setupGlobalErrorHandlers }) => {
       setupGlobalErrorHandlers();
     });
-    import('./utils/serviceWorkerRegistration');
+    // Initialize PWA Service Worker (only in production)
+    if (import.meta.env.PROD) {
+      import('./utils/serviceWorkerRegistration');
+    }
     removeInitialLoader();
   }, 100);
 }

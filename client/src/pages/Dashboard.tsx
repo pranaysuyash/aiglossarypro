@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ProgressVisualization from '@/components/ProgressVisualization';
 import RecommendedForYou from '@/components/RecommendedForYou';
 import SurpriseMe from '@/components/SurpriseMe';
@@ -52,10 +52,11 @@ interface StreakData {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { accessStatus } = useAccess();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [showWelcome, setShowWelcome] = useState(false);
   const [showPremiumWelcome, setShowPremiumWelcome] = useState(false);
 
@@ -99,31 +100,37 @@ export default function Dashboard() {
   // Fetch user progress data
   const { data: progressData, isLoading: progressLoading } = useQuery<ProgressData>({
     queryKey: ['/api/user/progress'],
+    enabled: !!user && !authLoading && !!accessStatus?.jwt,
   });
 
   // Fetch user activity data
   const { data: activityData, isLoading: activityLoading } = useQuery<ActivityData>({
     queryKey: ['/api/user/activity'],
+    enabled: !!user && !authLoading && !!accessStatus?.jwt,
   });
 
   // Fetch user's learning streak data
   const { data: streakData, isLoading: streakLoading } = useQuery<StreakData>({
     queryKey: ['/api/user/streak'],
+    enabled: !!user && !authLoading && !!accessStatus?.jwt,
   });
 
   // Fetch user's recently viewed terms
   const { data: recentlyViewed, isLoading: recentlyViewedLoading } = useQuery<ITerm[]>({
     queryKey: ['/api/terms/recently-viewed'],
+    enabled: !!user && !authLoading && !!accessStatus?.jwt,
   });
 
   // Fetch user's favorite terms
   const { data: favorites, isLoading: favoritesLoading } = useQuery<ITerm[]>({
     queryKey: ['/api/favorites'],
+    enabled: !!user && !authLoading && !!accessStatus?.jwt,
   });
 
   // Fetch recommended terms for the user
   const { data: recommended, isLoading: recommendedLoading } = useQuery<ITerm[]>({
     queryKey: ['/api/terms/recommended'],
+    enabled: !!user && !authLoading && !!accessStatus?.jwt,
   });
 
   // Create chart data with safe property access - transform for BarChart component
@@ -136,7 +143,7 @@ export default function Dashboard() {
     : [];
 
   const handleSurpriseTermSelect = (term: ITerm) => {
-    setLocation(`/terms/${term.id}`);
+    navigate(`/terms/${term.id}`);
   };
 
   return (
@@ -161,7 +168,7 @@ export default function Dashboard() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button
                     size="sm"
-                    onClick={() => setLocation('/categories')}
+                    onClick={() => navigate('/categories')}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     <BookOpen className="w-4 h-4 mr-1" />
@@ -170,7 +177,7 @@ export default function Dashboard() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setLocation('/ai-tools')}
+                    onClick={() => navigate('/ai-tools')}
                     className="border-green-300 text-green-700 hover:bg-green-100 dark:border-green-600 dark:text-green-300"
                   >
                     <Sparkles className="w-4 h-4 mr-1" />
@@ -210,7 +217,7 @@ export default function Dashboard() {
                 <div className="mt-3">
                   <Button
                     size="sm"
-                    onClick={() => setLocation('/categories')}
+                    onClick={() => navigate('/categories')}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <BookOpen className="w-4 h-4 mr-1" />
@@ -520,20 +527,16 @@ export default function Dashboard() {
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 You haven't viewed any terms yet. Start exploring the glossary!
               </p>
-              <Link href="/">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
-                  Browse Terms <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+              <Link to="/" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
+                Browse Terms <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Card>
           )}
 
           {recentlyViewed && recentlyViewed.length > 6 && (
             <div className="mt-4 text-center">
-              <Link href="/history">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
-                  View all history <ArrowRight className="ml-1 h-4 w-4" />
-                </a>
+              <Link to="/history" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
+                View all history <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
           )}
@@ -560,20 +563,16 @@ export default function Dashboard() {
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 You haven't favorited any terms yet.
               </p>
-              <Link href="/">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
-                  Browse Terms <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+              <Link to="/" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
+                Browse Terms <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Card>
           )}
 
           {favorites && favorites.length > 6 && (
             <div className="mt-4 text-center">
-              <Link href="/favorites">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
-                  View all favorites <ArrowRight className="ml-1 h-4 w-4" />
-                </a>
+              <Link to="/favorites" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
+                View all favorites <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
           )}
@@ -604,20 +603,16 @@ export default function Dashboard() {
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 We'll recommend terms based on your activity. Start exploring!
               </p>
-              <Link href="/">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
-                  Browse Terms <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+              <Link to="/" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
+                Browse Terms <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Card>
           )}
 
           {recommended && recommended.length > 6 && (
             <div className="mt-4 text-center">
-              <Link href="/recommendations">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
-                  View all recommendations <ArrowRight className="ml-1 h-4 w-4" />
-                </a>
+              <Link to="/recommendations" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
+                View all recommendations <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
           )}

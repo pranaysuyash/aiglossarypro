@@ -91,7 +91,7 @@ export default function SurpriseMe({
   // Get user's discovery preferences
   const { data: preferences } = useQuery({
     queryKey: ['/api/surprise-discovery/preferences'],
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!user?.jwt,
   });
 
   // Main surprise discovery mutation

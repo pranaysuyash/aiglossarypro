@@ -8,8 +8,8 @@ const authQueryTracker = {
   resetTime: Date.now()
 };
 
-// Minimum time between auth queries (5 seconds)
-const MIN_QUERY_INTERVAL = 5000;
+// Minimum time between auth queries (1 second - reduced for faster auth updates)
+const MIN_QUERY_INTERVAL = 1000;
 
 // Maximum queries per minute
 const MAX_QUERIES_PER_MINUTE = 10;
@@ -25,6 +25,13 @@ export const authQueryKey: QueryKey = ['/api/auth/user'];
 export function shouldAllowAuthQuery(): boolean {
   const now = Date.now();
   const authStateManager = AuthStateManager.getInstance();
+
+  // Always allow the first query
+  const isFirstQuery = authQueryTracker.lastQueryTime === 0;
+  if (isFirstQuery) {
+    console.log('✅ First auth query - allowing through');
+    return true;
+  }
 
   // Check circuit breaker first
   if (!authStateManager.canMakeAuthRequest()) {
@@ -84,7 +91,7 @@ export function getAuthQueryOptions() {
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
     refetchOnReconnect: false, // Don't refetch when network reconnects
     refetchInterval: false, // No automatic refetching
-    retry: false, // Don't retry failed auth queries (handled by circuit breaker)
+    retry: 1, // Allow one retry for auth queries to handle temporary issues
     retryOnMount: false, // Don't retry on mount
     networkMode: 'online' as const, // Only run when online
     // Query deduplication is handled by React Query automatically for same query keys

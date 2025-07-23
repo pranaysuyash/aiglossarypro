@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Progress API</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <h1>Progress API Test</h1>
+    <button onclick="testAPI()">Test Progress API</button>
+    <pre id="output"></pre>
+    
+    <script>
+        // Initialize Firebase (you'll need to add your config)
+        const firebaseConfig = {
+            // Add your Firebase config here
+        };
+        
+        function log(message) {
+            document.getElementById('output').textContent += message + '\n';
+        }
+        
+        async function testAPI() {
+            try {
+                log('Getting auth token from localStorage...');
+                
+                // Try different token locations
+                const token = localStorage.getItem('authToken') || 
+                             localStorage.getItem('firebase-auth-token') ||
+                             localStorage.getItem('firebaseToken');
+                             
+                if (!token) {
+                    log('No auth token found in localStorage');
+                    return;
+                }
+                
+                log('Found token: ' + token.substring(0, 30) + '...');
+                log('\nCalling /api/user/progress/stats...');
+                
+                const response = await fetch('http://localhost:3001/api/user/progress/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('Response status: ' + response.status);
+                const data = await response.json();
+                log('Response: ' + JSON.stringify(data, null, 2));
+                
+                if (response.status === 500) {
+                    log('\n⚠️ ERROR 500 detected! Check server logs now.');
+                }
+                
+            } catch (error) {
+                log('Error: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        // Check what's in localStorage
+        log('Current localStorage contents:');
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.includes('auth') || key.includes('token') || key.includes('firebase')) {
+                log(key + ': ' + localStorage.getItem(key).substring(0, 50) + '...');
+            }
+        }
+    </script>
+</body>
+</html>

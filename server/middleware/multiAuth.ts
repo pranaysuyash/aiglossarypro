@@ -269,82 +269,81 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
       });
     }
 
-    // Try Firebase token verification first
+    // Detect token type - Firebase ID tokens have 'kid' in header, custom JWTs don't
+    let isFirebaseToken = false;
     try {
-      const firebaseUser = await verifyFirebaseToken(token);
-      if (firebaseUser) {
-        // Get or create user in our database
-        let user = await storage.getUserByEmail(firebaseUser.email!);
-        
-        if (!user) {
-          // Create new user from Firebase data
-          user = await storage.upsertUser({
-            id: firebaseUser.uid,
-            email: firebaseUser.email!,
-            firstName: firebaseUser.name?.split(' ')[0] || '',
-            lastName: firebaseUser.name?.split(' ').slice(1).join(' ') || '',
-            profileImageUrl: firebaseUser.picture || undefined,
-            authProvider: firebaseUser.firebase?.sign_in_provider || 'firebase',
-            firebaseUid: firebaseUser.uid,
-          });
-        }
-
-        // Update Firebase UID if not set
-        if (user && !user.firebaseUid) {
-          await storage.updateUser(user.id, { firebaseUid: firebaseUser.uid });
-        }
-
-        // Set user on request
-        (req as any).user = {
-          ...user,
-          provider: 'firebase',
-          claims: {
-            sub: firebaseUser.uid,
-            email: firebaseUser.email,
-            name: firebaseUser.name,
-          },
-          isAdmin: user?.isAdmin || firebaseUser.admin === true,
-        };
-        (req as any).firebaseUser = firebaseUser;
-        return next();
-      }
-    } catch (firebaseError) {
-      // Firebase token verification failed, try JWT
-      log.debug('Firebase token verification failed, trying JWT', {
-        error: firebaseError instanceof Error ? firebaseError.message : 'Unknown error'
-      });
+      const header = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString());
+      isFirebaseToken = !!header.kid;
+    } catch (e) {
+      // If we can't parse the header, assume it's a custom JWT
     }
 
-    // Try JWT token verification
-    const decoded = verifyToken(token);
-    if (decoded) {
-      // Set user on request from JWT token
-      (req as any).user = {
-        id: decoded.sub,
-        email: decoded.email,
-        firstName: decoded.firstName || null,
-        lastName: decoded.lastName || null,
-        profileImageUrl: decoded.profileImageUrl || null,
-        provider: 'jwt',
-        claims: {
-          sub: decoded.sub,
-          email: decoded.email,
-          name: decoded.name,
-        },
-        isAdmin: decoded.isAdmin,
-      };
-      return next();
+    if (isFirebaseToken) {
+      // Handle Firebase ID tokens (from direct Firebase auth)
+      try {
+        const firebaseUser = await verifyFirebaseToken(token);
+        if (firebaseUser) {
+          // Get or create user in our database
+          let user = await storage.getUserByEmail(firebaseUser.email!);
+          
+          if (!user) {
+            // Create new user from Firebase data
+            user = await storage.upsertUser({
+              id: firebaseUser.uid,
+              email: firebaseUser.email!,
+              firstName: firebaseUser.name?.split(' ')[0] || '',
+              lastName: firebaseUser.name?.split(' ').slice(1).join(' ') || '',
+              profileImageUrl: firebaseUser.picture || undefined,
+              authProvider: firebaseUser.firebase?.sign_in_provider || 'firebase',
+              firebaseUid: firebaseUser.uid,
+            });
+          }
+
+          // Update Firebase UID if not set
+          if (user && !user.firebaseUid) {
+            await storage.updateUser(user.id, { firebaseUid: firebaseUser.uid });
+          }
+
+          // Set user on request
+          (req as any).user = {
+            ...user,
+            provider: 'firebase',
+            claims: {
+              sub: firebaseUser.uid,
+              email: firebaseUser.email,
+              name: firebaseUser.name,
+            },
+            isAdmin: user?.isAdmin || firebaseUser.admin === true,
+          };
+          (req as any).firebaseUser = firebaseUser;
+          return next();
+        }
+      } catch (firebaseError) {
+        log.debug('Firebase token verification failed', {
+          error: firebaseError instanceof Error ? firebaseError.message : 'Unknown error'
+        });
+      }
     } else {
-      // If token is invalid, return 401 immediately
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid or expired token',
-        availableProviders: {
-          google: !!process.env.GOOGLE_CLIENT_ID,
-          github: !!process.env.GITHUB_CLIENT_ID,
-          firebase: !!process.env.FIREBASE_PROJECT_ID,
-        },
-      });
+      // Handle custom JWT tokens (from Firebase exchange)
+      const decoded = verifyToken(token);
+      if (decoded) {
+        // Set user on request from JWT token
+        (req as any).user = {
+          id: decoded.sub,
+          email: decoded.email,
+          firstName: decoded.firstName || null,
+          lastName: decoded.lastName || null,
+          profileImageUrl: decoded.profileImageUrl || null,
+          provider: 'jwt',
+          claims: {
+            sub: decoded.sub,
+            email: decoded.email,
+            name: decoded.name,
+          },
+          isAdmin: decoded.isAdmin,
+        };
+        return next();
+      }
     }
   }
 

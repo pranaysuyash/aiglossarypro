@@ -88,7 +88,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
       if (error?.message === 'Authentication required') {return false;}
       return failureCount < 2;
     },
-    enabled: !!user, // Only run query if user is authenticated
+    enabled: !!user && !!user.jwt, // Only run query if user is authenticated with JWT
   });
 
   const recommendations: PersonalizedRecommendation[] = data?.data || [];

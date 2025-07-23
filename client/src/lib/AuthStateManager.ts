@@ -182,6 +182,13 @@ export class AuthStateManager {
   canMakeAuthRequest(): boolean {
     const now = Date.now();
 
+    // Always allow the first request
+    const isFirstRequest = this.authState.lastCheck === 0;
+    if (isFirstRequest) {
+      console.log('✅ First auth request - allowing through');
+      return true;
+    }
+
     // Check minimum interval between requests
     if (now - this.authState.lastCheck < this.MIN_CHECK_INTERVAL) {
       console.log('🚫 Auth request blocked: Too soon since last check');

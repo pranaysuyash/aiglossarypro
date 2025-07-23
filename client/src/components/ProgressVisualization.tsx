@@ -27,7 +27,7 @@ interface UserProgressStats {
   timeSpentMinutes: number;
   achievements: Achievement[];
   dailyStats: DailyStats[];
-  upgradePromptTriggers: UpgradePromptTrigger[];
+  upgradePromptTriggers?: UpgradePromptTrigger[]; // Optional to handle API responses without this field
 }
 
 interface Achievement {
@@ -116,7 +116,7 @@ export function ProgressVisualization({
         return;
       }
       
-      const response = await fetch('/api/progress/stats', {
+      const response = await fetch('/api/user/progress/stats', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -139,13 +139,66 @@ export function ProgressVisualization({
       }
 
       if (!response.ok) {
-        throw new Error('Failed to fetch progress stats');
+        // Try to get error message from response
+        let errorMessage = `Failed to fetch progress stats (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // Ignore JSON parse errors
+        }
+        
+        console.error('Progress stats API error:', response.status, errorMessage);
+        
+        // For 500 errors, use fallback data instead of showing error
+        if (response.status >= 500) {
+          setStats({
+            totalTermsViewed: 0,
+            totalBookmarks: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            categoriesExplored: 0,
+            timeSpentMinutes: 0,
+            achievements: [],
+            dailyStats: [],
+            upgradePromptTriggers: [],
+          });
+          return;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      setStats(data);
+      
+      // Ensure data has all required fields with defaults
+      setStats({
+        totalTermsViewed: data.totalTermsViewed || 0,
+        totalBookmarks: data.totalBookmarks || 0,
+        currentStreak: data.currentStreak || 0,
+        bestStreak: data.bestStreak || 0,
+        categoriesExplored: data.categoriesExplored || 0,
+        timeSpentMinutes: data.timeSpentMinutes || 0,
+        achievements: data.achievements || [],
+        dailyStats: data.dailyStats || [],
+        upgradePromptTriggers: data.upgradePromptTriggers || [],
+      });
     } catch (err) {
+      console.error('Progress stats fetch error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
+      
+      // For network errors, also use fallback data
+      setStats({
+        totalTermsViewed: 0,
+        totalBookmarks: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        categoriesExplored: 0,
+        timeSpentMinutes: 0,
+        achievements: [],
+        dailyStats: [],
+        upgradePromptTriggers: [],
+      });
     } finally {
       setLoading(false);
     }
@@ -295,6 +348,8 @@ export function ProgressVisualization({
 
   // Get achievement display name
   const getAchievementName = (type: string) => {
+    if (!type) return 'Unknown Achievement';
+    
     switch (type) {
       case 'daily_streak':
         return 'Daily Streak';
@@ -305,14 +360,14 @@ export function ProgressVisualization({
       case 'categories_explored':
         return 'Categories Mastered';
       default:
-        return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Upgrade Prompts */}
-      {showUpgradePrompts && !isPremium && stats.upgradePromptTriggers.length > 0 && (
+      {showUpgradePrompts && !isPremium && stats?.upgradePromptTriggers?.length > 0 && (
         <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-800">
@@ -322,7 +377,7 @@ export function ProgressVisualization({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.upgradePromptTriggers.slice(0, 2).map((trigger, index) => (
+              {(stats.upgradePromptTriggers || []).slice(0, 2).map((trigger, index) => (
                 <div key={index} className="flex items-center gap-3 text-sm">
                   <div
                     className={`w-2 h-2 rounded-full ${
@@ -442,11 +497,11 @@ export function ProgressVisualization({
             {stats.achievements.length > 0 ? (
               <>
                 <div className="flex items-center gap-2 text-yellow-600">
-                  {getAchievement(stats.achievements[0].type)}
-                  <span className="text-lg font-bold">{stats.achievements[0].value}</span>
+                  {getAchievement(stats.achievements[0]?.type || '')}
+                  <span className="text-lg font-bold">{stats.achievements[0]?.value || 0}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {getAchievementName(stats.achievements[0].type)}
+                  {getAchievementName(stats.achievements[0]?.type || '')}
                 </p>
               </>
             ) : (
@@ -473,28 +528,28 @@ export function ProgressVisualization({
                   key={achievement.id}
                   className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                 >
-                  <div className="text-yellow-600">{getAchievement(achievement.type)}</div>
+                  <div className="text-yellow-600">{getAchievement(achievement?.type || '')}</div>
                   <div className="flex-1">
                     <div className="font-medium text-sm">
-                      {getAchievementName(achievement.type)}
+                      {getAchievementName(achievement?.type || '')}
                     </div>
                     <div className="text-xs text-gray-600 space-y-1">
-                      <div>Current: {achievement.value}</div>
-                      {achievement.type === 'daily_streak' && (
+                      <div>Current: {achievement?.value || 0}</div>
+                      {achievement?.type === 'daily_streak' && achievement?.bestStreak && (
                         <div>Best: {achievement.bestStreak} days</div>
                       )}
-                      {achievement.progress < achievement.nextMilestone && (
+                      {achievement?.progress < achievement?.nextMilestone && (
                         <div>Next milestone: {achievement.nextMilestone}</div>
                       )}
                     </div>
-                    {achievement.progress < achievement.nextMilestone && (
+                    {achievement?.progress < achievement?.nextMilestone && (
                       <Progress
-                        value={(achievement.progress / achievement.nextMilestone) * 100}
+                        value={((achievement?.progress || 0) / (achievement?.nextMilestone || 1)) * 100}
                         className="h-1 mt-2"
                       />
                     )}
                   </div>
-                  {achievement.isActive && (
+                  {achievement?.isActive && (
                     <Badge variant="secondary" className="text-xs">
                       Active
                     </Badge>

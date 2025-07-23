@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { authQueryKey } from '@/lib/authQueryOptions';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -14,24 +15,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/lib/toast';
 import { api } from '@/lib/api';
 import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
+import { getAuthChannel, getTabId } from '@/lib/authChannel';
+import { AuthStateManager } from '@/lib/AuthStateManager';
+import { authQueryDeduplicator } from '@/lib/authQueryDeduplicator';
 import type {
   ApiResponse,
   AuthResponse,
   PurchaseVerificationResponse,
 } from '@/types/api-responses';
 
-// Create a broadcast channel for cross-tab communication with tab filtering
-const authChannel = typeof BroadcastChannel !== 'undefined' 
-  ? new BroadcastChannel('auth_state') 
-  : null;
-
-// Generate unique tab ID for filtering
-const tabId = crypto.randomUUID();
+// Use unified auth channel and tab ID
+const authChannel = getAuthChannel();
+const tabId = getTabId();
 
 export default function FirebaseLoginPage() {
-  const [, navigate] = useLocation();
+  const navigate = useNavigate();
   const { announce } = useLiveRegion();
   const queryClient = useQueryClient();
+  const { user, refetch: refreshAuth } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +42,23 @@ export default function FirebaseLoginPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Handle navigation based on auth state
+  useEffect(() => {
+    if (user) {
+      console.log('🚀 Auth state changed - navigating based on user type');
+      console.log('🚀 Is Admin:', user.isAdmin);
+      console.log('🚀 Has Lifetime Access:', user.lifetimeAccess);
+      
+      if (user.isAdmin) {
+        navigate('/admin');
+      } else if (user.lifetimeAccess) {
+        navigate('/dashboard?welcome=premium');
+      } else {
+        navigate('/dashboard?welcome=true');
+      }
+    }
+  }, [user, navigate]);
 
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     try {
@@ -62,11 +80,6 @@ export default function FirebaseLoginPage() {
       if (response.success && response.data) {
         // Store token in localStorage for API calls
         localStorage.setItem('authToken', (response.data as any).token);
-
-        // Update React Query cache with user data to maintain auth state
-        queryClient.setQueryData(authQueryKey, (response.data as any).user);
-        // Don't invalidate - the data is already set
-        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Broadcast login to other tabs
         if (authChannel) {
@@ -90,23 +103,19 @@ export default function FirebaseLoginPage() {
           'polite'
         );
 
-        // Redirect based on user type and status
-        console.log('🚀 OAuth Navigating after login - User data:', userData);
-        console.log('🚀 Is Admin:', userData.isAdmin);
-        console.log('🚀 Has Lifetime Access:', userData.lifetimeAccess);
+        // Update React Query cache and force auth refresh
+        queryClient.setQueryData(authQueryKey, (response.data as any).user);
         
-        // Small delay to ensure auth state is fully propagated
+        // Force immediate auth state update to trigger navigation
+        const authStateManager = AuthStateManager.getInstance();
+        authStateManager.recordSuccess((response.data as any).user, 'storage');
+        
+        // Reset deduplicator to allow immediate auth queries
+        authQueryDeduplicator.resetConsecutiveQueries();
+        
+        // Force refresh the auth query to ensure navigation triggers
         setTimeout(() => {
-          if (userData.isAdmin) {
-            console.log('🚀 Navigating to /admin');
-            navigate('/admin');
-          } else if (userData.lifetimeAccess) {
-            console.log('🚀 Navigating to /dashboard?welcome=premium');
-            navigate('/dashboard?welcome=premium');
-          } else {
-            console.log('🚀 Navigating to /dashboard?welcome=true');
-            navigate('/dashboard?welcome=true');
-          }
+          refreshAuth();
         }, 200);
       }
     } catch (err: any) {
@@ -235,11 +244,6 @@ export default function FirebaseLoginPage() {
       if (response.success && response.data) {
         localStorage.setItem('authToken', response.data?.token);
 
-        // Update React Query cache with user data to maintain auth state
-        queryClient.setQueryData(authQueryKey, (response.data as any).user);
-        // Don't invalidate - the data is already set
-        await new Promise(resolve => setTimeout(resolve, 100));
-
         // Broadcast login to other tabs
         if (authChannel) {
           authChannel.postMessage({ type: 'login', user: (response.data as any).user, source: tabId });
@@ -262,27 +266,19 @@ export default function FirebaseLoginPage() {
           'polite'
         );
 
-        // Redirect based on user type and status
-        console.log('🚀 Navigating after login - User data:', userData);
-        console.log('🚀 Is Admin:', userData?.isAdmin);
-        console.log('🚀 Has Lifetime Access:', userData?.lifetimeAccess);
+        // Update React Query cache and force auth refresh
+        queryClient.setQueryData(authQueryKey, response.data?.user);
         
-        // Small delay to ensure auth state is fully propagated
+        // Force immediate auth state update to trigger navigation
+        const authStateManager = AuthStateManager.getInstance();
+        authStateManager.recordSuccess(response.data?.user, 'storage');
+        
+        // Reset deduplicator to allow immediate auth queries
+        authQueryDeduplicator.resetConsecutiveQueries();
+        
+        // Force refresh the auth query to ensure navigation triggers
         setTimeout(() => {
-          console.log('🔍 Testing navigation... current path:', window.location.pathname);
-          if (userData?.isAdmin) {
-            console.log('🚀 Navigating to /admin via wouter');
-            navigate('/admin');
-            console.log('✅ Navigation call completed for /admin');
-          } else if (userData?.lifetimeAccess) {
-            console.log('🚀 Navigating to /dashboard?welcome=premium via wouter');
-            navigate('/dashboard?welcome=premium');
-            console.log('✅ Navigation call completed for /dashboard/premium');
-          } else {
-            console.log('🚀 Navigating to /dashboard?welcome=true via wouter');
-            navigate('/dashboard?welcome=true');
-            console.log('✅ Navigation call completed for /dashboard/true');
-          }
+          refreshAuth();
         }, 200);
       }
     } catch (err: any) {

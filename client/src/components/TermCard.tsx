@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,7 @@ const CategoryBadges = memo(({ term, variant }: { term: ITerm; variant: string }
   return (
     <div className="flex flex-wrap gap-1">
       {/* Main Category Badge */}
-      <Link href={`/category/${term.categoryId}`}>
+      <Link to={`/category/${term.categoryId}`}>
         <Badge
           variant="secondary"
           className={`bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 ${badgeSize} cursor-pointer transition-colors`}
@@ -72,7 +72,7 @@ const CategoryBadges = memo(({ term, variant }: { term: ITerm; variant: string }
             .map((subcategoryId, index) => {
               const subcategoryName = term.subcategories?.[index] || `Subcategory ${index + 1}`;
               return (
-                <Link key={subcategoryId} href={`/subcategories/${subcategoryId}`}>
+                <Link key={subcategoryId} to={`/subcategories/${subcategoryId}`}>
                   <Badge
                     variant="outline"
                     className={`text-gray-600 hover:text-primary hover:border-primary dark:text-gray-400 ${badgeSize} cursor-pointer transition-colors`}

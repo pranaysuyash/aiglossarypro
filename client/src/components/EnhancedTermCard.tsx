@@ -1,6 +1,6 @@
 import { Brain, ChevronRight, Code, Copy, Eye, Heart, Play, Share2, TestTube } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -34,7 +34,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const measureRender = () => performanceMonitor.mark('EnhancedTermCard_render');
-  const [, navigate] = useLocation();
+  const navigate = useNavigate();
 
   const enhanced = isEnhancedTerm(term);
 

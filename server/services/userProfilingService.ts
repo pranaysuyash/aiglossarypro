@@ -433,15 +433,25 @@ async function getExplorationRecommendations(
 ): Promise<PersonalizedRecommendation[]> {
   const exploredCategoryIds = userProfile.interests.map(i => i.categoryId);
 
-  const unexploredCategories = await db
-    .select({
-      id: categories.id,
-      name: categories.name,
-      description: categories.description,
-    })
-    .from(categories)
-    .where(sql`${categories.id} NOT IN (${exploredCategoryIds.map(id => `'${id}'`).join(',')})`)
-    .limit(3);
+  // If user has no interests yet, get random categories
+  const unexploredCategories = exploredCategoryIds.length > 0
+    ? await db
+        .select({
+          id: categories.id,
+          name: categories.name,
+          description: categories.description,
+        })
+        .from(categories)
+        .where(sql`${categories.id} NOT IN (${exploredCategoryIds.map(id => `'${id}'`).join(',')})`)
+        .limit(3)
+    : await db
+        .select({
+          id: categories.id,
+          name: categories.name,
+          description: categories.description,
+        })
+        .from(categories)
+        .limit(3);
 
   return unexploredCategories.map(category => ({
     type: 'category' as const,

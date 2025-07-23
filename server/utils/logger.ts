@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
+import util from 'node:util';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
@@ -44,7 +45,7 @@ const customFormat = winston.format.combine(
     }
 
     if (Object.keys(meta).length > 0) {
-      log += `\nMeta: ${JSON.stringify(meta, null, 2)}`;
+      log += `\nMeta: ${util.inspect(meta, { depth: 4, colors: false })}`;
     }
 
     return log;
@@ -111,7 +112,7 @@ const logger = winston.createLogger({
             winston.format.colorize(),
             winston.format.timestamp({ format: 'HH:mm:ss' }),
             winston.format.printf(({ timestamp, level, message, ...meta }) => {
-              const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+              const metaStr = Object.keys(meta).length ? ` ${util.inspect(meta, { depth: 2, colors: true })}` : '';
               return `${timestamp} [${level}]: ${message}${metaStr}`;
             })
           ),

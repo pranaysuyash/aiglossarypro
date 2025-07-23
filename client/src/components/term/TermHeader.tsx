@@ -11,7 +11,7 @@ import {
   TestTube,
   Zap,
 } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link, useNavigate } from 'react-router-dom';
 import ShareMenu from '@/components/ShareMenu';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -68,6 +68,7 @@ export default function TermHeader({
   onCopyLink,
   onShareMenuToggle,
 }: TermHeaderProps) {
+  const navigate = useNavigate();
   const enhancedTerm = isEnhancedTerm(term) ? term : null;
   const progressPercentage = getProgressPercentage(userSettings, term);
   const mainCategories = getMainCategories(term);
@@ -89,7 +90,7 @@ export default function TermHeader({
       <div className="p-6">
         {/* Back Navigation */}
         <div className="flex items-center mb-4">
-          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="mr-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mr-4">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </Button>
@@ -100,13 +101,13 @@ export default function TermHeader({
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href="/">Home</Link>
+                <Link to="/">Home</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href="/categories">Categories</Link>
+                <Link to="/categories">Categories</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             {mainCategories.length > 0 && (
@@ -114,7 +115,7 @@ export default function TermHeader({
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link href={`/categories?filter=${encodeURIComponent(mainCategories[0])}`}>
+                    <Link to={`/categories?filter=${encodeURIComponent(mainCategories[0])}`}>
                       {mainCategories[0]}
                     </Link>
                   </BreadcrumbLink>

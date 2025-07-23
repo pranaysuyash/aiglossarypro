@@ -1088,8 +1088,11 @@ export function registerTermRoutes(app: Express): void {
         const { limit = 5 } = req.query;
 
         const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
-        // Since getRecommendedTermsForTerm doesn't exist, use related terms or featured terms
-        const recommendations = await storage.getFeaturedTerms();
+        
+        // Get recommendations for this specific term
+        // If user is authenticated, pass userId for personalized recommendations
+        const userId = (req as any).user?.claims?.sub || null;
+        const recommendations = await storage.getRecommendedTermsForTerm(id, userId);
 
         const response: ApiResponse<ITerm[]> = {
           success: true,

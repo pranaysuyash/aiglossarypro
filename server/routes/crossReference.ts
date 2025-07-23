@@ -6,7 +6,6 @@
 import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAdmin } from '../middleware/adminAuth';
-import { mockRequireAdmin } from '../middleware/dev/mockAuth';
 import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { crossReferenceAnalyticsService } from '../services/crossReferenceAnalyticsService';
@@ -33,8 +32,8 @@ const pathwaysQuerySchema = z.object({
 });
 
 export function registerCrossReferenceRoutes(app: Express): void {
-  // Choose admin middleware based on environment
-  const adminMiddleware = mockRequireAdmin;
+  // Use requireAdmin for admin authentication
+  const adminMiddleware = requireAdmin;
 
   /**
    * Process text for automatic term linking

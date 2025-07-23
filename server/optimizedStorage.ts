@@ -400,6 +400,40 @@ export class OptimizedStorage implements IStorage {
   async recordTermView(termId: string, userId: string | null): Promise<void> {
     // Always execute this (no caching for writes)
     if (userId) {
+      // Get current user to check dailyViews reset
+      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (user.length > 0) {
+        const currentUser = user[0];
+        const now = new Date();
+        const lastReset = currentUser.lastViewReset ? new Date(currentUser.lastViewReset) : null;
+        
+        // Check if we need to reset daily views (new day)
+        const needsReset = !lastReset || 
+          now.toDateString() !== lastReset.toDateString();
+        
+        if (needsReset) {
+          // Reset daily views for new day
+          await db
+            .update(users)
+            .set({
+              dailyViews: 1,
+              lastViewReset: now,
+              updatedAt: now,
+            })
+            .where(eq(users.id, userId));
+        } else {
+          // Increment daily views
+          await db
+            .update(users)
+            .set({
+              dailyViews: sql`${users.dailyViews} + 1`,
+              updatedAt: now,
+            })
+            .where(eq(users.id, userId));
+        }
+      }
+
+      // Record the term view
       await db
         .insert(termViews)
         .values({
@@ -701,11 +735,20 @@ export class OptimizedStorage implements IStorage {
 
         const totalTerms = await db.select({ count: sql<number>`count(*)` }).from(terms);
 
+        // Get achievements
+        const achievements = await this.getUserAchievements(userId);
+
+        // Get streak data
+        const streakData = await this.getUserStreak(userId);
+
         return {
           learnedCount: learned.length,
           totalTerms: totalTerms[0].count,
           percentage: totalTerms[0].count > 0 ? (learned.length / totalTerms[0].count) * 100 : 0,
           learnedTerms: learned,
+          achievements: achievements,
+          currentStreak: streakData.currentStreak,
+          longestStreak: streakData.longestStreak,
         };
       },
       15 * 60 * 1000 // 15 minutes cache
@@ -1638,20 +1681,107 @@ export class OptimizedStorage implements IStorage {
   }
 
   async getUserStreak(userId: string): Promise<any> {
-    // Simple implementation - can be enhanced
-    const recentViews = await db
+    // Get all term views for the user, ordered by date
+    const allViews = await db
       .select({
         viewedAt: termViews.viewedAt,
       })
       .from(termViews)
       .where(eq(termViews.userId, userId))
-      .orderBy(desc(termViews.viewedAt))
-      .limit(30);
+      .orderBy(desc(termViews.viewedAt));
+
+    if (allViews.length === 0) {
+      return {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActivity: null,
+        streakHistory: [],
+      };
+    }
+
+    // Group views by date
+    const viewsByDate = new Map<string, number>();
+    allViews.forEach(view => {
+      const dateStr = view.viewedAt.toISOString().split('T')[0];
+      viewsByDate.set(dateStr, (viewsByDate.get(dateStr) || 0) + 1);
+    });
+
+    // Sort dates in descending order
+    const sortedDates = Array.from(viewsByDate.keys()).sort((a, b) => 
+      new Date(b).getTime() - new Date(a).getTime()
+    );
+
+    // Calculate current streak
+    let currentStreak = 0;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Check if user has activity today or yesterday to start the streak
+    if (viewsByDate.has(todayStr) || viewsByDate.has(yesterdayStr)) {
+      currentStreak = 1;
+      let checkDate = viewsByDate.has(todayStr) ? today : yesterday;
+      
+      // Go backwards and count consecutive days
+      for (let i = 1; i < sortedDates.length; i++) {
+        checkDate.setDate(checkDate.getDate() - 1);
+        const checkDateStr = checkDate.toISOString().split('T')[0];
+        
+        if (viewsByDate.has(checkDateStr)) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Calculate longest streak
+    let longestStreak = 0;
+    let tempStreak = 0;
+    let lastDate: Date | null = null;
+
+    sortedDates.forEach(dateStr => {
+      const currentDate = new Date(dateStr);
+      
+      if (!lastDate) {
+        tempStreak = 1;
+      } else {
+        const dayDiff = (lastDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (dayDiff === 1) {
+          tempStreak++;
+        } else {
+          longestStreak = Math.max(longestStreak, tempStreak);
+          tempStreak = 1;
+        }
+      }
+      
+      lastDate = currentDate;
+    });
+    
+    longestStreak = Math.max(longestStreak, tempStreak, currentStreak);
+
+    // Get streak history (last 7 days)
+    const streakHistory = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      streakHistory.push({
+        date: dateStr,
+        hasActivity: viewsByDate.has(dateStr),
+        viewCount: viewsByDate.get(dateStr) || 0,
+      });
+    }
 
     return {
-      currentStreak: 0,
-      longestStreak: 0,
-      recentActivity: recentViews,
+      currentStreak,
+      longestStreak,
+      lastActivity: allViews[0]?.viewedAt || null,
+      streakHistory: streakHistory.reverse(),
+      totalActiveDays: viewsByDate.size,
     };
   }
 
@@ -2648,14 +2778,208 @@ export class OptimizedStorage implements IStorage {
     return [];
   }
 
-  async isAchievementUnlocked(_userId: string, _achievementId: string): Promise<boolean> {
-    // Placeholder implementation - would need achievements schema
-    return false;
+  async isAchievementUnlocked(userId: string, achievementId: string): Promise<boolean> {
+    // Define achievements based on user activity
+    const achievements = await this.getUserAchievements(userId);
+    return achievements.some(a => a.id === achievementId && a.unlockedAt !== null);
   }
 
   async unlockAchievement(userId: string, achievementId: string): Promise<any> {
-    // Placeholder implementation - would need achievements schema
-    return { success: true, achievementId, userId };
+    const achievement = await this.getAchievementById(achievementId);
+    if (!achievement) {
+      throw new Error('Achievement not found');
+    }
+
+    // Check if already unlocked
+    const isUnlocked = await this.isAchievementUnlocked(userId, achievementId);
+    if (isUnlocked) {
+      return { success: false, message: 'Achievement already unlocked', achievement };
+    }
+
+    // Since we don't have an achievements table, we'll return a virtual achievement
+    return {
+      success: true,
+      achievement: {
+        ...achievement,
+        unlockedAt: new Date(),
+        userId,
+      },
+    };
+  }
+
+  // Helper method to get all possible achievements
+  private async getAchievementById(achievementId: string): Promise<any> {
+    const achievements = [
+      {
+        id: 'first-term',
+        name: 'First Steps',
+        description: 'View your first AI/ML term',
+        icon: '🎯',
+        category: 'learning',
+      },
+      {
+        id: 'streak-7',
+        name: 'Week Warrior',
+        description: 'Maintain a 7-day learning streak',
+        icon: '🔥',
+        category: 'streak',
+      },
+      {
+        id: 'streak-30',
+        name: 'Monthly Master',
+        description: 'Maintain a 30-day learning streak',
+        icon: '💎',
+        category: 'streak',
+      },
+      {
+        id: 'terms-10',
+        name: 'Knowledge Seeker',
+        description: 'View 10 different terms',
+        icon: '📚',
+        category: 'learning',
+      },
+      {
+        id: 'terms-50',
+        name: 'AI Explorer',
+        description: 'View 50 different terms',
+        icon: '🚀',
+        category: 'learning',
+      },
+      {
+        id: 'terms-100',
+        name: 'ML Scholar',
+        description: 'View 100 different terms',
+        icon: '🎓',
+        category: 'learning',
+      },
+      {
+        id: 'category-complete',
+        name: 'Category Champion',
+        description: 'Complete all terms in a category',
+        icon: '🏆',
+        category: 'completion',
+      },
+      {
+        id: 'favorites-10',
+        name: 'Curator',
+        description: 'Add 10 terms to favorites',
+        icon: '⭐',
+        category: 'engagement',
+      },
+    ];
+
+    return achievements.find(a => a.id === achievementId);
+  }
+
+  // Helper method to get user achievements based on their activity
+  async getUserAchievements(userId: string): Promise<any[]> {
+    const achievements = [];
+    
+    // Get user stats
+    const termViewsCount = await db
+      .select({ count: sql<number>`count(distinct ${termViews.termId})` })
+      .from(termViews)
+      .where(eq(termViews.userId, userId));
+    
+    const viewCount = Number(termViewsCount[0]?.count || 0);
+    
+    // Get streak data
+    const streakData = await this.getUserStreak(userId);
+    
+    // Get favorites count
+    const favoritesCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(favorites)
+      .where(eq(favorites.userId, userId));
+    
+    const favCount = Number(favoritesCount[0]?.count || 0);
+
+    // Check achievements
+    if (viewCount >= 1) {
+      achievements.push({
+        id: 'first-term',
+        name: 'First Steps',
+        description: 'View your first AI/ML term',
+        icon: '🎯',
+        unlockedAt: new Date(), // Would need to track actual unlock date
+        progress: viewCount,
+        maxProgress: 1,
+      });
+    }
+
+    if (streakData.currentStreak >= 7 || streakData.longestStreak >= 7) {
+      achievements.push({
+        id: 'streak-7',
+        name: 'Week Warrior',
+        description: 'Maintain a 7-day learning streak',
+        icon: '🔥',
+        unlockedAt: new Date(),
+        progress: Math.max(streakData.currentStreak, streakData.longestStreak),
+        maxProgress: 7,
+      });
+    }
+
+    if (streakData.currentStreak >= 30 || streakData.longestStreak >= 30) {
+      achievements.push({
+        id: 'streak-30',
+        name: 'Monthly Master',
+        description: 'Maintain a 30-day learning streak',
+        icon: '💎',
+        unlockedAt: new Date(),
+        progress: Math.max(streakData.currentStreak, streakData.longestStreak),
+        maxProgress: 30,
+      });
+    }
+
+    if (viewCount >= 10) {
+      achievements.push({
+        id: 'terms-10',
+        name: 'Knowledge Seeker',
+        description: 'View 10 different terms',
+        icon: '📚',
+        unlockedAt: new Date(),
+        progress: viewCount,
+        maxProgress: 10,
+      });
+    }
+
+    if (viewCount >= 50) {
+      achievements.push({
+        id: 'terms-50',
+        name: 'AI Explorer',
+        description: 'View 50 different terms',
+        icon: '🚀',
+        unlockedAt: new Date(),
+        progress: viewCount,
+        maxProgress: 50,
+      });
+    }
+
+    if (viewCount >= 100) {
+      achievements.push({
+        id: 'terms-100',
+        name: 'ML Scholar',
+        description: 'View 100 different terms',
+        icon: '🎓',
+        unlockedAt: new Date(),
+        progress: viewCount,
+        maxProgress: 100,
+      });
+    }
+
+    if (favCount >= 10) {
+      achievements.push({
+        id: 'favorites-10',
+        name: 'Curator',
+        description: 'Add 10 terms to favorites',
+        icon: '⭐',
+        unlockedAt: new Date(),
+        progress: favCount,
+        maxProgress: 10,
+      });
+    }
+
+    return achievements;
   }
 
   // Subcategory operations

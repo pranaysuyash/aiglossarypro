@@ -2,7 +2,6 @@ import type { Express, Request, Response } from 'express';
 import type { ApiResponse, IUser } from '../../shared/types';
 import { features } from '../config';
 import { authenticateToken } from '../middleware/adminAuth';
-import { mockAuthenticateToken, mockIsAuthenticated } from '../middleware/dev/mockAuth';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log as logger } from '../utils/logger';
@@ -13,15 +12,9 @@ import { userSchemas } from '../schemas/apiValidation';
  * Authentication and user management routes
  */
 export function registerAuthRoutes(app: Express): void {
-  // Choose authentication middleware based on enabled features
-  const authMiddleware =
-    features.firebaseAuthEnabled || features.simpleAuthEnabled
-      ? multiAuthMiddleware
-      : mockIsAuthenticated;
-  const tokenMiddleware =
-    features.firebaseAuthEnabled || features.simpleAuthEnabled
-      ? authenticateToken
-      : mockAuthenticateToken;
+  // Use multiAuthMiddleware for all authentication needs
+  const authMiddleware = multiAuthMiddleware;
+  const tokenMiddleware = authenticateToken;
 
   /**
    * @openapi

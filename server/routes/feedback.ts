@@ -6,7 +6,6 @@
 import type { Express, Request, Response } from 'express';
 import { enhancedStorage as storage } from '../enhancedStorage';
 import { requireAdmin } from '../middleware/adminAuth';
-import { mockRequireAdmin } from '../middleware/dev/mockAuth';
 import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
 import type { AuthenticatedRequest } from '../types/express';
 
@@ -24,8 +23,8 @@ const initializeFeedbackStorage = async () => {
 initializeFeedbackStorage();
 
 export function registerFeedbackRoutes(app: Express): void {
-  // Choose admin middleware based on environment
-  const _adminMiddleware = mockRequireAdmin;
+  // Use requireAdmin for admin authentication
+  const _adminMiddleware = requireAdmin;
 
   /**
    * Submit feedback for a specific term

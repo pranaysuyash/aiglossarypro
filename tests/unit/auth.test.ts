@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { features } from '../../server/config';
 import { app } from '../../server/index';
 import { requireAdmin } from '../../server/middleware/adminAuth';
-import { mockIsAuthenticated } from '../../server/middleware/dev/mockAuth';
+import { multiAuthMiddleware } from '../../server/middleware/multiAuth';
 
 // Mock Express request/response for middleware testing
 const mockRequest = (overrides = {}): any => ({
@@ -56,7 +56,7 @@ describe('Authentication System', () => {
         const res = mockResponse();
         const next = vi.fn();
 
-        await mockIsAuthenticated(req, res, next);
+        await multiAuthMiddleware(req, res, next);
 
         expect(next).toHaveBeenCalled();
         expect(req.user).toBeDefined();
@@ -155,7 +155,7 @@ describe('Authentication System', () => {
       const next = vi.fn();
 
       // This would normally trigger token refresh in production
-      await isAuthenticated(req, res, next);
+      await multiAuthMiddleware(req, res, next);
 
       // In development, mock auth should still work
       if (process.env.NODE_ENV === 'development') {
@@ -175,7 +175,7 @@ describe('Authentication System', () => {
 
       // Test the middleware directly
       if (process.env.NODE_ENV === 'development') {
-        await mockIsAuthenticated(req, res, next);
+        await multiAuthMiddleware(req, res, next);
         expect(next).toHaveBeenCalled();
       }
     });
@@ -189,7 +189,7 @@ describe('Authentication System', () => {
       const next = vi.fn();
 
       if (features.firebaseAuthEnabled) {
-        await authenticateFirebaseToken(req, res, next);
+        await multiAuthMiddleware(req, res, next);
         expect(res.status).toHaveBeenCalledWith(401);
       }
     });

@@ -3,13 +3,14 @@ FROM node:18-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat python3 make g++ autoconf automake libtool nasm zlib-dev
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json ./
 # Install all dependencies (including devDependencies for build)
-RUN npm ci && npm cache clean --force
+# Skip optional dependencies that cause issues in Alpine
+RUN npm ci --omit=optional && npm cache clean --force
 
 # Build the application
 FROM base AS builder
@@ -18,6 +19,8 @@ COPY . .
 COPY --from=deps /app/node_modules ./node_modules
 
 # Build the application
+# Fix rollup issue
+RUN npm install @rollup/rollup-linux-arm64-musl --save-dev --force
 RUN npm run build
 
 # Production image
@@ -57,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/api/health || exit 1
 
 # Start the server
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/start.js"]

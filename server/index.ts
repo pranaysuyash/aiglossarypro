@@ -1,9 +1,6 @@
 console.log('🚀 [DEBUG] Server index.ts loaded - very first line');
 
-import dotenv from 'dotenv';
-
 import { log } from './utils/logger';
-dotenv.config();
 
 console.log('🚀 [DEBUG] Server index.ts started - after imports');
 

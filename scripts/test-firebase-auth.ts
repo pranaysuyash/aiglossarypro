@@ -71,7 +71,7 @@ async function testFirebaseAuth() {
       const cookies = document.cookie;
       
       // Check localStorage
-      const localStorageData: Record<string, any> = {};
+      const localStorageData: Record<string, unknown> = {};
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && (key.includes('auth') || key.includes('firebase'))) {

@@ -4,8 +4,8 @@
  * Provides device detection, compatibility checking, and mode selection
  */
 
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import ARConceptOverlay from '../components/ar/ARConceptOverlay';
 import VRConceptSpace from '../components/vr/VRConceptSpace';
 import { useWebXR } from '../hooks/useWebXR';
@@ -26,7 +26,7 @@ const XRExploration: React.FC = () => {
       try {
         const report = await generateCompatibilityReport();
         setCompatibilityReport(report);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Failed to generate compatibility report:', error);
         setError('Failed to check device compatibility');
       }

@@ -26,7 +26,7 @@ export default meta;
 type Story = StoryObj<typeof ContactForm>;
 
 // Mock fetch for Storybook
-const mockFetch = (url: string, options: any) => {
+const mockFetch = (url: string, options: Record<string, unknown>) => {
   if (url.includes('/api/newsletter/contact')) {
     const body = JSON.parse(options.body);
 

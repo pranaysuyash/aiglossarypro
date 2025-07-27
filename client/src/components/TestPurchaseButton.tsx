@@ -93,7 +93,7 @@ export function TestPurchaseButton({
           message: response.data?.error || 'Test purchase failed',
         });
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       const errorMessage = err.response?.data?.error || 'Failed to complete test purchase';
       setError(errorMessage);
     } finally {

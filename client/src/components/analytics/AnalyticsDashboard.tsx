@@ -42,7 +42,7 @@ export default function AnalyticsDashboard() {
         environment: import.meta.env.NODE_ENV || 'unknown',
       };
       setDebugInfo(info);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error loading debug info:', error);
     } finally {
       setIsLoading(false);
@@ -60,7 +60,7 @@ export default function AnalyticsDashboard() {
     try {
       ga4Analytics.trackPageView('Test Page View', window.location.href);
       results.pageViewTracking = true;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Page view test failed:', error);
       results.pageViewTracking = false;
     }
@@ -69,7 +69,7 @@ export default function AnalyticsDashboard() {
     try {
       ga4Analytics.trackCTAClick('Test CTA', 'dashboard', 'testing');
       results.ctaTracking = true;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('CTA tracking test failed:', error);
       results.ctaTracking = false;
     }
@@ -78,7 +78,7 @@ export default function AnalyticsDashboard() {
     try {
       ga4Analytics.trackScrollDepth(50);
       results.scrollTracking = true;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Scroll tracking test failed:', error);
       results.scrollTracking = false;
     }
@@ -87,7 +87,7 @@ export default function AnalyticsDashboard() {
     try {
       ga4Analytics.trackSectionView('Test Section', 1);
       results.sectionTracking = true;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Section tracking test failed:', error);
       results.sectionTracking = false;
     }
@@ -96,7 +96,7 @@ export default function AnalyticsDashboard() {
     try {
       ga4Analytics.trackFormSubmission('contact', 'dashboard_test');
       results.formTracking = true;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Form tracking test failed:', error);
       results.formTracking = false;
     }
@@ -111,7 +111,7 @@ export default function AnalyticsDashboard() {
         value: 1,
       });
       results.businessEventTracking = true;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Business event tracking test failed:', error);
       results.businessEventTracking = false;
     }

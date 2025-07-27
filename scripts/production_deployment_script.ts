@@ -422,7 +422,7 @@ class ProductionDeployment {
     console.log(`📊 Deployment report saved: ${reportPath}`);
   }
 
-  private async handleDeploymentFailure(error: any): Promise<void> {
+  private async handleDeploymentFailure(error: Error | unknown): Promise<void> {
     const deploymentTime = (Date.now() - this.deploymentStartTime) / 1000;
 
     const errorReport = {

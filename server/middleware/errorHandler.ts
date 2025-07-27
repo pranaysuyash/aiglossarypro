@@ -5,7 +5,8 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 
 import logger from '../utils/logger';
 // Error types for better categorization
@@ -106,7 +107,7 @@ class ErrorLogger {
     return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private sanitizeData(data: any): any {
+  private sanitizeData(data: any) {
     if (!data) {return data;}
 
     const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
@@ -167,7 +168,7 @@ export const errorLogger = new ErrorLogger();
  * Async wrapper for route handlers to catch and handle errors
  */
 export const asyncHandler = (
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>
 ) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -177,7 +178,7 @@ export const asyncHandler = (
 /**
  * Database error handler
  */
-export const handleDatabaseError = async (error: any, req: Request): Promise<string> => {
+export const handleDatabaseError = async (error: Request, req: Request): Promise<string> => {
   const category = ErrorCategory.DATABASE;
   let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium';
 
@@ -202,7 +203,7 @@ export const handleDatabaseError = async (error: any, req: Request): Promise<str
  * AI/External API error handler
  */
 export const handleExternalAPIError = async (
-  error: any,
+  error: Error | unknown,
   req: Request,
   service: string
 ): Promise<string> => {
@@ -228,7 +229,7 @@ export const handleExternalAPIError = async (
  * Main error handling middleware
  */
 export const errorHandler = async (
-  error: any,
+  error: Error | unknown,
   req: Request,
   res: Response,
   _next: NextFunction
@@ -276,7 +277,7 @@ export const errorHandler = async (
   const errorId = await errorLogger.logError(error, req, category, severity);
 
   // Respond with appropriate error message
-  const errorResponse: any = {
+  const errorResponse: Error | unknown = {
     success: false,
     message: userMessage,
     errorId,

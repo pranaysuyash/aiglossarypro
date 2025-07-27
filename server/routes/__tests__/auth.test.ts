@@ -1,4 +1,5 @@
-import express from 'express';
+import express from 'express'
+import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -55,8 +56,8 @@ describe('Auth Routes', () => {
         createdAt: new Date(),
       };
 
-      (verifyIdToken as any).mockResolvedValueOnce(mockFirebaseUser);
-      (db.where as any).mockResolvedValueOnce([mockDbUser]);
+      (verifyIdToken as unknown).mockResolvedValueOnce(mockFirebaseUser);
+      (db.where as unknown).mockResolvedValueOnce([mockDbUser]);
 
       const response = await request(app)
         .post('/auth/firebase/login')
@@ -85,9 +86,9 @@ describe('Auth Routes', () => {
         createdAt: new Date(),
       };
 
-      (verifyIdToken as any).mockResolvedValueOnce(mockFirebaseUser);
-      (db.where as any).mockResolvedValueOnce([]); // No existing user
-      (db.returning as any).mockResolvedValueOnce([mockNewUser]);
+      (verifyIdToken as unknown).mockResolvedValueOnce(mockFirebaseUser);
+      (db.where as unknown).mockResolvedValueOnce([]); // No existing user
+      (db.returning as unknown).mockResolvedValueOnce([mockNewUser]);
 
       const response = await request(app)
         .post('/auth/firebase/login')
@@ -100,7 +101,7 @@ describe('Auth Routes', () => {
     });
 
     it('should handle invalid Firebase token', async () => {
-      (verifyIdToken as any).mockRejectedValueOnce(new Error('Invalid token'));
+      (verifyIdToken as unknown).mockRejectedValueOnce(new Error('Invalid token'));
 
       const response = await request(app)
         .post('/auth/firebase/login')
@@ -177,7 +178,7 @@ describe('Auth Routes', () => {
         createdAt: new Date(),
       };
 
-      (db.returning as any).mockResolvedValueOnce([mockTestUser]);
+      (db.returning as unknown).mockResolvedValueOnce([mockTestUser]);
 
       const response = await request(app).post('/auth/purchase/test');
 

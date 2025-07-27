@@ -29,7 +29,7 @@ export function MobileStickySearchBar({
     setIsOverlayOpen(false);
   };
 
-  const handleResultClick = (result: any) => {
+  const handleResultClick = (result: Response) => {
     console.log('Result clicked:', result);
     // Navigate to term detail page
     // This would typically use your routing system

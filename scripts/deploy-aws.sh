@@ -73,7 +73,7 @@ build_and_push_image() {
     
     # Build Docker image
     echo "🏗️ Building Docker image..."
-    docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+    docker build --platform linux/amd64 -t $ECR_REPOSITORY:$IMAGE_TAG .
     
     # Tag image for ECR
     docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_URI:$IMAGE_TAG

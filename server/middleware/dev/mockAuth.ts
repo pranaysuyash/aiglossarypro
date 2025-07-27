@@ -11,7 +11,8 @@
  * For local development, use proper Firebase authentication with test accounts.
  */
 
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 
 import logger from '../../utils/logger';
 // SECURITY: All mock authentication functions are disabled

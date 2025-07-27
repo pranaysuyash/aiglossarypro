@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { earlyBirdCustomers, earlyBirdStatus } from '../../shared/schema';
 import { db } from '../db';

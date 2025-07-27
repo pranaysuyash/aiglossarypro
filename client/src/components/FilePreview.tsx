@@ -28,7 +28,7 @@ interface PreviewData {
   type: 'excel' | 'csv' | 'json' | 'text' | 'unsupported';
   data?: any;
   headers?: string[];
-  rows?: any[][];
+  rows?: unknown[][];
   preview?: string;
   metadata?: {
     sheets?: string[];

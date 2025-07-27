@@ -23,8 +23,8 @@ type Story = StoryObj<typeof meta>;
 // Helper to mock experiment variants
 const mockExperimentVariant = (variant: string) => {
   (posthogExperiments as any).getExperimentVariant = (key: string) => {
-    if (key === 'landingPageVariant') return variant;
-    if (key === 'landingPageCTA') return 'control'; // Default for other experiments
+    if (key === 'landingPageVariant') {return variant;}
+    if (key === 'landingPageCTA') {return 'control';} // Default for other experiments
     return 'control';
   };
 };

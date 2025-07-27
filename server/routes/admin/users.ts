@@ -1,4 +1,5 @@
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { ApiResponse } from '../../../shared/types';
 import { DEFAULT_LIMITS } from '../../constants';
 import { enhancedStorage as storage } from '../../enhancedStorage';
@@ -21,7 +22,7 @@ export function registerAdminUserRoutes(app: Express): void {
         const { search } = req.query;
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -86,7 +87,7 @@ export function registerAdminUserRoutes(app: Express): void {
         const { userId } = req.params;
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -138,7 +139,7 @@ export function registerAdminUserRoutes(app: Express): void {
         const updateData = req.body;
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -183,7 +184,7 @@ export function registerAdminUserRoutes(app: Express): void {
         const { userId } = req.params;
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -227,7 +228,7 @@ export function registerAdminUserRoutes(app: Express): void {
         const { userId } = req.params;
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',

@@ -12,7 +12,7 @@ interface DashboardMetrics {
   totalSearches: number;
   totalFavorites: number;
   systemHealth: 'healthy' | 'warning' | 'error';
-  recentActivity: any[];
+  recentActivity: unknown[];
 }
 
 interface MetricCardProps {
@@ -65,7 +65,7 @@ export default function OwnerDashboard() {
         setMetrics(data);
         setLastUpdated(new Date());
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to fetch metrics:', error);
     } finally {
       setLoading(false);

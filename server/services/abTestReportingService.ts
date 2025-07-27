@@ -17,7 +17,7 @@ interface ReportData {
   metrics: ABTestMetricsType[];
   analysis: {
     conversionRates: Record<string, number>;
-    statisticalSignificance: Record<string, any>;
+    statisticalSignificance: Record<string, unknown>;
     winner?: {
       variant: string;
       improvement: number;
@@ -144,7 +144,7 @@ class ABTestReportingService {
    */
   private analyzeTestResults(metrics: ABTestMetricsType[]) {
     const conversionRates: Record<string, number> = {};
-    const statisticalSignificance: Record<string, any> = {};
+    const statisticalSignificance: Record<string, unknown> = {};
 
     // Calculate conversion rates
     metrics.forEach(metric => {

@@ -6,8 +6,8 @@
 import { Html, OrbitControls, Text } from '@react-three/drei';
 import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
 import { Info, Network, Pause, Play, RotateCcw, Settings } from 'lucide-react';
-import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
 import * as THREE from 'three';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -601,7 +601,7 @@ Escape: Reset view
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [focusedNodeIndex, selectedNode, handleNodeSelect, resetView]);
 
   // Update selected node when focus changes
@@ -610,7 +610,7 @@ Escape: Reset view
       const focusedNode = filteredNodes[focusedNodeIndex];
       setHighlightedNodes(new Set([focusedNode.id]));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [focusedNodeIndex, selectedNode]);
 
   const filteredNodes = useMemo(() => {

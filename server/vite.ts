@@ -1,5 +1,4 @@
 import type { Express } from 'express';
-import * as express from 'express';
 import { nanoid } from 'nanoid';
 import * as fs from 'node:fs';
 import type { Server } from 'node:http';

@@ -100,7 +100,7 @@ export function timeframeToDays(timeframe: TimeframeType): number {
  * Middleware factory for validating query parameters
  */
 export function validateQuery<T>(schema: z.ZodSchema<T>) {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Request, next: Request) => {
     try {
       const result = schema.safeParse(req.query);
 

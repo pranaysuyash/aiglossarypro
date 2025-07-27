@@ -3,8 +3,8 @@
  * Enhanced scrolling experience for mobile devices with momentum and smooth scrolling
  */
 
-import type React from 'react';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import type React from 'react';
 import { cn } from '../../lib/utils';
 
 interface TouchScrollState {

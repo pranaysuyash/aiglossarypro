@@ -58,7 +58,7 @@ export function PageTransitionLoader() {
     }
   }, [isLoading]);
 
-  if (!showLoader || !isLoading) return null;
+  if (!showLoader || !isLoading) {return null;}
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100]">

@@ -397,7 +397,7 @@ export const WithIndicators: Story = {
       <div className="w-full max-w-xs space-y-4">
         <Carousel
           setApi={api => {
-            if (!api) return;
+            if (!api) {return;}
             setCurrent(api.selectedScrollSnap());
             api.on('select', () => {
               setCurrent(api.selectedScrollSnap());

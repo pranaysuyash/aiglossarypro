@@ -141,7 +141,7 @@ class CDNDeployer {
     }
   }
 
-  private async getBuildStats(): Promise<any> {
+  private async getBuildStats(): Promise<unknown> {
     const assetsPath = path.join(this.distPath, 'assets');
     const stats = {
       totalFiles: 0,

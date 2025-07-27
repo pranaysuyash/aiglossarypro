@@ -43,7 +43,7 @@ interface UserAction {
   description: string;
   timestamp: string;
   screenshotPath?: string;
-  accessibilityIssues?: any[];
+  accessibilityIssues?: unknown[];
 }
 
 interface TestFlow {

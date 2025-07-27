@@ -1001,7 +1001,7 @@ class EnhancedVisualAuditor {
 
   private async testColorContrast(page: Page, config: TestConfig) {
     const contrastIssues = await page.evaluate(() => {
-      const issues: any[] = [];
+      const issues: unknown[] = [];
       const elements = document.querySelectorAll('*');
 
       elements.forEach((element: Element) => {
@@ -1754,7 +1754,7 @@ ${task.recommendation}
     return effortMap[issue.severity]?.[issue.category] || '1-2 hours';
   }
 
-  private calculateTotalEffort(tasks: any[]): string {
+  private calculateTotalEffort(tasks: unknown[]): string {
     const totalHours = tasks.reduce((total, task) => {
       const match = task.estimatedEffort.match(/(\d+)-(\d+)/);
       if (match) {

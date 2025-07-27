@@ -65,7 +65,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
     const previousActiveElementRef = useRef<Element | null>(null);
 
     const getFocusableElements = useCallback(() => {
-        if (!containerRef.current) return [];
+        if (!containerRef.current) {return [];}
 
         const focusableSelectors = [
             'a[href]',
@@ -89,10 +89,10 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
     }, []);
 
     const handleKeyDown = useCallback((event: KeyboardEvent) => {
-        if (!isActive || event.key !== 'Tab') return;
+        if (!isActive || event.key !== 'Tab') {return;}
 
         const focusableElements = getFocusableElements();
-        if (focusableElements.length === 0) return;
+        if (focusableElements.length === 0) {return;}
 
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];

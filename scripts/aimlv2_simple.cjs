@@ -220,13 +220,13 @@ async function processCSV(mode = 'topdown') {
     for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
         const row = rows[rowIdx];
         const term = row[0] || '';
-        if (!term) continue;
+        if (!term) {continue;}
         
         for (let colIdx = 1; colIdx < headers.length; colIdx++) {
             const excelRow = rowIdx + 2;
             const key = `${excelRow}-${colIdx}`;
             
-            if (checkpoint[key] || row[colIdx]) continue;
+            if (checkpoint[key] || row[colIdx]) {continue;}
             
             tasks.push({
                 rowIdx, colIdx, excelRow,
@@ -235,7 +235,7 @@ async function processCSV(mode = 'topdown') {
         }
     }
     
-    if (mode === 'bottomup') tasks.reverse();
+    if (mode === 'bottomup') {tasks.reverse();}
     
     log('info', `Found ${tasks.length} cells to process`);
     
@@ -280,14 +280,14 @@ async function processJSON(mode = 'topdown') {
     for (let rowIdx = 0; rowIdx < records.length; rowIdx++) {
         const record = records[rowIdx];
         const term = record[headers[0]] || '';
-        if (!term) continue;
+        if (!term) {continue;}
         
         for (let colIdx = 1; colIdx < headers.length; colIdx++) {
             const excelRow = rowIdx + 2;
             const key = `${excelRow}-${colIdx}`;
             const header = headers[colIdx];
             
-            if (checkpoint[key] || record[header]) continue;
+            if (checkpoint[key] || record[header]) {continue;}
             
             tasks.push({
                 rowIdx, colIdx, excelRow,
@@ -296,7 +296,7 @@ async function processJSON(mode = 'topdown') {
         }
     }
     
-    if (mode === 'bottomup') tasks.reverse();
+    if (mode === 'bottomup') {tasks.reverse();}
     
     log('info', `Found ${tasks.length} cells to process`);
     

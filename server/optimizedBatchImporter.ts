@@ -161,7 +161,7 @@ export class OptimizedBatchImporter {
   /**
    * Stream-based JSON loading for large files
    */
-  private async loadDataStreaming(filePath: string): Promise<any> {
+  private async loadDataStreaming(filePath: string): Promise<unknown> {
     // For very large files, consider using a streaming JSON parser
     // For now, use optimized synchronous loading with memory monitoring
     const stats = fs.statSync(filePath);
@@ -181,7 +181,7 @@ export class OptimizedBatchImporter {
    * Bulk import categories with optimized insertions
    */
   private async bulkImportCategories(
-    categoriesData: any[],
+    categoriesData: unknown[],
     categoryIdMap: Map<string, string>
   ): Promise<number> {
     let imported = 0;
@@ -189,7 +189,7 @@ export class OptimizedBatchImporter {
 
     for (let i = 0; i < categoriesData.length; i += batchSize) {
       const batch = categoriesData.slice(i, i + batchSize);
-      const validCategories: any[] = [];
+      const validCategories: unknown[] = [];
 
       // Prepare valid categories for bulk insert
       for (const category of batch) {
@@ -280,7 +280,7 @@ export class OptimizedBatchImporter {
    * Bulk import subcategories with optimized insertions
    */
   private async bulkImportSubcategories(
-    subcategoriesData: any[],
+    subcategoriesData: unknown[],
     categoryIdMap: Map<string, string>,
     subcategoryIdMap: Map<string, string>
   ): Promise<number> {
@@ -289,7 +289,7 @@ export class OptimizedBatchImporter {
 
     for (let i = 0; i < subcategoriesData.length; i += batchSize) {
       const batch = subcategoriesData.slice(i, i + batchSize);
-      const validSubcategories: any[] = [];
+      const validSubcategories: unknown[] = [];
 
       for (const subcategory of batch) {
         if (!subcategory.name || !subcategory.slug || !subcategory.categorySlug) {
@@ -383,7 +383,7 @@ export class OptimizedBatchImporter {
    * Bulk import terms with optimized insertions and relationship handling
    */
   private async bulkImportTerms(
-    termsData: any[],
+    termsData: unknown[],
     _categoryIdMap: Map<string, string>,
     subcategoryIdMap: Map<string, string>
   ): Promise<number> {
@@ -392,8 +392,8 @@ export class OptimizedBatchImporter {
 
     for (let i = 0; i < termsData.length; i += batchSize) {
       const batch = termsData.slice(i, i + batchSize);
-      const validTerms: any[] = [];
-      const termSubcategoryRelations: any[] = [];
+      const validTerms: unknown[] = [];
+      const termSubcategoryRelations: unknown[] = [];
 
       for (const term of batch) {
         if (!term.name) {

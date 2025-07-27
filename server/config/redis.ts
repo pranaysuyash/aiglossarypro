@@ -263,7 +263,7 @@ interface StaleWhileRevalidateEntry<T> {
 export class RedisCache {
   private prefix = 'enhanced_storage:';
   private stalePrefix = 'stale:';
-  private revalidationJobs = new Map<string, Promise<any>>();
+  private revalidationJobs = new Map<string, Promise<unknown>>();
 
   private getKey(key: string): string {
     return `${this.prefix}${key}`;

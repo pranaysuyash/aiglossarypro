@@ -3,7 +3,8 @@
  * Advanced analytics endpoints for measuring user engagement depth
  */
 
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { requireAdmin } from '../middleware/adminAuth';
 import { multiAuthMiddleware } from '../middleware/multiAuth';

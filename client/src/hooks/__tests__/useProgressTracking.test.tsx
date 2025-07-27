@@ -17,16 +17,16 @@ describe('useProgressTracking', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (global.fetch as any).mockReset();
+    (global.fetch as unknown).mockReset();
     
     // Setup default mocks
-    (useToast as any).mockReturnValue({ toast: mockToast });
-    (useAuth as any).mockReturnValue({ user: mockUser });
+    (useToast as unknown).mockReturnValue({ toast: mockToast });
+    (useAuth as unknown).mockReturnValue({ user: mockUser });
   });
 
   describe('trackTermInteraction', () => {
     it('should skip tracking for unauthenticated users', async () => {
-      (useAuth as any).mockReturnValue({ user: null });
+      (useAuth as unknown).mockReturnValue({ user: null });
       
       const { result } = renderHook(() => useProgressTracking());
 
@@ -38,7 +38,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should track term interaction successfully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true })
       });
@@ -73,7 +73,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should handle tracking errors silently by default', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
       const onError = vi.fn();
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -92,7 +92,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should show error toast when silentFailure is false', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useProgressTracking());
 
@@ -115,7 +115,7 @@ describe('useProgressTracking', () => {
 
   describe('toggleBookmark', () => {
     it('should show authentication required toast for unauthenticated users', async () => {
-      (useAuth as any).mockReturnValue({ user: null });
+      (useAuth as unknown).mockReturnValue({ user: null });
       
       const { result } = renderHook(() => useProgressTracking());
 
@@ -134,7 +134,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should add bookmark successfully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true, bookmarkCount: 5 })
       });
@@ -168,7 +168,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should remove bookmark successfully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true, bookmarkCount: 3 })
       });
@@ -188,7 +188,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should handle bookmark errors', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 400,
         json: async () => ({ error: 'Bookmark limit exceeded' })
@@ -212,7 +212,7 @@ describe('useProgressTracking', () => {
     });
 
     it('should handle network errors', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network failure'));
+      (global.fetch as unknown).mockRejectedValueOnce(new Error('Network failure'));
 
       const { result } = renderHook(() => useProgressTracking());
 
@@ -237,7 +237,7 @@ describe('useProgressTracking', () => {
         resolvePromise = resolve;
       });
 
-      (global.fetch as any).mockReturnValueOnce(promise);
+      (global.fetch as unknown).mockReturnValueOnce(promise);
 
       const { result } = renderHook(() => useProgressTracking());
 
@@ -268,7 +268,7 @@ describe('useProgressTracking', () => {
         });
       });
 
-      (global.fetch as any).mockReturnValueOnce(promise);
+      (global.fetch as unknown).mockReturnValueOnce(promise);
 
       const { result } = renderHook(() => useProgressTracking());
 

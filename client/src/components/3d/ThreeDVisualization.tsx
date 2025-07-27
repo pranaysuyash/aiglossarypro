@@ -16,7 +16,7 @@ interface ThreeDVisualizationProps {
     height?: number;
     backgroundColor?: string;
     showControls?: boolean;
-    data?: any[];
+    data?: unknown[];
 }
 
 function ThreeDLoading() {

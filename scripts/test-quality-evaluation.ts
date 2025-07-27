@@ -539,7 +539,7 @@ async function runComprehensiveTest() {
   console.log('🚀 Starting Comprehensive Quality Evaluation System Test\n');
   console.log('=' * 70);
 
-  const results: any = {};
+  const results: Response = {};
 
   try {
     // Test 1: Single evaluations

@@ -295,7 +295,7 @@ class AdaptiveContentService {
     const sessions = new Map<string, UserInteraction[]>();
 
     interactions.forEach(interaction => {
-      const metadata = interaction.metadata as any;
+      const metadata = interaction.metadata as unknown;
       const sessionId = metadata?.sessionId as string;
       if (sessionId) {
         if (!sessions.has(sessionId)) {

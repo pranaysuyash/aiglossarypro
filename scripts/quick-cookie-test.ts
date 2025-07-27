@@ -17,7 +17,7 @@ async function quickCookieTest() {
   // Check if compact mobile view is rendered
   const mobileCompact = await mobilePage.evaluate(() => {
     const banner = document.querySelector('.fixed.bottom-0');
-    if (!banner) return { found: false };
+    if (!banner) {return { found: false };}
     
     const text = banner.textContent || '';
     const height = banner.getBoundingClientRect().height;
@@ -50,7 +50,7 @@ async function quickCookieTest() {
   
   const desktopView = await desktopPage.evaluate(() => {
     const banner = document.querySelector('.fixed.bottom-0');
-    if (!banner) return { found: false };
+    if (!banner) {return { found: false };}
     
     const height = banner.getBoundingClientRect().height;
     const hasFullText = banner.textContent?.includes('Cookie Settings');

@@ -118,7 +118,7 @@ export default function FirebaseLoginPage() {
           refreshAuth();
         }, 200);
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error(`${provider} OAuth error:`, err);
 
       // Handle specific Firebase error codes
@@ -281,7 +281,7 @@ export default function FirebaseLoginPage() {
           refreshAuth();
         }, 200);
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error('Email login error:', err);
 
       // Handle specific Firebase error codes for email login
@@ -365,7 +365,7 @@ export default function FirebaseLoginPage() {
         const loginTab = document.querySelector('[value="login"]') as HTMLElement;
         loginTab?.click();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error('Registration error:', err);
 
       // Handle specific Firebase error codes for registration
@@ -719,7 +719,7 @@ export default function FirebaseLoginPage() {
                           firstName: 'Test',
                           lastName: 'User',
                         });
-                      } catch (error: any) {
+                      } catch (error: Error | unknown) {
                         // User already exists or other error - continue with login
                       }
 
@@ -772,7 +772,7 @@ export default function FirebaseLoginPage() {
                           firstName: 'Premium',
                           lastName: 'User',
                         });
-                      } catch (error: any) {
+                      } catch (error: Error | unknown) {
                         // User already exists or other error - continue with login
                       }
 
@@ -823,7 +823,7 @@ export default function FirebaseLoginPage() {
                           firstName: 'Admin',
                           lastName: 'User',
                         });
-                      } catch (error: any) {
+                      } catch (error: Error | unknown) {
                         // User already exists or other error - continue with login
                       }
 

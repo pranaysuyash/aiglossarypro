@@ -72,7 +72,7 @@ class MigrationSetupValidator {
         passed: true,
         message: 'Successfully connected to database',
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       this.addResult({
         check: 'Database Connection',
         passed: false,
@@ -160,7 +160,7 @@ class MigrationSetupValidator {
           paths: tsconfig.compilerOptions?.paths,
         },
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       this.addResult({
         check: 'TypeScript Config',
         passed: false,

@@ -60,7 +60,7 @@ export default function CodeBlock({
           oneDark = darkStyle.default;
           oneLight = lightStyle.default;
           syntaxHighlighterLoaded = true;
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
           console.error('Failed to load syntax highlighter:', error);
         }
       }

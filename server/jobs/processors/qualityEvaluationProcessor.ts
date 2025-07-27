@@ -328,7 +328,7 @@ async function processAutoEvaluation(job: Job<QualityEvaluationJobData>) {
 function mapSectionToContentType(
   sectionName: string
 ): 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general' {
-  const mappings: Record<string, any> = {
+  const mappings: Record<string, unknown> = {
     definition: 'definition',
     overview: 'definition',
     examples: 'example',
@@ -354,7 +354,7 @@ function mapSectionToContentType(
 /**
  * Send evaluation report email
  */
-async function sendEvaluationReport(termName: string, result: any, recipients: string[]) {
+async function sendEvaluationReport(termName: string, result: Response, recipients: string[]) {
   const subject = `Quality Evaluation Report: ${termName}`;
   const html = `
     <h2>Quality Evaluation Report</h2>
@@ -395,7 +395,7 @@ async function sendEvaluationReport(termName: string, result: any, recipients: s
 /**
  * Send batch evaluation summary email
  */
-async function sendBatchEvaluationSummary(result: any, recipients: string[]) {
+async function sendBatchEvaluationSummary(result: Response, recipients: string[]) {
   const subject = 'Batch Quality Evaluation Summary';
   const html = `
     <h2>Batch Quality Evaluation Summary</h2>
@@ -412,10 +412,10 @@ async function sendBatchEvaluationSummary(result: any, recipients: string[]) {
     
     <h3>Score Distribution:</h3>
     <ul>
-      <li>Excellent (8.5+): ${result.results.filter((r: any) => r.overallScore >= 8.5).length}</li>
-      <li>Good (7.0-8.5): ${result.results.filter((r: any) => r.overallScore >= 7.0 && r.overallScore < 8.5).length}</li>
-      <li>Acceptable (5.5-7.0): ${result.results.filter((r: any) => r.overallScore >= 5.5 && r.overallScore < 7.0).length}</li>
-      <li>Poor (<5.5): ${result.results.filter((r: any) => r.overallScore < 5.5).length}</li>
+      <li>Excellent (8.5+): ${result.results.filter((r: Response) => r.overallScore >= 8.5).length}</li>
+      <li>Good (7.0-8.5): ${result.results.filter((r: Response) => r.overallScore >= 7.0 && r.overallScore < 8.5).length}</li>
+      <li>Acceptable (5.5-7.0): ${result.results.filter((r: Response) => r.overallScore >= 5.5 && r.overallScore < 7.0).length}</li>
+      <li>Poor (<5.5): ${result.results.filter((r: Response) => r.overallScore < 5.5).length}</li>
     </ul>
     
     <p>Evaluated on: ${new Date().toISOString()}</p>

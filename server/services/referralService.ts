@@ -31,7 +31,7 @@ export interface GumroadSaleData {
   sale_timestamp: string;
   purchaser_id: string;
   subscription_id?: string;
-  variants?: Record<string, any>;
+  variants?: Record<string, unknown>;
   license_key?: string;
   ip_country: string;
   recurrence?: string;

@@ -6,10 +6,12 @@
  */
 
 import { and, eq, ilike, isNull, or, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import ContentGapAnalyzer from '../../../scripts/content-gap-analysis';
-import ContentPopulator from '../../../scripts/content-population';
+// TODO: Fix these imports for production build
+// import ContentGapAnalyzer from '../../../scripts/content-gap-analysis';
+// import ContentPopulator from '../../../scripts/content-population';
 import { enhancedTerms, termSections } from '../../../shared/enhancedSchema';
 import type { ApiResponse } from '../../../shared/types';
 import { db } from '../../db';
@@ -25,7 +27,7 @@ interface BulkOperation {
   processedItems: number;
   startedAt?: string;
   completedAt?: string;
-  results?: any;
+  results?: Response;
   errors?: string[];
 }
 
@@ -40,8 +42,8 @@ interface ContentValidationResult {
 
 // In-memory store for bulk operations (in production, use Redis or database)
 const bulkOperations = new Map<string, BulkOperation>();
-const contentPopulator = new ContentPopulator();
-const gapAnalyzer = new ContentGapAnalyzer();
+// const contentPopulator = new ContentPopulator();
+// const gapAnalyzer = new ContentGapAnalyzer();
 
 export function registerContentManagementRoutes(app: Express): void {
   /**
@@ -428,7 +430,7 @@ export function registerContentManagementRoutes(app: Express): void {
 async function processBulkOperation(
   operationId: string,
   type: string,
-  options: any
+  options: Record<string, unknown>
 ): Promise<void> {
   const operation = bulkOperations.get(operationId);
   if (!operation) {return;}
@@ -463,7 +465,7 @@ async function processBulkOperation(
   }
 }
 
-async function processGenerateDefinitions(operation: BulkOperation, options: any): Promise<void> {
+async function processGenerateDefinitions(operation: BulkOperation, options: Record<string, unknown>): Promise<void> {
   // Get terms with missing definitions
   const terms = await db
     .select()
@@ -500,7 +502,7 @@ async function processGenerateDefinitions(operation: BulkOperation, options: any
   }
 }
 
-async function processEnhanceContent(operation: BulkOperation, options: any): Promise<void> {
+async function processEnhanceContent(operation: BulkOperation, options: Record<string, unknown>): Promise<void> {
   // Get terms with low quality scores
   const terms = await db
     .select()
@@ -539,7 +541,7 @@ async function processEnhanceContent(operation: BulkOperation, options: any): Pr
   }
 }
 
-async function processCategorizeTerms(operation: BulkOperation, options: any): Promise<void> {
+async function processCategorizeTerms(operation: BulkOperation, options: Record<string, unknown>): Promise<void> {
   // Get uncategorized terms
   const terms = await db
     .select()
@@ -579,7 +581,7 @@ async function processCategorizeTerms(operation: BulkOperation, options: any): P
   }
 }
 
-async function processValidateQuality(operation: BulkOperation, options: any): Promise<void> {
+async function processValidateQuality(operation: BulkOperation, options: Record<string, unknown>): Promise<void> {
   const terms = await db
     .select()
     .from(enhancedTerms)

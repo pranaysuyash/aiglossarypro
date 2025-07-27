@@ -12,7 +12,7 @@ interface GoogleAdProps {
 
 declare global {
   interface Window {
-    adsbygoogle: any[];
+    adsbygoogle: unknown[];
   }
 }
 
@@ -95,7 +95,7 @@ export function GoogleAd({
           (window.adsbygoogle as any[]).push({});
           setAdLoaded(true);
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.warn('Failed to load AdSense:', error);
       }
     };

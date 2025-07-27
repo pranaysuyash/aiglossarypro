@@ -6,6 +6,7 @@ import { parseId, parseNumericQuery, parsePagination } from '../middleware/input
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log } from '../utils/logger';
+
 // Extended request interfaces for parsed middleware data
 interface RequestWithPagination extends Request {
   pagination: {
@@ -23,6 +24,17 @@ interface RequestWithParsedQuery extends Request {
   parsed?: {
     days?: number;
   };
+}
+
+// Combined types for routes that need multiple middleware
+type AuthenticatedWithPagination = AuthenticatedRequest & RequestWithPagination;
+type AuthenticatedWithParsedId = AuthenticatedRequest & RequestWithParsedId;
+type AuthenticatedWithParsedIdAndPagination = AuthenticatedRequest & RequestWithParsedId & RequestWithPagination;
+type AuthenticatedWithParsedQuery = AuthenticatedRequest & RequestWithParsedQuery;
+
+// Type for requests that might be authenticated (for routes that handle both auth and unauth)
+interface PossiblyAuthenticatedRequest extends Request {
+  user?: Express.User;
 }
 
 import { canViewTerm, getUserAccessStatus } from '../utils/accessControl';
@@ -44,9 +56,9 @@ export function registerUserRoutes(app: Express): void {
   // Favorites management
   app.get(
     '/api/favorites',
-    authMiddleware as any,
-    parsePagination as any,
-    async (req: any, res: Response) => {
+    authMiddleware,
+    parsePagination,
+    async (req: PossiblyAuthenticatedRequest & RequestWithPagination, res: Response) => {
       try {
         const userInfo = getUserInfo(req);
         if (!userInfo) {
@@ -58,7 +70,7 @@ export function registerUserRoutes(app: Express): void {
         const userId = userInfo.id;
         const { page, limit, offset } = req.pagination;
 
-        const result = await (storage as any).getUserFavoritesOptimized(userId, { limit, offset });
+        const result = await storage.getUserFavoritesOptimized(userId, { limit, offset });
 
         res.json({
           success: true,
@@ -83,10 +95,10 @@ export function registerUserRoutes(app: Express): void {
 
   app.get(
     '/api/favorites/:id',
-    authMiddleware as any,
+    authMiddleware,
     tokenMiddleware,
-    parseId() as any,
-    async (req: any, res: Response) => {
+    parseId(),
+    async (req: PossiblyAuthenticatedRequest & RequestWithParsedId, res: Response) => {
       try {
         const userInfo = getUserInfo(req);
         if (!userInfo) {
@@ -119,10 +131,10 @@ export function registerUserRoutes(app: Express): void {
 
   app.post(
     '/api/favorites/:id',
-    authMiddleware as any,
+    authMiddleware,
     tokenMiddleware,
-    parseId() as any,
-    async (req: any, res: Response) => {
+    parseId(),
+    async (req: PossiblyAuthenticatedRequest & RequestWithParsedId, res: Response) => {
       try {
         const userInfo = getUserInfo(req);
         if (!userInfo) {
@@ -155,9 +167,9 @@ export function registerUserRoutes(app: Express): void {
 
   app.delete(
     '/api/favorites/:id',
-    authMiddleware as any,
-    parseId() as any,
-    async (req: any, res: Response) => {
+    authMiddleware,
+    parseId(),
+    async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
@@ -184,9 +196,9 @@ export function registerUserRoutes(app: Express): void {
   // Progress tracking
   app.get(
     '/api/user/progress',
-    authMiddleware as any,
-    parsePagination as any,
-    async (req: any, res: Response) => {
+    authMiddleware,
+    parsePagination,
+    async (req: AuthenticatedWithPagination, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const { page, limit } = req.pagination;
@@ -217,9 +229,9 @@ export function registerUserRoutes(app: Express): void {
 
   app.get(
     '/api/progress/:id',
-    authMiddleware as any,
-    parseId() as any,
-    async (req: any, res: Response) => {
+    authMiddleware,
+    parseId(),
+    async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
@@ -246,9 +258,9 @@ export function registerUserRoutes(app: Express): void {
 
   app.post(
     '/api/progress/:id',
-    authMiddleware as any,
-    parseId() as any,
-    async (req: any, res: Response) => {
+    authMiddleware,
+    parseId(),
+    async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
@@ -284,9 +296,9 @@ export function registerUserRoutes(app: Express): void {
 
   app.delete(
     '/api/progress/:id',
-    authMiddleware as any,
-    parseId() as any,
-    async (req: any, res: Response) => {
+    authMiddleware,
+    parseId(),
+    async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
@@ -313,16 +325,15 @@ export function registerUserRoutes(app: Express): void {
   // User activity and analytics
   app.get(
     '/api/user/activity',
-    authMiddleware as any,
+    authMiddleware,
     parsePagination,
     parseNumericQuery('days', 30, 1, 365),
-    async (req, res) => {
-      const typedReq = req as AuthenticatedRequest & RequestWithPagination & RequestWithParsedQuery;
+    async (req: AuthenticatedRequest & RequestWithPagination & RequestWithParsedQuery, res: Response) => {
       try {
-        // const _userId = typedReq.user.claims.sub; // Currently not used
-        const { page, limit } = typedReq.pagination;
-        // const { type } = typedReq.query; // Currently not used
-        // const _days = typedReq.parsed?.days || 30; // Currently not used
+        // const _userId = req.user.claims.sub; // Currently not used
+        const { page, limit } = req.pagination;
+        // const { type } = req.query; // Currently not used
+        // const _days = req.parsed?.days || 30; // Currently not used
 
         // Since getUserActivity doesn't exist in OptimizedStorage, return empty for now
         const activity = {
@@ -354,7 +365,7 @@ export function registerUserRoutes(app: Express): void {
 
   app.get(
     '/api/user/streak',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;
@@ -380,7 +391,7 @@ export function registerUserRoutes(app: Express): void {
   // User statistics
   app.get(
     '/api/user/stats',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;
@@ -534,9 +545,9 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Daily usage statistics endpoint
-  app.get('/api/user/daily-usage', authMiddleware as any, async (req: Request, res: Response) => {
+  app.get('/api/user/daily-usage', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const userId = (req as any).user.claims.sub;
+      const userId = req.user.claims.sub;
       // const today = new Date().toISOString().split('T')[0]; // Currently not used
 
       // Get user info using storage
@@ -608,9 +619,9 @@ export function registerUserRoutes(app: Express): void {
   // Term access check endpoint
   app.get(
     '/api/user/term-access/:termId',
-    authMiddleware as any,
+    authMiddleware,
     parseId('termId'),
-    async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+    async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
@@ -638,7 +649,7 @@ export function registerUserRoutes(app: Express): void {
           lastViewReset: user.lastViewReset || undefined,
           referrerId: user.referrerId || undefined,
         };
-        const accessCheck = canViewTerm(userForAccessControl, termId);
+        const accessCheck = canViewTerm(userForAccessControl);
 
         res.json({
           success: true,
@@ -664,7 +675,7 @@ export function registerUserRoutes(app: Express): void {
   // Get enhanced user settings
   app.get(
     '/api/user/enhanced-settings',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;

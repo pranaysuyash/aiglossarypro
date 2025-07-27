@@ -251,7 +251,7 @@ describe('Guest Session Edge Cases', () => {
   it('handles missing window object gracefully', () => {
     const originalWindow = global.window;
 
-    (global as any).window = undefined;
+    (global as unknown).window = undefined;
 
     const session = getGuestSession();
     expect(session).toBeDefined();

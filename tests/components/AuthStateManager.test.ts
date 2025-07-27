@@ -19,7 +19,7 @@ describe('AuthStateManager', () => {
 
     beforeEach(() => {
         // Reset singleton instance
-        (AuthStateManager as any).instance = undefined;
+        (AuthStateManager as unknown).instance = undefined;
         authStateManager = AuthStateManager.getInstance();
         vi.useFakeTimers();
     });

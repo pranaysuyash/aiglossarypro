@@ -132,7 +132,7 @@ test.describe('Storybook Visual Regression', () => {
     console.log(`Found ${storyLinks.length} Storybook stories.`);
 
     for (const story of storyLinks) {
-      if (!story.id && !story.href) continue;
+      if (!story.id && !story.href) {continue;}
 
       // Generate story URL based on available data
       let storyUrl;

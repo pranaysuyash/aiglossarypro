@@ -147,7 +147,7 @@ async function runFullTest() {
   }
   
   // Step 2: Test sample columns (only if API key is available)
-  let results: any[] = [];
+  let results: Response[] = [];
   
   if (process.env.GEMINI_API_KEY) {
     const testTerm = 'transformer';

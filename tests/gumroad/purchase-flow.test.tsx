@@ -54,7 +54,7 @@ describe('Purchase Flow Integration Tests', () => {
         }
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockSuccessResponse)
       });
@@ -86,7 +86,7 @@ describe('Purchase Flow Integration Tests', () => {
     });
 
     test('should handle test purchase authentication errors', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 401,
         json: () => Promise.resolve({ error: 'Authentication required' })
@@ -103,7 +103,7 @@ describe('Purchase Flow Integration Tests', () => {
     });
 
     test('should handle test purchase in production mode', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 403,
         json: () => Promise.resolve({ 
@@ -243,7 +243,7 @@ describe('Purchase Flow Integration Tests', () => {
         }
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockVerificationResponse)
       });
@@ -264,7 +264,7 @@ describe('Purchase Flow Integration Tests', () => {
     });
 
     test('should handle purchase verification for non-existent user', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 404,
         json: () => Promise.resolve({ 
@@ -356,7 +356,7 @@ describe('Purchase Flow Integration Tests', () => {
 
   describe('Error Handling and Edge Cases', () => {
     test('should handle network errors during purchase flow', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
       renderWithProviders(<TestPurchaseButton />);
 
@@ -369,7 +369,7 @@ describe('Purchase Flow Integration Tests', () => {
     });
 
     test('should handle malformed API responses', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ /* malformed response */ })
       });
@@ -385,7 +385,7 @@ describe('Purchase Flow Integration Tests', () => {
     });
 
     test('should handle rate limiting errors', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 429,
         json: () => Promise.resolve({ 
@@ -404,7 +404,7 @@ describe('Purchase Flow Integration Tests', () => {
     });
 
     test('should handle server errors gracefully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 500,
         json: () => Promise.resolve({ 
@@ -487,7 +487,7 @@ describe('Purchase Flow Integration Tests', () => {
       const statusRegion = screen.getByRole('status', { name: /purchase status/i });
       expect(statusRegion).toHaveAttribute('aria-live', 'polite');
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({
           success: true,

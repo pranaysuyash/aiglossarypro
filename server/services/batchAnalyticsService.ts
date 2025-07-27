@@ -837,7 +837,7 @@ export class BatchAnalyticsService extends EventEmitter {
 
   // Private helper methods
 
-  private getCachedReport(key: string): any {
+  private getCachedReport(key: string) {
     const cached = this.reportCache.get(key);
     if (cached && Date.now() - cached.timestamp.getTime() < this.CACHE_TTL) {
       return cached.data;
@@ -861,7 +861,7 @@ export class BatchAnalyticsService extends EventEmitter {
   }
 
   private generateDailyTrends(
-    operations: any[],
+    operations: unknown[],
     startDate: Date,
     endDate: Date
   ): Array<{
@@ -902,7 +902,7 @@ export class BatchAnalyticsService extends EventEmitter {
     return trends;
   }
 
-  private calculatePerformanceTrends(_operations: any[]): {
+  private calculatePerformanceTrends(_operations: unknown[]): {
     processingRateChange: number;
     costEfficiencyChange: number;
     qualityScoreChange: number;
@@ -915,7 +915,7 @@ export class BatchAnalyticsService extends EventEmitter {
     };
   }
 
-  private analyzeBySections(operations: any[]): Array<{
+  private analyzeBySections(operations: unknown[]): Array<{
     sectionName: string;
     operationsCount: number;
     totalTerms: number;
@@ -967,7 +967,7 @@ export class BatchAnalyticsService extends EventEmitter {
     });
   }
 
-  private async analyzeModelPerformance(operations: any[]): Promise<
+  private async analyzeModelPerformance(operations: unknown[]): Promise<
     Array<{
       model: string;
       usage: number;
@@ -1006,7 +1006,7 @@ export class BatchAnalyticsService extends EventEmitter {
     });
   }
 
-  private analyzeUserActivity(operations: any[]): Array<{
+  private analyzeUserActivity(operations: unknown[]): Array<{
     userId: string;
     operationsCount: number;
     totalCost: number;
@@ -1042,7 +1042,7 @@ export class BatchAnalyticsService extends EventEmitter {
     });
   }
 
-  private generatePerformanceRecommendations(operations: any[], metrics: any): string[] {
+  private generatePerformanceRecommendations(operations: unknown[], metrics: any): string[] {
     const recommendations: string[] = [];
 
     if (metrics.errorRate > 0.1) {
@@ -1175,7 +1175,7 @@ export class BatchAnalyticsService extends EventEmitter {
 
   private generateCostOptimizationRecommendations(
     costAnalytics: any,
-    opportunities: any[]
+    opportunities: unknown[]
   ): string[] {
     const recommendations: string[] = [];
 
@@ -1195,8 +1195,8 @@ export class BatchAnalyticsService extends EventEmitter {
 
   private generateQualityImprovements(
     overallQuality: any,
-    _sectionQuality: any[],
-    modelComparison: any[]
+    _sectionQuality: unknown[],
+    modelComparison: unknown[]
   ): string[] {
     const improvements: string[] = [];
 

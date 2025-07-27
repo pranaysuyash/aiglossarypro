@@ -336,7 +336,7 @@ describe('AuthStatePersistence', () => {
                 photoURL: null,
             };
 
-            vi.mocked(getCurrentUser).mockReturnValue(mockFirebaseUser as any);
+            vi.mocked(getCurrentUser).mockReturnValue(mockFirebaseUser as unknown);
             vi.mocked(getIdToken).mockResolvedValue('firebase-token');
 
             const result = await authPersistence.recoverFromNetworkError();

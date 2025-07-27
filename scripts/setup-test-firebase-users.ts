@@ -88,7 +88,7 @@ async function setupTestUsers() {
         console.log(`  ✅ Created new user`);
         console.log(`  🎭 Access: ${testUser.isAdmin ? 'Admin' : testUser.lifetimeAccess ? 'Premium' : 'Basic'}`);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error(`  ❌ Error processing ${testUser.email}:`, error.message);
     }
   }

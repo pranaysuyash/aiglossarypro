@@ -124,7 +124,7 @@ export function isFeatureEnabled(feature: keyof FeatureFlags): boolean {
  * Middleware to check feature flags
  */
 export function requireFeature(feature: keyof FeatureFlags) {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Request, next: Request) => {
     if (!isFeatureEnabled(feature)) {
       return res.status(404).json({
         error: 'Feature not available',

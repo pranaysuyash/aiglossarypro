@@ -25,7 +25,7 @@ export interface PersonalizedRecommendation {
   description?: string;
   score: number;
   reasoning: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface UserPersonalizationProfile {
@@ -33,7 +33,7 @@ export interface UserPersonalizationProfile {
   learningStyle: string;
   preferredComplexity: string;
   interestCategories: string[];
-  engagementPatterns: Record<string, any>;
+  engagementPatterns: Record<string, unknown>;
   skillLevel: Record<string, number>;
   activeGoals: string[];
   lastUpdated: Date;
@@ -151,7 +151,7 @@ class PersonalizationService {
         learningStyle: profile.learning_style || 'mixed',
         preferredComplexity: profile.preferred_complexity || 'intermediate',
         interestCategories: [],
-        engagementPatterns: (profile.engagement_patterns as Record<string, any>) || {},
+        engagementPatterns: (profile.engagement_patterns as Record<string, unknown>) || {},
         skillLevel: (profile.skill_assessments as Record<string, number>) || {},
         activeGoals: (profile.active_learning_goals as any)?.goals || [],
         lastUpdated: profile.updated_at || new Date(),
@@ -613,17 +613,17 @@ class PersonalizationService {
   }
 
   // Additional helper methods would go here...
-  private analyzeTimePatterns(_events: UserBehaviorEvent[]): Record<string, any> | null {
+  private analyzeTimePatterns(_events: UserBehaviorEvent[]): Record<string, unknown> | null {
     // Implementation for time pattern analysis
     return null;
   }
 
-  private analyzeContentPatterns(_events: UserBehaviorEvent[]): Record<string, any> | null {
+  private analyzeContentPatterns(_events: UserBehaviorEvent[]): Record<string, unknown> | null {
     // Implementation for content pattern analysis
     return null;
   }
 
-  private analyzeLearningVelocity(_events: UserBehaviorEvent[]): Record<string, any> | null {
+  private analyzeLearningVelocity(_events: UserBehaviorEvent[]): Record<string, unknown> | null {
     // Implementation for learning velocity analysis
     return null;
   }
@@ -676,7 +676,7 @@ class PersonalizationService {
   private prepareUserContextForAI(
     userProfile: UserPersonalizationProfile,
     recentBehavior: UserBehaviorEvent[]
-  ): any {
+  ) {
     return {
       learningStyle: userProfile.learningStyle,
       complexity: userProfile.preferredComplexity,
@@ -685,7 +685,7 @@ class PersonalizationService {
     };
   }
 
-  private convertAIRecommendations(aiRecs: any[]): PersonalizedRecommendation[] {
+  private convertAIRecommendations(aiRecs: unknown[]): PersonalizedRecommendation[] {
     return aiRecs.map(rec => ({
       id: `ai_${rec.topic}`,
       type: 'term' as const,

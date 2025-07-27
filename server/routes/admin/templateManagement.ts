@@ -9,7 +9,7 @@ const router = Router();
 
 // In-memory template storage for demo purposes
 // In production, this would be stored in the database
-const promptTemplates: any[] = [
+const promptTemplates: unknown[] = [
   {
     id: 'template-1',
     name: 'Definition & Overview Template',

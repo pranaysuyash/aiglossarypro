@@ -378,7 +378,7 @@ class OptimizedS3Client {
       progressTracker(0, 'initializing');
 
       // Create pipeline for streaming
-      const streams: any[] = [response.Body as any];
+      const streams: Response[] = [response.Body as any];
 
       // Add progress tracking
       const progressTransform = new (require('node:stream').Transform)({

@@ -65,7 +65,7 @@ async function recreateTestUsers() {
           await storage.deleteUser(dbUsers[0].id);
           console.log(chalk.red(`  ❌ Removed from database: ${email}`));
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         if (error.code === 'auth/user-not-found') {
           console.log(chalk.gray(`  ⏭️  ${email} - already deleted`));
         } else {
@@ -117,7 +117,7 @@ async function recreateTestUsers() {
         
         console.log(chalk.green(`  ✅ Created database record for ${testUser.email}`));
         
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(chalk.red(`  ❌ Error creating ${testUser.email}: ${error.message}`));
       }
     }

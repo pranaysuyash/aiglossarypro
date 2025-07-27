@@ -32,7 +32,7 @@ describe('Analytics Middleware', () => {
 
     // Create mock response with proper end function
     originalEnd = vi.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
-      if (callback) callback();
+      if (callback) {callback();}
       return mockRes as Response;
     });
 
@@ -83,7 +83,7 @@ describe('Analytics Middleware', () => {
         middleware(mockReq as Request, mockRes as Response, mockNext);
 
         // Call the overridden end function with no parameters
-        const _result = (mockRes.end as any).call(mockRes);
+        const _result = (mockRes.end as unknown).call(mockRes);
 
         // Wait for async tracking
         await new Promise(resolve => setImmediate(resolve));
@@ -97,7 +97,7 @@ describe('Analytics Middleware', () => {
         middleware(mockReq as Request, mockRes as Response, mockNext);
 
         const chunk = 'test data';
-        const _result = (mockRes.end as any).call(mockRes, chunk);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk);
 
         await new Promise(resolve => setImmediate(resolve));
 
@@ -111,7 +111,7 @@ describe('Analytics Middleware', () => {
 
         const chunk = Buffer.from('test data');
         const encoding: BufferEncoding = 'utf8';
-        const _result = (mockRes.end as any).call(mockRes, chunk, encoding);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk, encoding);
 
         await new Promise(resolve => setImmediate(resolve));
 
@@ -127,7 +127,7 @@ describe('Analytics Middleware', () => {
         const encoding: BufferEncoding = 'utf8';
         const callback = vi.fn();
 
-        const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk, encoding, callback);
 
         await new Promise(resolve => setImmediate(resolve));
 
@@ -143,7 +143,7 @@ describe('Analytics Middleware', () => {
         middleware(mockReq as Request, mockRes as Response, mockNext);
 
         // Call end to trigger tracking
-        (mockRes.end as any).call(mockRes, 'response data');
+        (mockRes.end as unknown).call(mockRes, 'response data');
 
         await new Promise(resolve => setImmediate(resolve));
 
@@ -157,7 +157,7 @@ describe('Analytics Middleware', () => {
         );
 
         // Verify response time is calculated correctly
-        const trackCall = (analyticsService.trackPerformance as any).mock.calls[0];
+        const trackCall = (analyticsService.trackPerformance as unknown).mock.calls[0];
         const responseTime = trackCall[2];
         expect(responseTime).toBeGreaterThanOrEqual(100);
         expect(responseTime).toBeLessThan(200); // Should be close to 100ms
@@ -168,14 +168,14 @@ describe('Analytics Middleware', () => {
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
 
         // Make trackPerformance throw an error
-        (analyticsService.trackPerformance as any).mockRejectedValueOnce(
+        (analyticsService.trackPerformance as unknown).mockRejectedValueOnce(
           new Error('Tracking failed')
         );
 
         middleware(mockReq as Request, mockRes as Response, mockNext);
 
         // Call end
-        (mockRes.end as any).call(mockRes);
+        (mockRes.end as unknown).call(mockRes);
 
         await new Promise(resolve => setImmediate(resolve));
 
@@ -202,7 +202,7 @@ describe('Analytics Middleware', () => {
         // Re-apply middleware to override the new mock
         middleware(mockReq as Request, mockRes as Response, vi.fn());
 
-        const _result = (mockRes.end as any).call(mockRes);
+        const _result = (mockRes.end as unknown).call(mockRes);
 
         expect(capturedThis).toBe(mockRes);
       });

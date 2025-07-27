@@ -136,7 +136,7 @@ export async function dbBatchInsertProcessor(
  */
 async function executeBatchOperation(
   table: string,
-  records: any[],
+  records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   switch (table) {
@@ -173,7 +173,7 @@ async function executeBatchOperation(
  * Handle terms table batch operations
  */
 async function handleTermsBatch(
-  records: any[],
+  records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { terms } = await import('../../../shared/enhancedSchema');
@@ -239,7 +239,7 @@ async function handleTermsBatch(
  * Handle categories table batch operations
  */
 async function handleCategoriesBatch(
-  records: any[],
+  records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { categories } = await import('../../../shared/enhancedSchema');
@@ -264,7 +264,7 @@ async function handleCategoriesBatch(
  * Handle term_sections table batch operations
  */
 async function handleTermSectionsBatch(
-  records: any[],
+  records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { termSections } = await import('../../../shared/enhancedSchema');
@@ -289,7 +289,7 @@ async function handleTermSectionsBatch(
  * Handle enhanced_terms table batch operations
  */
 async function handleEnhancedTermsBatch(
-  _records: any[],
+  _records: unknown[],
   _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for enhanced terms
@@ -300,7 +300,7 @@ async function handleEnhancedTermsBatch(
  * Handle enhanced_term_sections table batch operations
  */
 async function handleEnhancedTermSectionsBatch(
-  _records: any[],
+  _records: unknown[],
   _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for enhanced term sections
@@ -311,7 +311,7 @@ async function handleEnhancedTermSectionsBatch(
  * Handle user_progress table batch operations
  */
 async function handleUserProgressBatch(
-  _records: any[],
+  _records: unknown[],
   _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for user progress
@@ -322,7 +322,7 @@ async function handleUserProgressBatch(
  * Handle analytics_events table batch operations
  */
 async function handleAnalyticsEventsBatch(
-  _records: any[],
+  _records: unknown[],
   _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for analytics events
@@ -333,7 +333,7 @@ async function handleAnalyticsEventsBatch(
  * Handle search_queries table batch operations
  */
 async function handleSearchQueriesBatch(
-  _records: any[],
+  _records: unknown[],
   _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for search queries

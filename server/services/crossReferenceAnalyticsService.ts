@@ -144,7 +144,7 @@ class CrossReferenceAnalyticsService {
 
     const results = await db.execute(flowQuery);
 
-    return results.rows.map((row: any) => ({
+    return results.rows.map((row: Response) => ({
       sourceTermId: row.source_term_id,
       sourceTermName: row.source_term_name,
       targetTermId: row.target_term_id,
@@ -198,7 +198,7 @@ class CrossReferenceAnalyticsService {
 
     const results = await db.execute(pathwayQuery);
 
-    return results.rows.map((row: any, index: number) => ({
+    return results.rows.map((row: Response, index: number) => ({
       pathwayId: `pathway_${index + 1}`,
       termSequence: row.pathway_ids,
       termNames: row.pathway,
@@ -419,8 +419,8 @@ class CrossReferenceAnalyticsService {
 
   private async calculateBridgeScore(
     _termId: string,
-    _incomingRefs: any[],
-    _outgoingRefs: any[]
+    _incomingRefs: unknown[],
+    _outgoingRefs: unknown[]
   ): Promise<number> {
     // Terms that connect different categories are considered bridges
     // This would need actual category analysis

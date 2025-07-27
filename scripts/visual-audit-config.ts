@@ -28,7 +28,7 @@ export interface AccessibilityConfig {
   wcagLevel: 'A' | 'AA' | 'AAA';
   rules: string[];
   skipRules?: string[];
-  customRules?: any[];
+  customRules?: unknown[];
 }
 
 export interface PerformanceThresholds {

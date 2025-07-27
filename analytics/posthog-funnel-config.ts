@@ -241,7 +241,7 @@ export const posthogFunnelConfig = {
   // Helper function to create PostHog funnel
   createPostHogFunnel: (funnelId: string) => {
     const funnel = funnels.find(f => f.id === funnelId);
-    if (!funnel) throw new Error(`Funnel ${funnelId} not found`);
+    if (!funnel) {throw new Error(`Funnel ${funnelId} not found`);}
 
     return {
       name: funnel.name,

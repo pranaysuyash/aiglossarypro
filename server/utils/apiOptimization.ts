@@ -4,7 +4,8 @@
  */
 
 import { createHash } from 'crypto';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 
 interface CacheOptions {
     ttl?: number; // Time to live in seconds
@@ -83,7 +84,7 @@ class APIOptimizer {
 
             // Override res.json to cache the response
             const originalJson = res.json.bind(res);
-            res.json = (data: any) => {
+            res.json = (data: Response) => {
                 // Only cache successful responses
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     this.setCache(cacheKey, data, ttl, tags, compress);
@@ -111,7 +112,7 @@ class APIOptimizer {
 
             // Override res.end to capture response time
             const originalEnd = res.end.bind(res);
-            res.end = (...args: any[]) => {
+            res.end = (...args: Response[]) => {
                 const responseTime = Date.now() - startTime;
 
                 this.trackResponseTime({
@@ -144,7 +145,7 @@ class APIOptimizer {
 
             if (acceptsGzip) {
                 const originalJson = res.json.bind(res);
-                res.json = (data: any) => {
+                res.json = (data: Response) => {
                     const jsonString = JSON.stringify(data);
 
                     // Only compress responses larger than 1KB
@@ -346,7 +347,7 @@ class APIOptimizer {
      */
     private calculateHitRate(): number {
         const recentMetrics = this.responseMetrics.slice(-1000); // Last 1000 requests
-        if (recentMetrics.length === 0) return 0;
+        if (recentMetrics.length === 0) {return 0;}
 
         const hits = recentMetrics.filter(m => m.cacheHit).length;
         return (hits / recentMetrics.length) * 100;

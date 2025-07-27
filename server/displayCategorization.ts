@@ -297,7 +297,7 @@ export const FILTER_CONFIGS: FilterConfig[] = [
 
 // Helper functions for organizing content
 export class ContentOrganizer {
-  static organizeForCard(sections: Map<string, any>): any {
+  static organizeForCard(sections: Map<string, any>) {
     const cardData: any = {};
 
     DEFAULT_LAYOUT.cardContent.forEach(sectionName => {
@@ -310,7 +310,7 @@ export class ContentOrganizer {
     return cardData;
   }
 
-  static organizeForSidebar(sections: Map<string, any>): any {
+  static organizeForSidebar(sections: Map<string, any>) {
     const sidebarData: any = {};
 
     DEFAULT_LAYOUT.sidebarContent.forEach(sectionName => {
@@ -322,8 +322,8 @@ export class ContentOrganizer {
     return sidebarData;
   }
 
-  static organizeForMain(sections: Map<string, any>): any[] {
-    const mainSections: any[] = [];
+  static organizeForMain(sections: Map<string, any>): unknown[] {
+    const mainSections: unknown[] = [];
 
     DEFAULT_LAYOUT.mainContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
@@ -343,8 +343,8 @@ export class ContentOrganizer {
     return mainSections.sort((a, b) => b.priority - a.priority);
   }
 
-  static organizeForModal(sections: Map<string, any>): any[] {
-    const modalSections: any[] = [];
+  static organizeForModal(sections: Map<string, any>): unknown[] {
+    const modalSections: unknown[] = [];
 
     DEFAULT_LAYOUT.modalContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
@@ -363,7 +363,7 @@ export class ContentOrganizer {
     return modalSections.sort((a, b) => b.priority - a.priority);
   }
 
-  static extractFilterData(sections: Map<string, any>, categories: any): any {
+  static extractFilterData(sections: Map<string, any>, categories: any) {
     const filterData: any = {};
 
     // Add category data
@@ -403,7 +403,7 @@ export class ContentOrganizer {
     return searchText.trim();
   }
 
-  private static extractCardSummary(sectionData: any, sectionName: string): any {
+  private static extractCardSummary(sectionData: any, sectionName: string) {
     if (sectionName === 'Introduction') {
       return {
         overview: sectionData.definition_and_overview?.content || '',

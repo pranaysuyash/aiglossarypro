@@ -12,8 +12,8 @@ import {
   MessageSquare,
   RefreshCw,
 } from 'lucide-react';
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -199,7 +199,7 @@ const AdminContactsDashboard: React.FC = () => {
 
       await refetchSubmissions();
       setSelectedSubmissions([]);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Bulk action error:', error);
     } finally {
       setBulkActionLoading(false);
@@ -222,7 +222,7 @@ const AdminContactsDashboard: React.FC = () => {
       await refetchSubmissions();
       setEditingContact(null);
       setStatusNotes('');
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Status update error:', error);
     }
   };
@@ -249,7 +249,7 @@ const AdminContactsDashboard: React.FC = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Export error:', error);
     }
   };

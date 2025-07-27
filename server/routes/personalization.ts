@@ -9,6 +9,53 @@ import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { personalizationService } from '../services/personalizationService';
 import { log as logger } from '../utils/logger';
 
+// Types
+interface Recommendation {
+  id: string;
+  type: 'term' | 'category' | 'learning_path';
+  title: string;
+  description?: string;
+  metadata: {
+    algorithm: string;
+    score: number;
+    popularity: number;
+    reason?: string;
+  };
+}
+
+interface UserProfile {
+  preferredComplexity: 'beginner' | 'intermediate' | 'advanced';
+  interestCategories: string[];
+  engagementPatterns: Record<string, unknown>;
+  skillLevel: Record<string, unknown>;
+  activeGoals: string[];
+}
+
+interface PersonalizedHomepageSection {
+  welcomeBanner?: {
+    greeting: string;
+    suggestion: string;
+    userLevel: string;
+    timeOfDay: string;
+    personalizedMessage: boolean;
+  };
+  recommendedForYou?: Array<Recommendation & { displayPriority: string }>;
+  continueLearning?: Recommendation[];
+  trendingTopics?: Recommendation[];
+  exploreCategories?: Recommendation[];
+  learningPaths?: Recommendation[];
+  recentActivity?: Array<unknown>;
+}
+
+interface PersonalizationContext {
+  timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'night';
+  dayOfWeek?: string;
+  sessionLength?: number;
+  deviceType?: 'mobile' | 'tablet' | 'desktop';
+  currentPath?: string;
+  referrer?: string;
+}
+
 // Validation schemas
 const PersonalizedHomepageSchema = z.object({
   context: z
@@ -29,7 +76,7 @@ const BehaviorEventSchema = z.object({
   eventType: z.string(),
   entityType: z.string(),
   entityId: z.string(),
-  context: z.record(z.any()).optional(),
+  context: z.record(z.unknown()).optional(),
   timestamp: z.string().optional(),
 });
 
@@ -56,7 +103,7 @@ export function registerPersonalizationRoutes(app: Express): void {
   // Get personalized homepage data
   app.get(
     '/api/personalization/homepage',
-    authMiddleware as any,
+    authMiddleware,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -144,7 +191,7 @@ export function registerPersonalizationRoutes(app: Express): void {
   // Get personalized recommendations for a specific context
   app.get(
     '/api/personalization/recommendations/:type',
-    authMiddleware as any,
+    authMiddleware,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -178,7 +225,7 @@ export function registerPersonalizationRoutes(app: Express): void {
         const recommendations = await personalizationService.getPersonalizedRecommendations({
           userId,
           context,
-          recommendationType: recommendationType as any,
+          recommendationType: recommendationType as 'homepage' | 'term_detail' | 'category_page' | 'search_results',
           limit,
           excludeIds,
         });
@@ -223,7 +270,7 @@ export function registerPersonalizationRoutes(app: Express): void {
   // Track user behavior event
   app.post(
     '/api/personalization/track',
-    authMiddleware as any,
+    authMiddleware,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -264,7 +311,7 @@ export function registerPersonalizationRoutes(app: Express): void {
   // Provide feedback on recommendations
   app.post(
     '/api/personalization/feedback',
-    authMiddleware as any,
+    authMiddleware,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -322,7 +369,7 @@ export function registerPersonalizationRoutes(app: Express): void {
   // Get user's personalization profile
   app.get(
     '/api/personalization/profile',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;
@@ -350,7 +397,7 @@ export function registerPersonalizationRoutes(app: Express): void {
   // Analytics endpoints for behavior tracking
   app.post(
     '/api/analytics/scroll-depth',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const _userId = req.user.claims.sub;
@@ -371,7 +418,7 @@ export function registerPersonalizationRoutes(app: Express): void {
 
   app.post(
     '/api/analytics/interaction',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const _userId = req.user.claims.sub;
@@ -395,7 +442,7 @@ export function registerPersonalizationRoutes(app: Express): void {
 
   app.post(
     '/api/analytics/time-spent',
-    authMiddleware as any,
+    authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const _userId = req.user.claims.sub;
@@ -430,11 +477,11 @@ function determineTimeOfDay(): 'morning' | 'afternoon' | 'evening' | 'night' {
 
 async function buildPersonalizedHomepage(params: {
   userId: string;
-  recommendations: any[];
-  userProfile: any;
+  recommendations: Recommendation[];
+  userProfile: UserProfile;
   requestedSections?: string[];
-  context: any;
-}) {
+  context: PersonalizationContext;
+}): Promise<PersonalizedHomepageSection> {
   const { userId, recommendations, userProfile, requestedSections, context } = params;
 
   // Default sections
@@ -449,7 +496,7 @@ async function buildPersonalizedHomepage(params: {
   ];
 
   const sections = requestedSections || defaultSections;
-  const homepage: any = {};
+  const homepage: PersonalizedHomepageSection = {};
 
   for (const section of sections) {
     switch (section) {
@@ -499,7 +546,7 @@ async function buildPersonalizedHomepage(params: {
   return homepage;
 }
 
-function buildWelcomeBanner(userProfile: any, context: any) {
+function buildWelcomeBanner(userProfile: UserProfile, context: PersonalizationContext) {
   const timeOfDay = context.timeOfDay;
   const complexity = userProfile.preferredComplexity;
 
@@ -535,7 +582,7 @@ function buildWelcomeBanner(userProfile: any, context: any) {
 }
 
 function calculatePersonalizationLevel(
-  userProfile: any,
+  userProfile: UserProfile,
   recommendationCount: number
 ): 'low' | 'medium' | 'high' {
   // Calculate how personalized the experience is based on available data

@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Clock, Tag, TrendingUp, X, Zap } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { Link } from 'wouter';
 import { trackUserAction } from '@/lib/analytics';
 import { useExperiment } from '@/services/posthogExperiments';

@@ -44,30 +44,6 @@ interface CodeExample {
 
 import { CreateCodeExampleModal } from './CreateCodeExampleModal';
 
-interface CodeExample {
-  id: string;
-  term_id: string;
-  title: string;
-  description?: string | undefined;
-  language: string;
-  code: string;
-  expected_output?: string;
-  libraries?: Record<string, unknown>;
-  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
-  example_type: 'implementation' | 'tutorial' | 'snippet' | 'full_project';
-  is_runnable: boolean;
-  external_url?: string;
-  is_verified: boolean;
-  upvotes: number;
-  downvotes: number;
-  created_at: string;
-  updated_at: string;
-  term?: {
-    name: string;
-    shortDefinition: string;
-  };
-}
-
 interface CodeExamplesManagementProps {
   onExampleSelect?: (example: CodeExample) => void;
 }
@@ -148,7 +124,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
     ) {
       try {
         await deleteMutation.mutateAsync(exampleId);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         // Handle delete error silently
       }
     }

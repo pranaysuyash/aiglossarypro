@@ -19,8 +19,8 @@ import {
   User,
   X,
 } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '../../hooks/useAuth';
 import { useGestureNavigation } from '../../hooks/useGestureNavigation';

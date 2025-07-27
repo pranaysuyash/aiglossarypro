@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, inArray, isNotNull, like, or, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { contactSubmissions, newsletterSubscriptions } from '../../../shared/schema';
 import { db } from '../../db';
@@ -46,7 +47,7 @@ const updateContactStatusSchema = z.object({
 /**
  * Admin middleware to check if user can perform admin actions
  */
-function requireAdminAccess(req: Request, res: Response, next: any) {
+function requireAdminAccess(req: Request, res: Response, next: Request) {
   try {
     const user = req.user;
 

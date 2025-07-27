@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../middleware/firebaseAuth';
 import { UserService } from '../services/userService';
 import { ENVIRONMENT_CONSTANTS, HTTP_STATUS, PRICING_CONSTANTS } from '../utils/constants';

@@ -224,7 +224,7 @@ async function warmRelationshipsCache(key: string, ttl: number): Promise<void> {
 /**
  * Helper function to get user preferences
  */
-async function getUserPreferences(userId: string): Promise<any> {
+async function getUserPreferences(userId: string): Promise<unknown> {
   // Mock implementation - replace with actual database query
   return {
     userId,
@@ -241,7 +241,7 @@ async function getUserPreferences(userId: string): Promise<any> {
 /**
  * Helper function to calculate search metrics
  */
-async function calculateSearchMetrics(timeframe: string): Promise<any> {
+async function calculateSearchMetrics(timeframe: string): Promise<unknown> {
   // Mock implementation - replace with actual analytics query
   return {
     timeframe,
@@ -260,7 +260,7 @@ async function calculateSearchMetrics(timeframe: string): Promise<any> {
 /**
  * Helper function to generate user recommendations
  */
-async function generateUserRecommendations(userId: string): Promise<any> {
+async function generateUserRecommendations(userId: string): Promise<unknown> {
   // Mock implementation - replace with actual recommendation engine
   return {
     userId,
@@ -285,7 +285,7 @@ async function generateUserRecommendations(userId: string): Promise<any> {
 /**
  * Helper function to find term relationships
  */
-async function findTermRelationships(termId: string): Promise<any> {
+async function findTermRelationships(termId: string): Promise<unknown> {
   // Mock implementation - replace with actual relationship analysis
   return {
     termId,

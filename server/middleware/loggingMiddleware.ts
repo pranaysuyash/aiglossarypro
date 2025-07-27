@@ -1,4 +1,5 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { log, performanceTimer } from '../utils/logger';
 import { addBreadcrumb, captureAPIError } from '../utils/sentry';
@@ -51,7 +52,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
 
   // Override res.json to capture response data
   const originalJson = res.json;
-  res.json = function (body: any) {
+  res.json = function (body: Response) {
     const duration = timer.end({
       requestId: req.requestId,
       statusCode: res.statusCode,
@@ -70,7 +71,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
 
   // Override res.send to capture non-JSON responses
   const originalSend = res.send;
-  res.send = function (body: any) {
+  res.send = function (body: Response) {
     if (!res.headersSent) {
       const duration = timer.end({
         requestId: req.requestId,
@@ -125,7 +126,7 @@ export const errorLoggingMiddleware = (
 export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const originalEnd = res.end.bind(res);
 
-  (res as any).end = function (chunk?: any, encoding?: BufferEncoding, callback?: () => void): any {
+  (res as any).end = function (chunk?: Response, encoding?: BufferEncoding, callback?: () => void): Response {
     // Check if this was a rate limit response
     if (res.statusCode === 429) {
       log.security.rateLimitExceeded(
@@ -181,7 +182,7 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
     const timer = performanceTimer(`Health Check: ${req.path}`);
 
     const originalJson = res.json;
-    res.json = function (body: any) {
+    res.json = function (body: Response) {
       timer.end();
       return originalJson.call(this, body);
     };
@@ -193,7 +194,7 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
 // User context middleware (for logging user info)
 export const userContextMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   const sessionUser = ((req as any).session as any)?.user;
-  const authUser = req.user as any;
+  const authUser = req.user as unknown;
 
   if (sessionUser || authUser) {
     req.userId = sessionUser?.id || authUser?.id || authUser?.claims?.sub;

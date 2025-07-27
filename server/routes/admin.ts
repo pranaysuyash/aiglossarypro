@@ -1,7 +1,15 @@
 import path from 'node:path';
-import type { Express, Request, Response } from 'express';
 import express from 'express';
+import type { Express, Request, Response } from 'express';
 import type { AdminStats, ApiResponse } from '../../shared/types';
+import type { 
+  User, 
+  Term, 
+  Category, 
+  ContentMetrics, 
+  SystemHealth,
+  PaginatedResult 
+} from '../types/storage.types';
 
 import { enhancedStorage as storage } from '../enhancedStorage';
 import { authenticateToken, requireAdmin } from '../middleware/adminAuth';
@@ -12,6 +20,32 @@ import templateManagementRoutes from './admin/templateManagement';
 import { validate } from '../middleware/validationMiddleware';
 import { adminSchemas } from '../schemas/apiValidation';
 const router = express.Router();
+
+// Define bulk operation types
+interface BulkOperation {
+  id: string;
+  type: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  progress: number;
+  totalItems: number;
+  processedItems: number;
+  startedAt: string;
+  completedAt?: string;
+  results: Array<{
+    termId: string;
+    termName: string;
+    action: string;
+    success: boolean;
+    message: string;
+    qualityScore?: number;
+  }> | null;
+  errors: Array<string | { termId: string; termName: string; error: string }>;
+}
+
+// Extend global object with proper typing
+declare global {
+  var bulkOperations: Record<string, BulkOperation> | undefined;
+}
 
 /**
  * Admin management routes
@@ -367,7 +401,7 @@ export function registerAdminRoutes(app: Express): void {
         let filteredUsers = users.data;
         if (searchTerm) {
           filteredUsers = users.data.filter(
-            (user: any) =>
+            (user: User) =>
               user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
               user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
               user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -513,7 +547,7 @@ export function registerAdminRoutes(app: Express): void {
     '/api/admin/batch/categorize',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res: Response) => {
+    async (req: Request, res: Response) => {
       try {
         const { termIds, _options = {} } = req.body; // options currently not used
 
@@ -525,8 +559,20 @@ export function registerAdminRoutes(app: Express): void {
           return res.status(400).json({ message: 'Maximum 50 terms can be processed at once' });
         }
 
-        const results: any[] = [];
-        const errors: any[] = [];
+        const results: Array<{
+          termId: string;
+          termName: string;
+          success: boolean;
+          categorization?: {
+            mainCategories: string[];
+            subCategories: string[];
+          };
+        }> = [];
+        const errors: Array<{
+          termId: string;
+          termName?: string;
+          error: string;
+        }> = [];
 
         // Process terms in batches of 5 to avoid overwhelming the AI service
         for (let i = 0; i < termIds.length; i += 5) {
@@ -668,7 +714,7 @@ Respond with JSON only.`
     '/api/admin/batch/enhance-definitions',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res: Response) => {
+    async (req: Request, res: Response) => {
       try {
         const { termIds, options = {} } = req.body;
         const {
@@ -686,8 +732,19 @@ Respond with JSON only.`
           return res.status(400).json({ message: 'Maximum 20 terms can be enhanced at once' });
         }
 
-        const results: any[] = [];
-        const errors: any[] = [];
+        const results: Array<{
+          termId: string;
+          termName: string;
+          originalDefinition: string;
+          enhancedDefinition: string;
+          success: boolean;
+          enhancementType: string;
+          characterCount: number;
+        }> = [];
+        const errors: Array<{
+          termId: string;
+          error: string;
+        }> = [];
 
         // Process terms individually for better quality
         for (const termId of termIds) {
@@ -809,7 +866,7 @@ Provide an enhanced definition following the guidelines above.`
     '/api/admin/batch/status/:operationId',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res: Response) => {
+    async (req: Request, res: Response) => {
       try {
         const { operationId } = req.params;
 
@@ -877,7 +934,7 @@ Provide an enhanced definition following the guidelines above.`
     async (_req: Request, res: Response) => {
       try {
         // In production, this would query historical data
-        const trendData = [
+        const trendData: Array<{ month: string; generated: number; cost: number }> = [
           { month: 'Oct', generated: 245, cost: 12.5 },
           { month: 'Nov', generated: 312, cost: 15.8 },
           { month: 'Dec', generated: 428, cost: 21.4 },
@@ -908,7 +965,7 @@ Provide an enhanced definition following the guidelines above.`
         // const contentMetrics = await storage.getContentMetrics(); // Currently not used
 
         // Calculate quality distribution
-        const qualityData = [
+        const qualityData: Array<{ name: string; value: number; color: string }> = [
           { name: 'Excellent (90-100)', value: 35, color: '#10B981' },
           { name: 'Good (80-89)', value: 42, color: '#3B82F6' },
           { name: 'Average (70-79)', value: 18, color: '#F59E0B' },
@@ -946,7 +1003,7 @@ Provide an enhanced definition following the guidelines above.`
         if (search) {
           const searchTerm = (search as string).toLowerCase();
           filteredTerms = filteredTerms.filter(
-            (term: any) =>
+            (term: Term) =>
               term.name?.toLowerCase().includes(searchTerm) ||
               term.shortDefinition?.toLowerCase().includes(searchTerm) ||
               term.definition?.toLowerCase().includes(searchTerm)
@@ -956,14 +1013,14 @@ Provide an enhanced definition following the guidelines above.`
         // Apply category filter
         if (category && category !== 'all') {
           filteredTerms = filteredTerms.filter(
-            (term: any) => term.category === category || term.categoryId === category
+            (term: Term) => term.category === category || term.categoryId === category
           );
         }
 
         // Apply status filter
         if (status && status !== 'all') {
           filteredTerms = filteredTerms.filter(
-            (term: any) => term.verificationStatus === status || term.status === status
+            (term: Term) => term.verificationStatus === status || term.status === status
           );
         }
 
@@ -975,7 +1032,7 @@ Provide an enhanced definition following the guidelines above.`
         const paginatedTerms = filteredTerms.slice(startIndex, endIndex);
 
         // Format terms for admin interface
-        const formattedTerms = paginatedTerms.map((term: any) => ({
+        const formattedTerms = paginatedTerms.map((term: Term) => ({
           id: term.id,
           name: term.name,
           shortDefinition: term.shortDefinition || `${term.definition?.substring(0, 100)  }...`,
@@ -1012,7 +1069,7 @@ Provide an enhanced definition following the guidelines above.`
     async (_req: Request, res: Response) => {
       try {
         const categories = await storage.getAllCategories();
-        const categoryNames = categories.data?.map((cat: any) => cat.name) || [
+        const categoryNames = categories.data?.map((cat: Category) => cat.name) || [
           'Deep Learning',
           'NLP',
           'Computer Vision',
@@ -1188,41 +1245,41 @@ Provide an enhanced definition following the guidelines above.`
 
         // Calculate content statistics
         const completedTerms = terms.filter(
-          (term: any) => term.fullDefinition && term.shortDefinition && term.category
+          (term: Term) => term.fullDefinition && term.shortDefinition && term.category
         ).length;
 
         const missingDefinitions = terms.filter(
-          (term: any) => !term.fullDefinition || term.fullDefinition.length < 50
+          (term: Term) => !term.fullDefinition || term.fullDefinition.length < 50
         ).length;
 
         const missingShortDefinitions = terms.filter(
-          (term: any) => !term.shortDefinition || term.shortDefinition.length < 20
+          (term: Term) => !term.shortDefinition || term.shortDefinition.length < 20
         ).length;
 
         const uncategorizedTerms = terms.filter(
-          (term: any) => !term.category || term.category === 'Uncategorized'
+          (term: Term) => !term.category || term.category === 'Uncategorized'
         ).length;
 
         const termsWithCodeExamples = terms.filter(
-          (term: any) => term.codeExamples && term.codeExamples.length > 0
+          (term: Term) => term.codeExamples && term.codeExamples.length > 0
         ).length;
 
         const termsWithInteractiveElements = terms.filter(
-          (term: any) => term.interactiveElements && term.interactiveElements.length > 0
+          (term: Term) => term.interactiveElements && term.interactiveElements.length > 0
         ).length;
 
         // Calculate quality distribution
         const qualityDistribution = {
-          excellent: terms.filter((term: any) => (term.qualityScore || 75) >= 90).length,
-          good: terms.filter((term: any) => {
+          excellent: terms.filter((term: Term) => (term.qualityScore || 75) >= 90).length,
+          good: terms.filter((term: Term) => {
             const score = term.qualityScore || 75;
             return score >= 80 && score < 90;
           }).length,
-          average: terms.filter((term: any) => {
+          average: terms.filter((term: Term) => {
             const score = term.qualityScore || 75;
             return score >= 70 && score < 80;
           }).length,
-          poor: terms.filter((term: any) => (term.qualityScore || 75) < 70).length,
+          poor: terms.filter((term: Term) => (term.qualityScore || 75) < 70).length,
         };
 
         const lowQualityTerms =
@@ -1284,17 +1341,17 @@ Provide an enhanced definition following the guidelines above.`
         switch (type) {
           case 'generate-definitions':
             targetTerms = terms.filter(
-              (term: any) => !term.fullDefinition || term.fullDefinition.length < 50
+              (term: Term) => !term.fullDefinition || term.fullDefinition.length < 50
             );
             break;
           case 'enhance-content':
             targetTerms = terms.filter(
-              (term: any) => term.fullDefinition && (term.qualityScore || 75) < 80
+              (term: Term) => term.fullDefinition && (term.qualityScore || 75) < 80
             );
             break;
           case 'categorize-terms':
             targetTerms = terms.filter(
-              (term: any) => !term.category || term.category === 'Uncategorized'
+              (term: Term) => !term.category || term.category === 'Uncategorized'
             );
             break;
           case 'validate-quality':
@@ -1398,7 +1455,7 @@ Provide an enhanced definition following the guidelines above.`
           termsToValidate = terms;
         }
 
-        const validationResults = termsToValidate.map((term: any) => {
+        const validationResults = termsToValidate.map((term: Term) => {
           const issues = [];
           const suggestions = [];
           let qualityScore = 100;
@@ -1492,8 +1549,8 @@ Provide an enhanced definition following the guidelines above.`
 async function processBulkOperation(
   operationId: string,
   type: string,
-  targetTerms: any[],
-  _options: any // Currently not used
+  targetTerms: Term[],
+  _options: Record<string, unknown> // Currently not used
 ) {
   try {
     if (!global.bulkOperations[operationId]) {return;}
@@ -1502,8 +1559,19 @@ async function processBulkOperation(
     operation.status = 'running';
     operation.startedAt = new Date().toISOString();
 
-    const results = [];
-    const errors = [];
+    const results: Array<{
+      termId: string;
+      termName: string;
+      action: string;
+      success: boolean;
+      message: string;
+      qualityScore?: number;
+    }> = [];
+    const errors: Array<{
+      termId: string;
+      termName: string;
+      error: string;
+    }> = [];
 
     // Process items in chunks
     const chunkSize = 10;
@@ -1512,7 +1580,14 @@ async function processBulkOperation(
 
       for (const term of chunk) {
         try {
-          let result;
+          let result: {
+            termId: string;
+            termName: string;
+            action: string;
+            success: boolean;
+            message: string;
+            qualityScore?: number;
+          } | undefined;
 
           switch (type) {
             case 'generate-definitions':

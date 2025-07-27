@@ -29,7 +29,7 @@ export default function FirebaseDebug() {
       try {
         await auth?.authStateReady();
         addLog('✅ Auth state is ready');
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         addLog(`❌ Auth state error: ${error.message}`);
       }
       
@@ -40,7 +40,7 @@ export default function FirebaseDebug() {
       addLog('Testing invalid login to check Firebase connection...');
       try {
         await signInWithEmail('test@invalid.com', 'wrongpassword');
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         addLog(`Expected error: ${error.code} - ${error.message}`);
         if (error.code?.startsWith('auth/')) {
           addLog('✅ Firebase connection is working!');
@@ -58,7 +58,7 @@ export default function FirebaseDebug() {
           body: JSON.stringify({ idToken: 'test' })
         });
         addLog(`Google API reachable: ${response.ok} (status: ${response.status})`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         addLog(`❌ Network error: ${error.message}`);
       }
       

@@ -1,4 +1,5 @@
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { ApiResponse, PaginatedResponse } from '../../shared/types';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log } from '../utils/logger';

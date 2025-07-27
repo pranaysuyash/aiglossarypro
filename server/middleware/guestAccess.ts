@@ -1,4 +1,5 @@
-import type { Request, RequestHandler, Response } from 'express';
+import type { Request, RequestHandler, Response } from 'express'
+import type { Request, Response } from 'express';
 import { log } from '../utils/logger';
 import { redisService, cacheKeys, cacheTTL } from '../services/redisService';
 

@@ -14,7 +14,7 @@ describe('Authentication Loop Prevention Integration', () => {
 
     beforeEach(() => {
         // Reset singleton instances
-        (AuthStateManager as any).instance = undefined;
+        (AuthStateManager as unknown).instance = undefined;
         authStateManager = AuthStateManager.getInstance();
         authQueryDeduplicator.clear();
 

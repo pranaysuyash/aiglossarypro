@@ -42,7 +42,7 @@ export interface UserDiscoveryContext {
   favoriteCategories: string[];
   skillLevel: string;
   learningGoals: string[];
-  explorationHistory: any[];
+  explorationHistory: unknown[];
   preferences: any;
 }
 

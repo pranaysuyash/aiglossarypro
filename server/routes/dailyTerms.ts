@@ -5,7 +5,8 @@
  */
 
 import { format, isValid, parseISO } from 'date-fns';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { ApiResponse } from '../../shared/types';
 import { DailyTermRotationService } from '../services/dailyTermRotation';
 import { log as logger } from '../utils/logger';

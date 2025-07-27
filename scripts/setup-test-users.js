@@ -87,7 +87,7 @@ async function setupTestUsers() {
 
   for (const userData of TEST_USERS) {
     const success = await createTestUser(userData);
-    if (success) successCount++;
+    if (success) {successCount++;}
     console.log(''); // Add spacing
   }
 

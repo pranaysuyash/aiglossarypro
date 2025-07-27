@@ -348,7 +348,7 @@ export function ProgressVisualization({
 
   // Get achievement display name
   const getAchievementName = (type: string) => {
-    if (!type) return 'Unknown Achievement';
+    if (!type) {return 'Unknown Achievement';}
     
     switch (type) {
       case 'daily_streak':

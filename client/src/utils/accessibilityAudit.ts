@@ -275,11 +275,11 @@ export class FocusManager {
         this.previousActiveElement = document.activeElement;
 
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key !== 'Tab') return;
+            if (event.key !== 'Tab') {return;}
 
             this.updateFocusableElements();
 
-            if (this.focusableElements.length === 0) return;
+            if (this.focusableElements.length === 0) {return;}
 
             const firstElement = this.focusableElements[0] as HTMLElement;
             const lastElement = this.focusableElements[this.focusableElements.length - 1] as HTMLElement;

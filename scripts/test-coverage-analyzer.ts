@@ -41,7 +41,7 @@ class TestCoverageAnalyzer {
         stdio: 'pipe',
         encoding: 'utf-8'
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       // Tests might fail but coverage should still be generated
       console.log(chalk.yellow('⚠️  Some tests failed, but coverage was generated\n'));
     }

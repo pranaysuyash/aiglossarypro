@@ -43,7 +43,7 @@ async function finalClearAll() {
         } else {
           console.log(`✅ ${table}: Already empty (${reason})`);
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`⚠️ ${table}: ${error.message.split('\\n')[0]}`);
 
         // If table doesn't exist, that's fine
@@ -87,7 +87,7 @@ async function finalClearAll() {
         }
 
         console.log(`${tableName.padEnd(20)}: ${String(count).padStart(6)} records ${status}`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`${tableName.padEnd(20)}: ERROR - ${error.message.split('\\n')[0]}`);
       }
     }

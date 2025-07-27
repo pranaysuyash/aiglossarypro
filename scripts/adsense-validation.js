@@ -39,9 +39,9 @@ class AdSenseValidator {
 
     console.log(`[${timestamp}] ${prefix} ${message}`);
 
-    if (type === 'pass') this.results.passed++;
-    if (type === 'fail') this.results.failed++;
-    if (type === 'warn') this.results.warnings++;
+    if (type === 'pass') {this.results.passed++;}
+    if (type === 'fail') {this.results.failed++;}
+    if (type === 'warn') {this.results.warnings++;}
 
     this.results.tests.push({ message, type, timestamp });
   }

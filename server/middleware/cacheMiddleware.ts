@@ -59,7 +59,7 @@ export function cache(options: CacheOptions = {}) {
       const originalJson = res.json.bind(res);
       
       // Override json method to cache the response
-      res.json = function(data: any) {
+      res.json = function(data: Response) {
         // Store in cache
         redisService.set(cacheKey, data, ttl).catch(error => {
           log.error('Failed to cache response', { key: cacheKey, error });
@@ -93,7 +93,7 @@ export function invalidateCache(patterns: string[] | ((req: Request) => string[]
     const originalJson = res.json.bind(res);
     
     // Override json method to invalidate cache after successful response
-    res.json = function(data: any) {
+    res.json = function(data: Response) {
       // Only invalidate on successful responses
       if (res.statusCode >= 200 && res.statusCode < 300) {
         const patternsToInvalidate = typeof patterns === 'function' 

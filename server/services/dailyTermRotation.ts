@@ -540,7 +540,7 @@ export class DailyTermRotationService {
   /**
    * Get historical performance metrics for algorithm tuning
    */
-  async getSelectionMetrics(_days = 30): Promise<any> {
+  async getSelectionMetrics(_days = 30): Promise<unknown> {
     const metrics = {
       totalSelections: 0,
       averageTermsPerDay: 0,

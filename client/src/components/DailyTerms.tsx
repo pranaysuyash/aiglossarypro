@@ -19,8 +19,8 @@ import {
   Target,
   Zap,
 } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import type React from 'react';
 import type { ITerm } from '../../../shared/types';
 
 interface DailyTermsResponse {

@@ -337,17 +337,17 @@ function generateMockContent(columnName) {
   };
   
   // Determine content based on column name patterns
-  if (columnName === 'Term') return TERM;
-  if (columnName === 'Introduction – Definition and Overview') return SAMPLE_DEFINITION;
-  if (columnName.includes('Code') || columnName.includes('Pseudocode')) return columnPatterns['Code Snippets'];
-  if (columnName.includes('Mermaid') || columnName.includes('Diagram')) return columnPatterns['Mermaid Diagram'];
-  if (columnName.includes('Interactive Element')) return columnPatterns['Interactive Element'];
-  if (columnName.includes('FAQ')) return columnPatterns['FAQs'];
-  if (columnName.includes('Metadata')) return columnPatterns['Metadata'];
-  if (columnName.includes('Tags') || columnName.includes('Keywords')) return columnPatterns['Tags'];
-  if (columnName.includes('References') || columnName.includes('Papers')) return columnPatterns['References'];
-  if (columnName.includes('Prerequisites')) return columnPatterns['Prerequisites'];
-  if (columnName.includes('Key Concepts') || columnName.includes('Principles')) return columnPatterns['Key Concepts'];
+  if (columnName === 'Term') {return TERM;}
+  if (columnName === 'Introduction – Definition and Overview') {return SAMPLE_DEFINITION;}
+  if (columnName.includes('Code') || columnName.includes('Pseudocode')) {return columnPatterns['Code Snippets'];}
+  if (columnName.includes('Mermaid') || columnName.includes('Diagram')) {return columnPatterns['Mermaid Diagram'];}
+  if (columnName.includes('Interactive Element')) {return columnPatterns['Interactive Element'];}
+  if (columnName.includes('FAQ')) {return columnPatterns['FAQs'];}
+  if (columnName.includes('Metadata')) {return columnPatterns['Metadata'];}
+  if (columnName.includes('Tags') || columnName.includes('Keywords')) {return columnPatterns['Tags'];}
+  if (columnName.includes('References') || columnName.includes('Papers')) {return columnPatterns['References'];}
+  if (columnName.includes('Prerequisites')) {return columnPatterns['Prerequisites'];}
+  if (columnName.includes('Key Concepts') || columnName.includes('Principles')) {return columnPatterns['Key Concepts'];}
   
   // Default content for other columns
   return `Sample content for "${columnName}" related to ${TERM}. This demonstrates the structure and format expected for this column in the AI/ML glossary.`;
@@ -401,7 +401,7 @@ async function validateStructure(content) {
         break;
       }
     }
-    if (!categorized) sections['Other']++;
+    if (!categorized) {sections['Other']++;}
   }
   
   console.log('\\nSection distribution:');

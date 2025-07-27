@@ -373,7 +373,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
   const _handleARSessionStart = useCallback(async () => {
     try {
       await initializeARSession();
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       const message = error instanceof Error ? error?.message : 'Failed to start AR session';
       onError?.(message);
     }
@@ -384,7 +384,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
       await endSession();
       setPlacedConcepts([]);
       setSelectedConcept(null);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error ending AR session:', error);
     }
   }, [endSession]);

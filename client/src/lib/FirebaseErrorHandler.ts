@@ -50,7 +50,7 @@ export class FirebaseErrorHandler {
     private fallbackState: FallbackAuthState;
     private retryConfig: RetryConfig;
     private networkListeners: ((online: boolean) => void)[] = [];
-    private retryQueues: Map<string, Promise<any>> = new Map();
+    private retryQueues: Map<string, Promise<unknown>> = new Map();
 
     // Circuit breaker state
     private circuitBreaker = {
@@ -97,7 +97,7 @@ export class FirebaseErrorHandler {
     public async handleAuthError(
         error: FirebaseError | FirebaseAuthError | Error,
         operation: string,
-        context: Record<string, any> = {}
+        context: Record<string, unknown> = {}
     ): Promise<FirebaseAuthError> {
         const firebaseError = this.createFirebaseError(error, operation, context);
 
@@ -301,7 +301,7 @@ export class FirebaseErrorHandler {
     private createFirebaseError(
         error: FirebaseError | FirebaseAuthError | Error,
         operation: string,
-        context: Record<string, any>
+        context: Record<string, unknown>
     ): FirebaseAuthError {
         const isFirebaseErr = this.isFirebaseError(error);
         const firebaseCode = isFirebaseErr ? error.code : 'unknown';
@@ -334,7 +334,7 @@ export class FirebaseErrorHandler {
         return firebaseError;
     }
 
-    private isFirebaseError(error: any): error is FirebaseError {
+    private isFirebaseError(error: Error | unknown): error is FirebaseError {
         return error && typeof error === 'object' && 'code' in error && error.code?.startsWith('auth/');
     }
 
@@ -356,9 +356,9 @@ export class FirebaseErrorHandler {
         const highCodes = ['auth/network-request-failed', 'auth/timeout'];
         const mediumCodes = ['auth/too-many-requests', 'auth/quota-exceeded'];
 
-        if (criticalCodes.includes(firebaseCode)) return ErrorSeverity.CRITICAL;
-        if (highCodes.includes(firebaseCode)) return ErrorSeverity.HIGH;
-        if (mediumCodes.includes(firebaseCode)) return ErrorSeverity.MEDIUM;
+        if (criticalCodes.includes(firebaseCode)) {return ErrorSeverity.CRITICAL;}
+        if (highCodes.includes(firebaseCode)) {return ErrorSeverity.HIGH;}
+        if (mediumCodes.includes(firebaseCode)) {return ErrorSeverity.MEDIUM;}
 
         return ErrorSeverity.LOW;
     }

@@ -230,7 +230,7 @@ class ErrorTracker {
   }
 
   // Send errors to custom analytics endpoint
-  private async sendToAnalytics(error: any): Promise<void> {
+  private async sendToAnalytics(error: Error | unknown): Promise<void> {
     try {
       // Only send in production
       if (import.meta.env.PROD) {

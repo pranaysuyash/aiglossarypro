@@ -1,4 +1,5 @@
-import type { Response } from 'express';
+import type { Response } from 'express'
+import type { Request, Response } from 'express';
 
 interface CSVColumn {
   key: string;
@@ -9,7 +10,7 @@ interface CSVColumn {
 /**
  * Generate CSV string from data array
  */
-export function generateCSV(data: Record<string, any>[], columns: CSVColumn[]): string {
+export function generateCSV(data: Record<string, unknown>[], columns: CSVColumn[]): string {
   // Generate header row
   const headers = columns.map(col => escapeCSVValue(col.header)).join(',');
 
@@ -101,7 +102,7 @@ export const csvGenerators = {
   /**
    * Generate CSV for user data
    */
-  users: (users: Record<string, any>[]) => {
+  users: (users: Record<string, unknown>[]) => {
     const columns: CSVColumn[] = [
       { key: 'id', header: 'User ID' },
       { key: 'email', header: 'Email' },
@@ -119,7 +120,7 @@ export const csvGenerators = {
   /**
    * Generate CSV for revenue/purchase data
    */
-  purchases: (purchases: Record<string, any>[]) => {
+  purchases: (purchases: Record<string, unknown>[]) => {
     const columns: CSVColumn[] = [
       { key: 'createdAt', header: 'Date', formatter: csvFormatters.dateTime },
       { key: 'gumroadOrderId', header: 'Order ID' },
@@ -138,7 +139,7 @@ export const csvGenerators = {
   /**
    * Generate CSV for terms data
    */
-  terms: (terms: Record<string, any>[]) => {
+  terms: (terms: Record<string, unknown>[]) => {
     const columns: CSVColumn[] = [
       { key: 'id', header: 'Term ID' },
       { key: 'name', header: 'Term Name' },

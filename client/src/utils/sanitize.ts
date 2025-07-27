@@ -1,5 +1,5 @@
-import type { Config } from 'dompurify';
 import DOMPurify from 'dompurify';
+import type { Config } from 'dompurify';
 
 /**
  * Sanitizes HTML content to prevent XSS attacks

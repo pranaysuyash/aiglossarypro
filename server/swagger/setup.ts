@@ -55,11 +55,11 @@ export function setupSwagger(app: Express): void {
       defaultModelsExpandDepth: 2,
       defaultModelExpandDepth: 2,
       tryItOutEnabled: true,
-      requestInterceptor: (req: any) => {
+      requestInterceptor: (req: Request) => {
         // Add any request interceptors here
         return req;
       },
-      responseInterceptor: (res: any) => {
+      responseInterceptor: (res: Response) => {
         // Add any response interceptors here
         return res;
       },

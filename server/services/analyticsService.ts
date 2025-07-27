@@ -191,7 +191,7 @@ export class AnalyticsService {
   }
 
   // Get comprehensive analytics dashboard data
-  async getDashboardData(timeframe: 'day' | 'week' | 'month' | 'year' = 'week'): Promise<any> {
+  async getDashboardData(timeframe: 'day' | 'week' | 'month' | 'year' = 'week'): Promise<unknown> {
     try {
       const timeframeDays = {
         day: 1,
@@ -300,7 +300,7 @@ export class AnalyticsService {
   }
 
   // Get search insights and failed queries
-  async getSearchInsights(): Promise<any> {
+  async getSearchInsights(): Promise<unknown> {
     try {
       // Get queries with no results (potential content gaps)
       const noResultQueries = await db.execute(sql`

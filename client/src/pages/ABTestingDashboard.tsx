@@ -105,7 +105,7 @@ export function ABTestingDashboard() {
         const data = await response.json();
         setActiveTest(data);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to fetch A/B test data:', error);
     } finally {
       setLoading(false);

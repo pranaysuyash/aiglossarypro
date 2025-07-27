@@ -483,7 +483,7 @@ describe('Content Structure Helper Functions', () => {
         },
         {
           name: '',
-          content: undefined as any,
+          content: undefined as unknown,
         },
       ];
 

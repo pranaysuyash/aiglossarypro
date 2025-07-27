@@ -30,7 +30,7 @@ describe('Logging Middleware', () => {
 
     // Create mock response with proper end function
     originalEnd = vi.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
-      if (callback) callback();
+      if (callback) {callback();}
       return mockRes as Response;
     });
 
@@ -59,7 +59,7 @@ describe('Logging Middleware', () => {
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
       // Call the overridden end function
-      (mockRes.end as any).call(mockRes);
+      (mockRes.end as unknown).call(mockRes);
 
       expect(log.security.rateLimitExceeded).not.toHaveBeenCalled();
       expect(originalEnd).toHaveBeenCalledWith(undefined, undefined, undefined);
@@ -72,7 +72,7 @@ describe('Logging Middleware', () => {
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
       // Call the overridden end function
-      (mockRes.end as any).call(mockRes);
+      (mockRes.end as unknown).call(mockRes);
 
       expect(log.security.rateLimitExceeded).toHaveBeenCalledWith(
         'test-user-123',
@@ -89,7 +89,7 @@ describe('Logging Middleware', () => {
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
-      (mockRes.end as any).call(mockRes);
+      (mockRes.end as unknown).call(mockRes);
 
       expect(log.security.rateLimitExceeded).toHaveBeenCalledWith('anonymous', '/api/test', 50);
     });
@@ -103,7 +103,7 @@ describe('Logging Middleware', () => {
       });
 
       it('should handle calls with no parameters', () => {
-        const _result = (mockRes.end as any).call(mockRes);
+        const _result = (mockRes.end as unknown).call(mockRes);
 
         expect(originalEnd).toHaveBeenCalledWith(undefined, undefined, undefined);
         expect(log.security.rateLimitExceeded).toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe('Logging Middleware', () => {
 
       it('should handle calls with chunk parameter only', () => {
         const chunk = 'test response';
-        const _result = (mockRes.end as any).call(mockRes, chunk);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk);
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, undefined, undefined);
         expect(log.security.rateLimitExceeded).toHaveBeenCalled();
@@ -120,7 +120,7 @@ describe('Logging Middleware', () => {
       it('should handle calls with chunk and encoding parameters', () => {
         const chunk = Buffer.from('test response');
         const encoding: BufferEncoding = 'utf8';
-        const _result = (mockRes.end as any).call(mockRes, chunk, encoding);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk, encoding);
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, encoding, undefined);
         expect(log.security.rateLimitExceeded).toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe('Logging Middleware', () => {
         const encoding: BufferEncoding = 'utf8';
         const callback = vi.fn();
 
-        const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk, encoding, callback);
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, encoding, callback);
         expect(log.security.rateLimitExceeded).toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe('Logging Middleware', () => {
         const encoding = undefined;
         const callback = vi.fn();
 
-        const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
+        const _result = (mockRes.end as unknown).call(mockRes, chunk, encoding, callback);
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, undefined, callback);
       });
@@ -158,7 +158,7 @@ describe('Logging Middleware', () => {
         // Re-apply middleware
         rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, vi.fn());
 
-        (mockRes.end as any).call(mockRes);
+        (mockRes.end as unknown).call(mockRes);
 
         expect(capturedThis).toBe(mockRes);
       });
@@ -170,7 +170,7 @@ describe('Logging Middleware', () => {
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
-      (mockRes.end as any).call(mockRes);
+      (mockRes.end as unknown).call(mockRes);
 
       expect(log.security.rateLimitExceeded).toHaveBeenCalledWith(
         'test-user-123',
@@ -185,7 +185,7 @@ describe('Logging Middleware', () => {
 
       rateLimitLoggingMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
-      (mockRes.end as any).call(mockRes);
+      (mockRes.end as unknown).call(mockRes);
 
       expect(log.security.rateLimitExceeded).toHaveBeenCalledWith(
         'test-user-123',

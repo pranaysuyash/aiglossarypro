@@ -1,4 +1,5 @@
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { ApiResponse, ICategory, ITerm, PaginatedResponse } from '../../shared/types';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log } from '../utils/logger';
@@ -24,7 +25,7 @@ export function registerCategoryRoutes(app: Express): void {
       const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Get categories with optimized field selection
-      let categories: any[] = [];
+      let categories: unknown[] = [];
       let totalCount = 0;
 
       try {

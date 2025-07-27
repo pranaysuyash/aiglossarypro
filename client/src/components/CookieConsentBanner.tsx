@@ -73,7 +73,7 @@ export default function CookieConsentBanner({
           // Don't show banner if consent already given
           return;
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Error parsing cookie consent:', error);
       }
     }
@@ -391,7 +391,7 @@ export function useCookieConsent() {
         try {
           const parsed = JSON.parse(savedConsent);
           setConsent(parsed.consent);
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
           console.error('Error parsing cookie consent:', error);
         }
       }
@@ -422,7 +422,7 @@ export function isCookieAllowed(type: keyof CookieConsent): boolean {
 
     const parsed = JSON.parse(savedConsent);
     return parsed.consent?.[type] ?? false;
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error('Error checking cookie consent:', error);
     return false;
   }

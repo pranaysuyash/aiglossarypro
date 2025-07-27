@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { enhancedTerms, sectionItems } from '../../shared/enhancedSchema';
+import { enhancedTerms, sectionItems, sections } from '../../shared/enhancedSchema';
 import { db } from '../db';
 import { log as logger } from '../utils/logger';
 
@@ -858,20 +858,34 @@ Provide an improved version that addresses the feedback while maintaining techni
       };
 
       // Check if we have previous content for this section
-      const existingContent = await db
+      // First find the section for this term
+      const termSection = await db
         .select()
-        .from(sectionItems)
+        .from(sections)
         .where(
           and(
-            eq(sectionItems.label, request.sectionName)
-            // Note: we'll need to join with sections table to get termId
-            // For now, we'll skip this and assume no previous content
+            eq(sections.termId, request.termId),
+            eq(sections.name, request.sectionName)
           )
         )
         .limit(1);
 
-      if (existingContent.length > 0) {
-        variables.previousContent = existingContent[0].content || undefined;
+      if (termSection.length > 0) {
+        // Now check for existing content in section_items
+        const existingContent = await db
+          .select()
+          .from(sectionItems)
+          .where(
+            and(
+              eq(sectionItems.sectionId, termSection[0].id),
+              eq(sectionItems.label, request.sectionName)
+            )
+          )
+          .limit(1);
+
+        if (existingContent.length > 0) {
+          variables.previousContent = existingContent[0].content || undefined;
+        }
       }
 
       // Render the template

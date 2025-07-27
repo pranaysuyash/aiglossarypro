@@ -469,9 +469,9 @@ ${this.getRecommendations()}
     const total = allChecks.length;
     const percentage = Math.round((implemented / total) * 100);
 
-    if (percentage === 100) return '✅ FULLY IMPLEMENTED';
-    if (percentage >= 90) return '🟢 MOSTLY COMPLETE';
-    if (percentage >= 70) return '🟡 PARTIALLY IMPLEMENTED';
+    if (percentage === 100) {return '✅ FULLY IMPLEMENTED';}
+    if (percentage >= 90) {return '🟢 MOSTLY COMPLETE';}
+    if (percentage >= 70) {return '🟡 PARTIALLY IMPLEMENTED';}
     return '🔴 NEEDS WORK';
   }
 

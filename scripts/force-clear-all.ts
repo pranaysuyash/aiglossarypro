@@ -31,14 +31,14 @@ async function forceClearAll() {
         const afterCount = (afterResult.rows[0] as any).count;
 
         console.log(`✅ ${tableName}: ${beforeCount} → ${afterCount} records (TRUNCATED)`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`⚠️ ${tableName}: ${error.message}`);
 
         // Try alternative method
         try {
           await db.execute(sql.raw(`DELETE FROM ${tableName}`));
           console.log(`✅ ${tableName}: Cleared with DELETE`);
-        } catch (error2: any) {
+        } catch (error2: Error | unknown) {
           console.log(`❌ ${tableName}: Could not clear - ${error2.message}`);
         }
       }
@@ -71,7 +71,7 @@ async function forceClearAll() {
         }
 
         console.log(`${tableName}: ${count} records ${status}`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`${tableName}: ERROR - ${error.message}`);
       }
     }

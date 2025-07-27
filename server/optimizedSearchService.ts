@@ -161,7 +161,7 @@ export async function optimizedSearch(
         }
 
         // 10. Transform results
-        const searchResults: OptimizedSearchResult[] = results.map((result: any) => ({
+        const searchResults: OptimizedSearchResult[] = results.map((result: Response) => ({
           id: result.id,
           name: result.name,
           definition: result.definition || undefined,
@@ -256,7 +256,7 @@ export async function getPopularSearchTerms(limit = 10): Promise<OptimizedSearch
         .orderBy(desc(terms.viewCount))
         .limit(limit);
 
-      return results.map((result: any) => ({
+      return results.map((result: Response) => ({
         id: result.id,
         name: result.name,
         shortDefinition: result.shortDefinition || undefined,

@@ -81,7 +81,7 @@ class HierarchicalMigrator {
   private isDryRun: boolean = false;
   private batchSize: number = 100;
   private logFile: string = `migration-log-${Date.now()}.json`;
-  private migrationLog: any[] = [];
+  private migrationLog: unknown[] = [];
 
   constructor(dryRun: boolean = false) {
     if (!process.env.DATABASE_URL) {
@@ -213,7 +213,7 @@ class HierarchicalMigrator {
   /**
    * Process terms in batches to avoid memory issues
    */
-  private async processBatches(terms: any[]): Promise<any[]> {
+  private async processBatches(terms: unknown[]): Promise<any[]> {
     console.log(`⚙️  Processing ${terms.length} terms in batches of ${this.batchSize}...`);
 
     const results = [];
@@ -236,7 +236,7 @@ class HierarchicalMigrator {
   /**
    * Process a single batch of terms
    */
-  private async processBatch(terms: any[]): Promise<any[]> {
+  private async processBatch(terms: unknown[]): Promise<any[]> {
     const results = [];
 
     for (const term of terms) {
@@ -261,7 +261,7 @@ class HierarchicalMigrator {
   /**
    * Migrate a single term from flat to hierarchical structure
    */
-  private async migrateTerm(term: any): Promise<any> {
+  private async migrateTerm(term: any): Promise<unknown> {
     console.log(`🔄 Migrating term: ${term.name}`);
 
     // Get current sections for this term
@@ -490,7 +490,7 @@ class HierarchicalMigrator {
     oldProgress.forEach(progress => {
       const matchingSection = newSections.find(section =>
         section.sectionData.items?.some(
-          (item: any) => item.originalSectionId === progress.sectionId
+          (item: Response) => item.originalSectionId === progress.sectionId
         )
       );
 
@@ -578,7 +578,7 @@ class HierarchicalMigrator {
   /**
    * Verify migration integrity
    */
-  private async verifyMigrationIntegrity(results: any[]): Promise<void> {
+  private async verifyMigrationIntegrity(results: Response[]): Promise<void> {
     console.log('🔍 Verifying migration integrity...');
 
     const totalTerms = results.length;

@@ -90,7 +90,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
 
         // Navigate to app home page after successful logout
         window.location.assign('/app');
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Logout error:', error);
         // Fallback: force navigation to app home page even if logout fails
         window.location.assign('/app');

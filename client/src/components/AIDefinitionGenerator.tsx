@@ -95,7 +95,7 @@ export function AIDefinitionGenerator({
       } else {
         throw new Error(result.error || 'Failed to generate definition');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error generating definition:', error);
       announce(`Failed to generate definition for ${term.trim()}`, 'assertive');
       toast({

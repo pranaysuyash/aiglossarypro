@@ -104,7 +104,7 @@ export function ReferralSystem() {
         const data = await response.json();
         setStats(data);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to fetch referral stats:', error);
       toast({
         title: 'Error',
@@ -140,7 +140,7 @@ export function ReferralSystem() {
       if (response.ok) {
         fetchReferralStats();
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to generate referral code:', error);
     }
   };
@@ -158,7 +158,7 @@ export function ReferralSystem() {
       });
 
       setTimeout(() => setCopied(false), 2000);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       toast({
         title: 'Error',
         description: 'Failed to copy referral link',
@@ -184,7 +184,7 @@ export function ReferralSystem() {
         // Fallback to copying
         await copyReferralLink();
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to share:', error);
     }
   };

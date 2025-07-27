@@ -99,7 +99,7 @@ export function UserInterviewBanner({
       } else {
         throw new Error('Failed to register for interview');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to register for interview:', error);
       toast({
         title: 'Registration Failed',

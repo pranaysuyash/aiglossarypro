@@ -60,7 +60,7 @@ interface RealTimeMetrics {
   hitRate: number;
   avgResponseTime: number;
   activeKeys: number;
-  recentOperations: any[];
+  recentOperations: unknown[];
 }
 
 interface CacheHealth {
@@ -109,7 +109,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/stats');
       const data = await response.json();
       setStats(data);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching cache stats:', error);
     }
   }, []);
@@ -119,7 +119,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/real-time');
       const data = await response.json();
       setRealTimeMetrics(data);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching real-time metrics:', error);
     }
   }, []);
@@ -129,7 +129,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/health');
       const data = await response.json();
       setHealth(data);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching cache health:', error);
     }
   }, []);
@@ -139,7 +139,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/report');
       const data = await response.json();
       setReport(data);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching cache report:', error);
     }
   }, []);
@@ -153,7 +153,7 @@ export function CacheMonitoring() {
       );
       const data = await response.json();
       setHistoricalData(data.metrics || []);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching historical data:', error);
     }
   }, []);

@@ -1,4 +1,5 @@
-import type { Express, Request, RequestHandler } from 'express';
+import type { Express, Request, RequestHandler } from 'express'
+import type { Request, Response } from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -82,7 +83,7 @@ export async function setupMultiAuth(app: Express) {
           callbackURL: oauthConfig.google.callbackURL,
           scope: ['profile', 'email'],
         },
-        async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+        async (accessToken: string, refreshToken: string, profile: Response, done: Response) => {
           try {
             const user: OAuthUser = {
               id: `google:${profile.id}`,
@@ -145,7 +146,7 @@ export async function setupMultiAuth(app: Express) {
           callbackURL: oauthConfig.github.callbackURL,
           scope: ['user:email'],
         },
-        async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+        async (accessToken: string, refreshToken: string, profile: Response, done: Response) => {
           try {
             const user = {
               id: `github:${profile.id}`,
@@ -221,7 +222,7 @@ export async function setupMultiAuth(app: Express) {
           return res.status(500).json({ success: false, message: 'Logout failed' });
         }
 
-        (req as any).session?.destroy?.((err: any) => {
+        (req as any).session?.destroy?.((err: Request) => {
           if (err) {
             log.error('Session destruction error', { error: err.message });
           }
@@ -235,7 +236,7 @@ export async function setupMultiAuth(app: Express) {
 
       // Clear session if it exists
       if ((req as any).session?.destroy) {
-        (req as any).session.destroy((err: any) => {
+        (req as any).session.destroy((err: Request) => {
           if (err) {
             log.error('Session destruction error', { error: err.message });
           }
@@ -360,7 +361,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
     });
   }
 
-  const user = req.user as any;
+  const user = req.user as unknown;
 
   // For OAuth providers (Google/GitHub), check if user still exists in database
   if (user.provider && user.provider !== 'jwt') {
@@ -393,7 +394,7 @@ export function getUserInfo(
 ): { id: string; email: string; name: string; provider: string } | null {
   if (!req.user) {return null;}
 
-  const user = req.user as any;
+  const user = req.user as unknown;
 
   // Handle Google/GitHub OAuth format
   return {

@@ -111,7 +111,7 @@ async function precomputeSearchResults(
   const queries = popularQueries || (await getPopularSearchQueries(50));
 
   let processedQueries = 0;
-  const computedData: Record<string, any> = {};
+  const computedData: Record<string, unknown> = {};
 
   for (const query of queries) {
     try {
@@ -189,7 +189,7 @@ async function precomputeTermRelationships(
   const terms = termIds || (await enhancedStorage.getAllTerms()).map((term: any) => term.id);
 
   let processedTerms = 0;
-  const relationshipData: Record<string, any> = {};
+  const relationshipData: Record<string, unknown> = {};
 
   for (const termId of terms) {
     try {
@@ -250,7 +250,7 @@ async function precomputeUserRecommendations(
   const users = userIds || (await getActiveUsers(100));
 
   let processedUsers = 0;
-  const recommendationData: Record<string, any> = {};
+  const recommendationData: Record<string, unknown> = {};
 
   for (const userId of users) {
     try {
@@ -307,7 +307,7 @@ async function precomputeAnalytics(
     stage: 'initialization',
   });
 
-  const computedAnalytics: Record<string, any> = {};
+  const computedAnalytics: Record<string, unknown> = {};
   let processedMetrics = 0;
   const totalMetrics = timeframes.length * metrics.length;
 
@@ -371,7 +371,7 @@ async function getPopularSearchQueries(_limit: number): Promise<string[]> {
   ];
 }
 
-async function computeTermRelationships(termId: string, maxRelationships: number): Promise<any> {
+async function computeTermRelationships(termId: string, maxRelationships: number): Promise<unknown> {
   // Mock implementation - replace with actual relationship computation
   return {
     termId,
@@ -401,7 +401,7 @@ async function getActiveUsers(limit: number): Promise<string[]> {
 async function computeUserRecommendations(
   userId: string,
   maxRecommendations: number
-): Promise<any> {
+): Promise<unknown> {
   // Mock implementation - replace with actual recommendation engine
   return {
     userId,
@@ -423,7 +423,7 @@ async function computeUserRecommendations(
   };
 }
 
-async function computeAnalyticsMetric(metric: string, timeframe: string): Promise<any> {
+async function computeAnalyticsMetric(metric: string, timeframe: string): Promise<unknown> {
   // Mock implementation - replace with actual analytics computation
   return {
     metric,

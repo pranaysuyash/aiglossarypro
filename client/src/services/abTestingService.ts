@@ -4,7 +4,7 @@ import { ga4Analytics } from '@/lib/ga4Analytics';
 export interface ABTestEvent {
   eventName: string;
   variant: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -49,7 +49,7 @@ class ABTestingService {
   }
 
   // Track page view with variant
-  trackPageView(variant: string, properties: Record<string, any> = {}) {
+  trackPageView(variant: string, properties: Record<string, unknown> = {}) {
     const eventData = {
       test_id: this.testId,
       variant,
@@ -87,7 +87,7 @@ class ABTestingService {
   }
 
   // Track conversion events
-  trackConversion(eventName: string, variant: string, properties: Record<string, any> = {}) {
+  trackConversion(eventName: string, variant: string, properties: Record<string, unknown> = {}) {
     const conversionData = {
       test_id: this.testId,
       variant,
@@ -320,7 +320,7 @@ class ABTestingService {
   }
 
   // Get session data
-  private getSessionData(): any {
+  private getSessionData() {
     const stored = sessionStorage.getItem('ab_test_data');
     return stored ? JSON.parse(stored) : { variants: {} };
   }
@@ -364,9 +364,9 @@ export const abTestingService = new ABTestingService();
 // Export hooks for React components
 export function useABTestTracking(variant: string) {
   return {
-    trackPageView: (properties?: Record<string, any>) =>
+    trackPageView: (properties?: Record<string, unknown>) =>
       abTestingService.trackPageView(variant, properties),
-    trackConversion: (eventName: string, properties?: Record<string, any>) =>
+    trackConversion: (eventName: string, properties?: Record<string, unknown>) =>
       abTestingService.trackConversion(eventName, variant, properties),
     trackEngagement: (type: string, value: number) =>
       abTestingService.trackEngagement(variant, type, value),

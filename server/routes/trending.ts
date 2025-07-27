@@ -4,7 +4,8 @@
  */
 
 import { and, avg, count, desc, eq, gte, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { categories, terms, termViews } from '../../shared/schema';
 import { CacheKeys, redisCache } from '../config/redis';
 import { db } from '../db';

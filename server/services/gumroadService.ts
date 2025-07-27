@@ -21,8 +21,8 @@ interface GumroadSale {
   referrer: string;
   order_number: number;
   sale_timestamp: string;
-  url_params: Record<string, any>;
-  custom_fields: Record<string, any>;
+  url_params: Record<string, unknown>;
+  custom_fields: Record<string, unknown>;
   ip_country: string;
   recurrence: string;
   is_gift_receiver_purchase: boolean;
@@ -30,10 +30,10 @@ interface GumroadSale {
   disputed: boolean;
   dispute_won: boolean;
   test: boolean;
-  affiliates: any[];
-  variants_and_quantity: any[];
+  affiliates: unknown[];
+  variants_and_quantity: unknown[];
   license_key: string;
-  variants: Record<string, any>;
+  variants: Record<string, unknown>;
   full_name: string;
   purchaser_id: string;
 }

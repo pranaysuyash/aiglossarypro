@@ -1,4 +1,5 @@
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { ApiResponse, ITerm } from '../../shared/types';
 import {
   getGuestAnalytics,

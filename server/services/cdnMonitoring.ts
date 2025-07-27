@@ -1,4 +1,5 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import fetch from 'node-fetch';
 
 import logger from '../utils/logger';
@@ -194,7 +195,7 @@ export class CDNMonitoringService {
         }
       );
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as unknown;
 
       if (!data.success) {
         throw new Error(`Cloudflare API error: ${data.errors?.[0]?.message}`);
@@ -462,7 +463,7 @@ export class CDNMonitoringService {
     return this.metrics.slice(-100); // Last 100 metrics
   }
 
-  public getCurrentStatus(): any {
+  public getCurrentStatus() {
     const latestMetrics = this.metrics[this.metrics.length - 1];
 
     if (!latestMetrics) {
@@ -479,7 +480,7 @@ export class CDNMonitoringService {
     };
   }
 
-  public async generateReport(): Promise<any> {
+  public async generateReport(): Promise<unknown> {
     const metrics = this.metrics.slice(-288); // Last 24 hours (5-minute intervals)
 
     if (metrics.length === 0) {

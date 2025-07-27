@@ -296,7 +296,7 @@ export class CheckpointManager {
    */
   getPendingTasks(
     headers: string[],
-    rows: any[][]
+    rows: unknown[][]
   ): Array<{
     rowIdx: number;
     colIdx: number;

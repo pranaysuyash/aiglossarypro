@@ -65,7 +65,7 @@ interface TestResults {
     termSections: number;
     userProgress: number;
   };
-  migrationResults: any[];
+  migrationResults: unknown[];
   validationResults: any;
 }
 
@@ -380,7 +380,7 @@ class HierarchicalMigrationTester {
       `
     );
 
-    progressMapping.rows.forEach((row: any) => {
+    progressMapping.rows.forEach((row: Response) => {
       validation.userProgressMapping[row.term_id] = parseInt(row.progress_count as string);
     });
 

@@ -301,7 +301,7 @@ export const getPromptTripletForColumn = (columnId: string): PromptTriplet | nul
 
 export const generatePromptWithTerm = (columnId: string, termName: string, promptType: 'generative' | 'evaluative' | 'improvement'): string | null => {
   const triplet = getPromptTripletForColumn(columnId);
-  if (!triplet) return null;
+  if (!triplet) {return null;}
   
   return triplet[promptType].replace(/\*\*\[TERM\]\*\*/g, `**${termName}**`);
 };

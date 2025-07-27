@@ -15,8 +15,8 @@ export interface GA4Event {
   item_brand?: string;
   price?: number;
   quantity?: number;
-  user_properties?: Record<string, any>;
-  custom_parameters?: Record<string, any>;
+  user_properties?: Record<string, unknown>;
+  custom_parameters?: Record<string, unknown>;
 }
 
 export interface GA4ConversionEvent extends GA4Event {
@@ -443,7 +443,7 @@ class GA4AnalyticsService {
     transaction_id: string,
     value: number,
     currency = 'USD',
-    items: any[]
+    items: unknown[]
   ): void {
     if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
@@ -516,7 +516,7 @@ class GA4AnalyticsService {
     journeyId: string;
     stage: string;
     action: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }): void {
     if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
@@ -589,7 +589,7 @@ class GA4AnalyticsService {
   }
 
   // Get funnel progress for current session
-  getFunnelProgress(funnelName: string): Record<number, any> {
+  getFunnelProgress(funnelName: string): Record<number, unknown> {
     try {
       const storageKey = `ga4_funnel_${funnelName}`;
       return JSON.parse(sessionStorage.getItem(storageKey) || '{}');

@@ -64,7 +64,7 @@ export function AISemanticSearch({
         } else {
           throw new Error(result.error || 'Search failed');
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Semantic search error:', error);
         toast({
           title: 'Search Error',

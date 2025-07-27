@@ -520,7 +520,7 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
     }
   }
 
-  private calculateNextVersion(existingVersions: any[], action: string): string {
+  private calculateNextVersion(existingVersions: unknown[], action: string): string {
     if (existingVersions.length === 0) {
       return '1.0';
     }

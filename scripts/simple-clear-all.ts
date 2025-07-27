@@ -24,7 +24,7 @@ async function simpleClearAll() {
       const count2 = (afterCount.rows[0] as any).count;
 
       console.log(`✅ enhanced_terms: ${count1} → ${count2} records`);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.log(`⚠️ enhanced_terms: ${error.message}`);
     }
 
@@ -39,7 +39,7 @@ async function simpleClearAll() {
       const count2 = (afterCount.rows[0] as any).count;
 
       console.log(`✅ categories: ${count1} → ${count2} records`);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.log(`⚠️ categories: ${error.message}`);
     }
 
@@ -66,7 +66,7 @@ async function simpleClearAll() {
         }
 
         console.log(`${tableName}: ${count} records ${status}`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`${tableName}: ERROR - ${error.message}`);
       }
     }

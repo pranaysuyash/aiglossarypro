@@ -1,5 +1,5 @@
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -64,7 +64,7 @@ export function ContactForm({ className }: ContactFormProps) {
       } else {
         throw new Error(result.message);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       toast({
         title: 'Error sending message',
         description: error instanceof Error ? error?.message : 'Please try again later.',

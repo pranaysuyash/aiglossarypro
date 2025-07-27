@@ -383,7 +383,7 @@ export class AuthStatePersistence {
     private async retrieveTokenData(): Promise<TokenStorage | null> {
         try {
             const stored = sessionStorage.getItem(this.config.storageKey);
-            if (!stored) return null;
+            if (!stored) {return null;}
 
             if (this.config.useSecureStorage) {
                 return this.decryptTokenData(stored);

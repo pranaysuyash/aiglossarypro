@@ -150,7 +150,7 @@ test.describe('Performance and Load Testing', () => {
               }
 
               if (entry.entryType === 'layout-shift') {
-                const layoutEntry = entry as any; // LayoutShift interface not available in standard types
+                const layoutEntry = entry as unknown; // LayoutShift interface not available in standard types
                 metrics.cls = (metrics.cls || 0) + layoutEntry.value;
               }
             });

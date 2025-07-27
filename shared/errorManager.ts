@@ -78,7 +78,7 @@ export class ErrorManager {
      * Initialize the error manager with default configurations
      */
     public initialize(): void {
-        if (this.isInitialized) return;
+        if (this.isInitialized) {return;}
 
         // Set up global error handlers
         if (typeof window !== 'undefined') {
@@ -207,7 +207,7 @@ export class ErrorManager {
         });
     }
 
-    private isEnhancedError(error: any): error is EnhancedError {
+    private isEnhancedError(error: Error | unknown): error is EnhancedError {
         return error && typeof error === 'object' && 'type' in error && 'severity' in error;
     }
 

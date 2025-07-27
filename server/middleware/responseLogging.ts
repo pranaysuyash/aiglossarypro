@@ -8,7 +8,7 @@ import { log as logger } from '../utils/logger';
 export function responseLoggingMiddleware(req: Request, res: Response, next: NextFunction): void {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined;
+  let capturedJsonResponse: Record<string, unknown> | undefined;
 
   // Override res.json to capture response data
   const originalResJson = res.json;

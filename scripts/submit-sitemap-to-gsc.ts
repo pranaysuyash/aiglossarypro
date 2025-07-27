@@ -94,7 +94,7 @@ class GoogleSearchConsoleSubmitter {
         console.warn(`⚠️ Unexpected response status ${response.status} for ${sitemapUrl}`);
         return false;
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       if (error.code === 400 && error.message?.includes('already exists')) {
         console.log(`ℹ️ Sitemap ${sitemapUrl} already exists in GSC`);
         return true;
@@ -108,7 +108,7 @@ class GoogleSearchConsoleSubmitter {
   /**
    * Get sitemap status from Google Search Console
    */
-  async getSitemapStatus(sitemapUrl: string): Promise<any> {
+  async getSitemapStatus(sitemapUrl: string): Promise<unknown> {
     try {
       const response = await this.searchconsole.sitemaps.get({
         siteUrl: this.config.siteUrl,
@@ -116,7 +116,7 @@ class GoogleSearchConsoleSubmitter {
       });
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       if (error.code === 404) {
         return null; // Sitemap not found
       }

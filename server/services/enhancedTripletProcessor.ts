@@ -426,7 +426,7 @@ export class EnhancedTripletProcessor {
    */
   private async processColumnWithQualityPipeline(
     column: ColumnDefinitionWithTriplets,
-    terms: any[],
+    terms: unknown[],
     options: ProcessingOptions
   ): Promise<void> {
     try {
@@ -481,7 +481,7 @@ export class EnhancedTripletProcessor {
    */
   private async generatePhase(
     column: ColumnDefinitionWithTriplets,
-    terms: any[],
+    terms: unknown[],
     options: ProcessingOptions
   ): Promise<void> {
     logger.info(`Starting generation phase for ${terms.length} terms`);
@@ -540,7 +540,7 @@ export class EnhancedTripletProcessor {
    */
   private async evaluatePhase(
     column: ColumnDefinitionWithTriplets,
-    terms: any[],
+    terms: unknown[],
     options: ProcessingOptions
   ): Promise<void> {
     logger.info(`Starting evaluation phase for generated content`);
@@ -618,7 +618,7 @@ export class EnhancedTripletProcessor {
    */
   private async improvePhase(
     column: ColumnDefinitionWithTriplets,
-    terms: any[],
+    terms: unknown[],
     options: ProcessingOptions
   ): Promise<void> {
     logger.info(`Starting improvement phase for low-quality content`);
@@ -890,7 +890,7 @@ export class EnhancedTripletProcessor {
   /**
    * Filter terms that don't have content for the specified column
    */
-  private async filterTermsWithoutColumn(terms: any[], _columnId: string): Promise<any[]> {
+  private async filterTermsWithoutColumn(terms: unknown[], _columnId: string): Promise<any[]> {
     // This would check the database for existing content
     // For now, return all terms
     return terms;

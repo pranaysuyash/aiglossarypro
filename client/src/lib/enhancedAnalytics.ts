@@ -7,7 +7,7 @@ export interface ConversionEvent {
   conversion_type: 'signup' | 'upgrade' | 'engagement' | 'feature_usage';
   value?: number;
   currency?: string;
-  user_properties?: Record<string, any>;
+  user_properties?: Record<string, unknown>;
   experiment_context?: {
     active_experiments: Record<string, string>;
     variant_exposures: string[];
@@ -19,7 +19,7 @@ export interface UserJourneyStep {
   step_type: 'page_view' | 'interaction' | 'conversion' | 'drop_off';
   timestamp: Date;
   page_path: string;
-  user_properties: Record<string, any>;
+  user_properties: Record<string, unknown>;
   experiment_context?: Record<string, string>;
 }
 
@@ -134,7 +134,7 @@ class EnhancedAnalyticsService {
   }
 
   // Track feature usage with A/B testing context
-  trackFeatureUsageWithExperiments(feature_name: string, usage_data: Record<string, any> = {}) {
+  trackFeatureUsageWithExperiments(feature_name: string, usage_data: Record<string, unknown> = {}) {
     const activeExperiments = posthogExperiments.getActiveExperiments();
 
     posthog.capture('feature_usage_enhanced', {
@@ -193,7 +193,7 @@ class EnhancedAnalyticsService {
   }
 
   // Advanced cohort analysis for experiments
-  trackCohortMetrics(cohort_type: string, cohort_properties: Record<string, any>) {
+  trackCohortMetrics(cohort_type: string, cohort_properties: Record<string, unknown>) {
     const activeExperiments = posthogExperiments.getActiveExperiments();
 
     posthog.capture('cohort_metrics', {
@@ -318,10 +318,10 @@ export function useEnhancedAnalytics() {
       enhancedAnalytics.trackConversionWithExperiments(event),
     trackJourneyStep: (step: Omit<UserJourneyStep, 'timestamp' | 'experiment_context'>) =>
       enhancedAnalytics.trackJourneyStep(step),
-    trackFeatureUsage: (feature: string, data?: Record<string, any>) =>
+    trackFeatureUsage: (feature: string, data?: Record<string, unknown>) =>
       enhancedAnalytics.trackFeatureUsageWithExperiments(feature, data),
     getJourneySummary: () => enhancedAnalytics.getJourneySummary(),
-    trackCohort: (type: string, properties: Record<string, any>) =>
+    trackCohort: (type: string, properties: Record<string, unknown>) =>
       enhancedAnalytics.trackCohortMetrics(type, properties),
   };
 }

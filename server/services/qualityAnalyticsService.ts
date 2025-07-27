@@ -501,7 +501,7 @@ export class QualityAnalyticsService {
     return [];
   }
 
-  private async calculateSummaryMetrics(_evaluations: any[]): Promise<any> {
+  private async calculateSummaryMetrics(_evaluations: unknown[]): Promise<unknown> {
     // Calculate summary metrics from evaluations
     return {
       totalTermsEvaluated: 150,
@@ -561,7 +561,7 @@ export class QualityAnalyticsService {
     ];
   }
 
-  private async calculateTrends(_startDate: Date, _endDate: Date): Promise<any> {
+  private async calculateTrends(_startDate: Date, _endDate: Date): Promise<unknown> {
     // Calculate daily and weekly trends
     return {
       daily: [],
@@ -589,7 +589,7 @@ export class QualityAnalyticsService {
     ];
   }
 
-  private async identifyCommonIssues(_evaluations: any[]): Promise<any[]> {
+  private async identifyCommonIssues(_evaluations: unknown[]): Promise<any[]> {
     // Analyze evaluations to find common issues
     return [
       {
@@ -609,9 +609,9 @@ export class QualityAnalyticsService {
 
   private generateRecommendations(
     _summary: any,
-    _commonIssues: any[],
-    _modelPerformance: any[]
-  ): any {
+    _commonIssues: unknown[],
+    _modelPerformance: unknown[]
+  ) {
     return {
       immediate: [
         'Address critical quality issues in 15 terms scoring below 4.0',
@@ -638,7 +638,7 @@ export class QualityAnalyticsService {
     return [];
   }
 
-  private calculateTrend(_historicalData: any[]): any {
+  private calculateTrend(_historicalData: unknown[]) {
     // Calculate trend from historical data
     return {
       direction: 'improving' as const,
@@ -647,7 +647,7 @@ export class QualityAnalyticsService {
     };
   }
 
-  private makePredictions(_historicalData: any[], _trend: any): any {
+  private makePredictions(_historicalData: unknown[], _trend: any) {
     // Make predictions based on historical data and trend
     return {
       nextEvaluation: 7.8,
@@ -670,18 +670,18 @@ export class QualityAnalyticsService {
     }
   }
 
-  private async getExportData(_options?: any): Promise<any[]> {
+  private async getExportData(_options?: Record<string, unknown>): Promise<any[]> {
     // Get data for export based on options
     return [];
   }
 
-  private convertToCSV(_data: any[]): Buffer {
+  private convertToCSV(_data: unknown[]): Buffer {
     // Convert data to CSV format
     const csv = 'termId,termName,overallScore,accuracy,clarity,completeness\n';
     return Buffer.from(csv);
   }
 
-  private convertToExcel(_data: any[]): Buffer {
+  private convertToExcel(_data: unknown[]): Buffer {
     // Convert data to Excel format
     // Would use a library like exceljs
     return Buffer.from('Excel data');

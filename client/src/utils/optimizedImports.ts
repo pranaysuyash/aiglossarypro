@@ -42,9 +42,9 @@ export const Icons = {
 // Dynamic icon loader with caching
 class IconLoader {
     private cache = new Map<string, any>();
-    private loading = new Map<string, Promise<any>>();
+    private loading = new Map<string, Promise<unknown>>();
 
-    async load(iconName: keyof typeof Icons): Promise<any> {
+    async load(iconName: keyof typeof Icons): Promise<unknown> {
         // Return cached icon if available
         if (this.cache.has(iconName)) {
             return this.cache.get(iconName);

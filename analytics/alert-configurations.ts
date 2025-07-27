@@ -27,7 +27,7 @@ export interface AlertCondition {
 
 export interface AlertChannel {
   type: 'email' | 'slack' | 'webhook' | 'pagerduty' | 'dashboard';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   filter?: AlertFilter;
 }
 

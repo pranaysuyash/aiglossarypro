@@ -23,7 +23,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
 
   describe('Country Detection', () => {
     test('should detect US pricing as default', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -76,7 +76,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
       ];
 
       for (const testCase of testCases) {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as unknown).mockResolvedValueOnce({
           ok: true,
           json: () =>
             Promise.resolve({
@@ -114,7 +114,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
       ];
 
       for (const country of europeanCountries) {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as unknown).mockResolvedValueOnce({
           ok: true,
           json: () =>
             Promise.resolve({
@@ -141,7 +141,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
   describe('Dynamic Pricing Display', () => {
     test('should display country-specific pricing on landing page', async () => {
       // Mock pricing API response for India
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -249,7 +249,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
 
   describe('VPN and Proxy Detection', () => {
     test('should handle VPN detection gracefully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -275,7 +275,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
     });
 
     test('should handle country detection failures', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 500,
       });
@@ -317,7 +317,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
           },
         };
 
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as unknown).mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(mockResponse),
         });
@@ -468,7 +468,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
 
   describe('Edge Cases and Error Handling', () => {
     test('should handle unsupported countries gracefully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
@@ -507,7 +507,7 @@ describe('Country-Based Pricing (PPP) Testing', () => {
     });
 
     test('should handle rate limiting on pricing API', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown).mockResolvedValueOnce({
         ok: false,
         status: 429,
         json: () =>

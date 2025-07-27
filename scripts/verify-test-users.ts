@@ -59,7 +59,7 @@ async function verifyTestUsers() {
       console.log(`   Email Verified: ${firebaseUser.emailVerified ? 'Yes' : 'No'}`);
       console.log(`   Created: ${new Date(firebaseUser.metadata.creationTime).toLocaleString()}`);
       console.log(`   Last Sign In: ${firebaseUser.metadata.lastSignInTime ? new Date(firebaseUser.metadata.lastSignInTime).toLocaleString() : 'Never'}`);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       if (error.code === 'auth/user-not-found') {
         console.log(chalk.red('❌ Firebase: NOT FOUND'));
       } else {

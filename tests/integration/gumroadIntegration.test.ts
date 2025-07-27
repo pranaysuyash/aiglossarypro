@@ -61,7 +61,7 @@ describe('Gumroad Payment Integration', () => {
         app.use(express.raw({ type: 'application/json' }));
 
         // Register Gumroad routes
-        registerGumroadRoutes(app as any);
+        registerGumroadRoutes(app as unknown);
 
         // Mock console methods to reduce noise
         vi.spyOn(console, 'log').mockImplementation(() => { });
@@ -508,7 +508,7 @@ describe('Gumroad Payment Integration', () => {
 
             try {
                 // Trigger an error condition
-                await GumroadService.processSaleWebhook({} as any);
+                await GumroadService.processSaleWebhook({} as unknown);
             } catch (error) {
                 // Should log errors
                 expect(error).toBeInstanceOf(Error);

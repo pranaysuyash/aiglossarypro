@@ -193,7 +193,7 @@ export const startTransaction = (name: string, operation: string) => {
 // Performance monitoring for API endpoints
 export const monitorAPIPerformance = (
   name: string,
-  operation: () => Promise<any>,
+  operation: () => Promise<unknown>,
   context?: {
     userId?: string;
     endpoint?: string;
@@ -241,7 +241,7 @@ export const monitorAPIPerformance = (
 // Database query performance monitoring
 export const monitorDatabaseQuery = async (
   queryName: string,
-  query: () => Promise<any>,
+  query: () => Promise<unknown>,
   context?: {
     table?: string;
     operation?: string;

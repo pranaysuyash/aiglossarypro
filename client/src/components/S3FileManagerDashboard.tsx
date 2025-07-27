@@ -15,8 +15,8 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -117,7 +117,7 @@ export default function S3FileManagerDashboard() {
   // Load files on component mount
   useEffect(() => {
     loadFiles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // Filter files based on search and filters
@@ -230,7 +230,7 @@ export default function S3FileManagerDashboard() {
 
           if (result.errors?.length > 0) {
             setError(
-              `Upload completed with errors: ${result.errors.map((e: any) => e.error).join(', ')}`
+              `Upload completed with errors: ${result.errors.map((e: Response) => e.error).join(', ')}`
             );
           }
         } else {

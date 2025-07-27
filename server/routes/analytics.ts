@@ -1,5 +1,6 @@
 import { desc, eq, gte, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { terms, termViews } from '../../shared/schema';
 import { ERROR_MESSAGES } from '../constants';
 import { db } from '../db';
@@ -81,7 +82,7 @@ export function registerAnalyticsRoutes(app: Express): void {
     '/api/analytics/user',
     authMiddleware,
     validateQuery(UserAnalyticsQuerySchema),
-    async (req: any, res: Response) => {
+    async (req: Request, res: Response) => {
       try {
         const userId = req.user.claims.sub;
         const { timeframe } = req.query as unknown as UserAnalyticsQuery;
@@ -287,7 +288,7 @@ export function registerAnalyticsRoutes(app: Express): void {
     tokenMiddleware,
     requireAdmin,
     validateQuery(ExportAnalyticsQuerySchema),
-    async (req: any, res: Response) => {
+    async (req: Request, res: Response) => {
       try {
         const _userId = req.user.claims.sub;
 

@@ -123,7 +123,7 @@ export class Enhanced295AIContentService {
         request.maxTokens || column.estimatedTokens
       );
 
-      let result: GenerationResult = {
+      const result: GenerationResult = {
         success: true,
         termId: request.termId,
         columnId: request.columnId,
@@ -375,8 +375,8 @@ export class Enhanced295AIContentService {
   
   private getPromptsForColumn(columnId: string, termName: string) {
     // Try base prompts first
-    let prompts = generatePromptsForTerm(columnId, termName);
-    if (prompts) return prompts;
+    const prompts = generatePromptsForTerm(columnId, termName);
+    if (prompts) {return prompts;}
     
     // Try extended prompts
     const triplet = getPromptTripletForColumn(columnId);
@@ -473,10 +473,10 @@ export class Enhanced295AIContentService {
   }
 
   private async saveGeneratedContent(result: GenerationResult) {
-    if (!result.success || !result.finalContent) return;
+    if (!result.success || !result.finalContent) {return;}
 
     const column = getColumnById(result.columnId);
-    if (!column) return;
+    if (!column) {return;}
 
     // Check if section exists
     let section = await db.query.sections.findFirst({

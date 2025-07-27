@@ -72,7 +72,7 @@ export function useErrorHandler() {
 
   const handleAsyncError = useCallback(
     async (
-      asyncOperation: () => Promise<any>,
+      asyncOperation: () => Promise<unknown>,
       context: string,
       options: ErrorHandlerOptions = {}
     ) => {
@@ -86,7 +86,7 @@ export function useErrorHandler() {
   );
 
   const withRetry = useCallback(
-    async (operation: () => Promise<any>, maxRetries = 3, context = 'Operation') => {
+    async (operation: () => Promise<unknown>, maxRetries = 3, context = 'Operation') => {
       let lastError: Error;
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -120,7 +120,7 @@ export function useErrorHandler() {
 }
 
 // Utility function for handling API errors specifically
-export function getApiErrorMessage(error: any): string {
+export function getApiErrorMessage(error: Error | unknown): string {
   if (error?.response?.data?.message) {
     return error.response.data.message;
   }

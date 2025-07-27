@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { StrictMode } from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // Demo component to showcase the main entry point
@@ -14,9 +14,7 @@ const MainDemo = () => {
       <div className="bg-gray-100 p-4 rounded mb-4">
         <h4 className="font-semibold mb-2">Application Bootstrap:</h4>
         <pre className="text-sm bg-white p-3 rounded overflow-x-auto">
-          {`import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
+{`import App from './App.tsx'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(

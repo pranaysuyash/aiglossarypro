@@ -16,8 +16,8 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -58,9 +58,9 @@ interface PersonalizedHomepageData {
   userProfile: UserProfile;
   recommendations: PersonalizedRecommendation[];
   personalizedSections: {
-    recentActivity: any[];
+    recentActivity: unknown[];
     recommendedForYou: PersonalizedRecommendation[];
-    continuelearning: any[];
+    continuelearning: unknown[];
     exploreNew: PersonalizedRecommendation[];
     trending: PersonalizedRecommendation[];
   };

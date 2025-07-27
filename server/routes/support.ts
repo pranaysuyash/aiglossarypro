@@ -4,9 +4,12 @@ import { supportService } from '../services/supportService';
 import { log } from '../utils/logger';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validateAuth } from '../middleware/auth';
-import { validateAdminAuth } from '../middleware/adminAuth';
+// Note: validateAdminAuth is not used in this file
 import { z } from 'zod';
-import { uploadFileToS3 } from '../s3Service';
+import { uploadFileToS3, getS3BucketName } from '../s3Service';
+import * as fs from 'fs';
+import * as path from 'path';
+import type { AuthenticatedRequest } from '../types/express';
 
 // Configure multer for file uploads
 const upload = multer({
@@ -65,8 +68,8 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/tickets',
     validateAuth,
     upload.array('attachments', 5),
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const validation = createTicketSchema.safeParse(req.body);
 
       if (!validation.success) {
@@ -83,14 +86,27 @@ export function setupSupportRoutes(app: Express) {
         for (const file of req.files) {
           try {
             const fileKey = `support/${user.id}/${Date.now()}-${file.originalname}`;
-            const uploadResult = await uploadFileToS3(file.buffer, fileKey, file.mimetype);
+            const tempPath = path.join('/tmp', `${Date.now()}-${file.originalname}`);
             
-            attachments.push({
-              fileName: file.originalname,
-              fileType: file.mimetype,
-              fileSize: file.size,
-              fileUrl: uploadResult.url,
-            });
+            // Save file temporarily
+            fs.writeFileSync(tempPath, file.buffer);
+            
+            try {
+              // Upload to S3
+              await uploadFileToS3(getS3BucketName(), fileKey, tempPath);
+              
+              attachments.push({
+                fileName: file.originalname,
+                fileType: file.mimetype,
+                fileSize: file.size,
+                fileUrl: `https://${getS3BucketName()}.s3.amazonaws.com/${fileKey}`,
+              });
+            } finally {
+              // Clean up temp file
+              if (fs.existsSync(tempPath)) {
+                fs.unlinkSync(tempPath);
+              }
+            }
           } catch (error) {
             log.error('Error uploading attachment', { error });
           }
@@ -99,9 +115,12 @@ export function setupSupportRoutes(app: Express) {
 
       const ticket = await supportService.createTicket({
         userId: user.id,
-        userEmail: user.email,
-        userName: user.name || user.firstName,
-        ...validation.data,
+        userEmail: user.email || '',
+        userName: user.firstName || '',
+        subject: validation.data.subject,
+        description: validation.data.description,
+        category: validation.data.category,
+        priority: validation.data.priority,
         attachments,
       });
 
@@ -116,8 +135,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/support/tickets',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const { status, limit = 20, offset = 0 } = req.query;
 
       const tickets = await supportService.getUserTickets(user.id, {
@@ -137,8 +156,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/admin/support/tickets',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -170,8 +189,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/support/tickets/:ticketId',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const { ticketId } = req.params;
 
       const ticket = await supportService.getTicket(
@@ -197,8 +216,8 @@ export function setupSupportRoutes(app: Express) {
   app.patch(
     '/api/admin/support/tickets/:ticketId',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -237,8 +256,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/support/tickets/:ticketId/messages',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const { ticketId } = req.params;
 
       // Verify user has access to ticket
@@ -271,8 +290,8 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/tickets/:ticketId/messages',
     validateAuth,
     upload.array('attachments', 3),
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const { ticketId } = req.params;
       const validation = addMessageSchema.safeParse(req.body);
 
@@ -303,8 +322,21 @@ export function setupSupportRoutes(app: Express) {
         for (const file of req.files) {
           try {
             const fileKey = `support/${ticketId}/${Date.now()}-${file.originalname}`;
-            const uploadResult = await uploadFileToS3(file.buffer, fileKey, file.mimetype);
-            attachments.push(uploadResult.url);
+            const tempPath = path.join('/tmp', `${Date.now()}-${file.originalname}`);
+            
+            // Save file temporarily
+            fs.writeFileSync(tempPath, file.buffer);
+            
+            try {
+              // Upload to S3
+              await uploadFileToS3(getS3BucketName(), fileKey, tempPath);
+              attachments.push(`https://${getS3BucketName()}.s3.amazonaws.com/${fileKey}`);
+            } finally {
+              // Clean up temp file
+              if (fs.existsSync(tempPath)) {
+                fs.unlinkSync(tempPath);
+              }
+            }
           } catch (error) {
             log.error('Error uploading message attachment', { error });
           }
@@ -331,8 +363,8 @@ export function setupSupportRoutes(app: Express) {
   app.post(
     '/api/support/tickets/:ticketId/satisfaction',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const { ticketId } = req.params;
       const validation = satisfactionRatingSchema.safeParse(req.body);
 
@@ -371,8 +403,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/support/stats',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       const { dateFrom } = req.query;
 
       const stats = await supportService.getTicketStats({
@@ -391,8 +423,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/admin/support/stats',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -417,8 +449,8 @@ export function setupSupportRoutes(app: Express) {
   app.put(
     '/api/admin/support/tickets/:ticketId/status',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -450,8 +482,8 @@ export function setupSupportRoutes(app: Express) {
   app.put(
     '/api/admin/support/tickets/:ticketId/assign',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -483,8 +515,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/admin/support/tickets/:ticketId/messages',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -518,8 +550,8 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/tickets/:ticketId/messages',
     validateAuth,
     upload.array('attachments', 3),
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -554,8 +586,21 @@ export function setupSupportRoutes(app: Express) {
         for (const file of req.files) {
           try {
             const fileKey = `support/${ticketId}/${Date.now()}-${file.originalname}`;
-            const uploadResult = await uploadFileToS3(file.buffer, fileKey, file.mimetype);
-            attachments.push(uploadResult.url);
+            const tempPath = path.join('/tmp', `${Date.now()}-${file.originalname}`);
+            
+            // Save file temporarily
+            fs.writeFileSync(tempPath, file.buffer);
+            
+            try {
+              // Upload to S3
+              await uploadFileToS3(getS3BucketName(), fileKey, tempPath);
+              attachments.push(`https://${getS3BucketName()}.s3.amazonaws.com/${fileKey}`);
+            } finally {
+              // Clean up temp file
+              if (fs.existsSync(tempPath)) {
+                fs.unlinkSync(tempPath);
+              }
+            }
           } catch (error) {
             log.error('Error uploading message attachment', { error });
           }
@@ -582,8 +627,8 @@ export function setupSupportRoutes(app: Express) {
   app.get(
     '/api/admin/support/canned-responses',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({
@@ -606,8 +651,8 @@ export function setupSupportRoutes(app: Express) {
   app.post(
     '/api/admin/support/canned-responses',
     validateAuth,
-    asyncHandler(async (req, res) => {
-      const user = req.user as any;
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const user = req.user;
       
       if (!user.isAdmin) {
         return res.status(403).json({

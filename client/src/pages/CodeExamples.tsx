@@ -8,8 +8,8 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Link } from 'wouter';
@@ -56,7 +56,7 @@ const CodeExamples: React.FC = () => {
 
   useEffect(() => {
     fetchCodeExamples();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const fetchCodeExamples = async () => {

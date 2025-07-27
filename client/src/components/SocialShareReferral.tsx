@@ -82,7 +82,7 @@ export function SocialShareReferral({
         description: 'Your referral link has been copied to clipboard.',
         duration: 3000,
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = url;
@@ -150,7 +150,7 @@ export function SocialShareReferral({
           description: "Thanks for sharing! You'll earn commission for any purchases.",
           duration: 4000,
         });
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log('Native share cancelled or failed');
       }
     }

@@ -8,8 +8,8 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { Link, useParams } from 'wouter';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -72,7 +72,7 @@ const LearningPathDetail: React.FC = () => {
     if (id) {
       fetchLearningPath();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [id]);
 
   useEffect(() => {

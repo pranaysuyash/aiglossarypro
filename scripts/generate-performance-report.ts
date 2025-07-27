@@ -381,7 +381,7 @@ ${this.generateInsights(summary, componentStats)}
       : '<div class="alert info">ℹ️ No performance issues detected.</div>';
   }
 
-  private generateInsights(summary: any, componentStats: any[]): string {
+  private generateInsights(summary: any, componentStats: unknown[]): string {
     const insights = [];
 
     const slowestComponent = componentStats[0];

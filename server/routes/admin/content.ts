@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
-import { type Express, type Request, type Response, Router } from 'express';
+import { type Express, type Request, type Response, Router } from 'express'
+import type { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { categories, terms } from '../../../shared/schema';
 import type { ApiResponse } from '../../../shared/types';

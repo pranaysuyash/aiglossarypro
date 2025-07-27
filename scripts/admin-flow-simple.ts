@@ -145,7 +145,7 @@ async function simpleAdminFlow() {
       console.log(chalk.bold.green('\n✅ Admin Flow Test Complete!'));
       console.log(chalk.cyan(`📸 Screenshots saved to: ${screenshotsDir}`));
       
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error(chalk.red('\n❌ Test error:'), error.message);
       await page.screenshot({ path: path.join(screenshotsDir, 'error-state.png') });
     }

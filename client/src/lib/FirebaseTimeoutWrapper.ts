@@ -117,7 +117,7 @@ export async function withTimeout<T>(
             const result = await operation();
             clearTimeout(timer);
             resolve(result);
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
             clearTimeout(timer);
             
             // Handle retry logic
@@ -234,7 +234,7 @@ export async function raceWithTimeout<T>(
  * Timeout queue for managing multiple concurrent operations
  */
 export class TimeoutQueue {
-    private queue: Map<string, Promise<any>> = new Map();
+    private queue: Map<string, Promise<unknown>> = new Map();
     private maxConcurrent: number;
     private currentCount: number = 0;
 

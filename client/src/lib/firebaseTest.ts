@@ -26,7 +26,7 @@ export async function testFirebaseConnection() {
   try {
     console.log('🔥 Testing sign in with invalid credentials...');
     await signInWithEmail('test@invalid.com', 'wrongpassword');
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.log('🔥 Expected error from invalid login:', {
       code: error.code,
       message: error.message,

@@ -282,7 +282,7 @@ export class MonitoringService extends EventEmitter {
 
     private checkAlerts(metrics: SystemMetrics): void {
         for (const config of this.alertConfigs) {
-            if (!config.enabled) continue;
+            if (!config.enabled) {continue;}
 
             // Check cooldown
             const lastAlert = this.lastAlertTimes.get(config.name);

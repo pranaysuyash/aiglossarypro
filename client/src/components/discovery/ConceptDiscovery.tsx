@@ -25,8 +25,8 @@ interface ConceptDiscoveryProps {
 }
 
 interface GraphData {
-  nodes: any[];
-  links: any[];
+  nodes: unknown[];
+  links: unknown[];
   categories: string[];
   subcategories: string[];
 }
@@ -100,7 +100,7 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
             filteredRelationships: data.data.relationships?.length || 0,
           });
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Error fetching relationships:', error);
         toast({
           title: 'Error',

@@ -103,7 +103,7 @@ export function InlineContentEditor({
       setVersions([newVersion, ...versions.slice(0, 9)]); // Keep last 10 versions
 
       toast({ title: 'Success', description: 'Content saved successfully' });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error saving content:', error);
       toast({ title: 'Error', description: 'Failed to save content', variant: 'destructive' });
     } finally {

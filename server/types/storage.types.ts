@@ -169,9 +169,20 @@ export interface SearchResult {
 }
 
 export interface SearchFilters extends BaseSearchFilters {
+  query?: string;
+  categories?: string[];
+  subcategories?: string[];
+  difficulty?: string;
   verificationStatus?: string[];
   hasContent?: boolean;
+  hasCodeExamples?: boolean;
+  hasInteractiveElements?: boolean;
+  hasCaseStudies?: boolean;
+  applicationDomains?: string[];
+  techniques?: string[];
   dateRange?: DateRange;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface DateRange {

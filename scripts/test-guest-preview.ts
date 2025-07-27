@@ -31,7 +31,7 @@ class GuestPreviewTester {
     this.sessionId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
+  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<unknown> {
     const url = `${this.baseUrl}${endpoint}`;
     const response = await fetch(url, {
       ...options,

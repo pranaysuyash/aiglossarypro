@@ -114,7 +114,7 @@ class GeminiCoverageValidator {
       const componentName = path.basename(compFile, '.tsx');
       const category = this.getComponentCategory(compFile);
 
-      if (!byCategory[category]) byCategory[category] = { total: 0, covered: 0 };
+      if (!byCategory[category]) {byCategory[category] = { total: 0, covered: 0 };}
       byCategory[category].total++;
 
       const storyExists = fs.existsSync(compFile.replace(/\.tsx$/, '.stories.tsx'));
@@ -140,14 +140,14 @@ class GeminiCoverageValidator {
   }
 
   getComponentCategory(filePath) {
-    if (filePath.includes('/pages/')) return 'Pages';
-    if (filePath.includes('/ui/')) return 'UI Components';
-    if (filePath.includes('/admin/')) return 'Admin';
-    if (filePath.includes('/landing/')) return 'Landing';
-    if (filePath.includes('/analytics/')) return 'Analytics';
-    if (filePath.includes('/ar/') || filePath.includes('/vr/')) return 'AR/VR';
-    if (filePath.includes('/mobile/')) return 'Mobile';
-    if (filePath.includes('/components/')) return 'Components';
+    if (filePath.includes('/pages/')) {return 'Pages';}
+    if (filePath.includes('/ui/')) {return 'UI Components';}
+    if (filePath.includes('/admin/')) {return 'Admin';}
+    if (filePath.includes('/landing/')) {return 'Landing';}
+    if (filePath.includes('/analytics/')) {return 'Analytics';}
+    if (filePath.includes('/ar/') || filePath.includes('/vr/')) {return 'AR/VR';}
+    if (filePath.includes('/mobile/')) {return 'Mobile';}
+    if (filePath.includes('/components/')) {return 'Components';}
     return 'Other';
   }
 

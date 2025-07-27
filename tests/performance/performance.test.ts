@@ -14,7 +14,7 @@ const mockPerformance = {
   getEntriesByName: vi.fn(() => []),
 };
 
-global.performance = mockPerformance as any;
+global.performance = mockPerformance as unknown;
 
 describe('Performance Regression Tests', () => {
   beforeAll(() => {
@@ -111,7 +111,7 @@ describe('Performance Regression Tests', () => {
     test('useMemo prevents expensive recalculations', () => {
       let calculationCount = 0;
 
-      const expensiveCalculation = (data: any[]) => {
+      const expensiveCalculation = (data: unknown[]) => {
         calculationCount++;
         return data.length;
       };
@@ -157,7 +157,7 @@ describe('Performance Regression Tests', () => {
   describe('Performance Monitoring', () => {
     test('Performance monitor records metrics', () => {
       // Test performance monitoring functionality
-      const metrics: any[] = [];
+      const metrics: unknown[] = [];
 
       const recordMetric = (name: string, value: number) => {
         metrics.push({ name, value, timestamp: Date.now() });

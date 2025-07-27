@@ -183,9 +183,9 @@ const categoryColors = {
 
 // Quality score colors
 const getQualityColor = (score?: number) => {
-  if (!score) return 'text-gray-500';
-  if (score >= 8) return 'text-green-600';
-  if (score >= 6) return 'text-yellow-600';
+  if (!score) {return 'text-gray-500';}
+  if (score >= 8) {return 'text-green-600';}
+  if (score >= 6) {return 'text-yellow-600';}
   return 'text-red-600';
 };
 
@@ -384,7 +384,7 @@ export const Enhanced295ContentDisplay = React.memo(({
         section.displayName.toLowerCase().includes(searchLower) ||
         (section.content?.content && section.content.content.toLowerCase().includes(searchLower));
       
-      if (!matchesSearch && !hasSubsections) return null;
+      if (!matchesSearch && !hasSubsections) {return null;}
     }
 
     if (selectedCategory !== 'all' && section.content && section.content.category !== selectedCategory) {
@@ -705,7 +705,7 @@ export const Enhanced295ContentDisplay = React.memo(({
                           const countContent = (s: HierarchicalSection) => {
                             if (s.content) {
                               totalCount++;
-                              if (s.content.hasContent) contentCount++;
+                              if (s.content.hasContent) {contentCount++;}
                             }
                             if (s.subsections) {
                               Object.values(s.subsections).forEach(countContent);

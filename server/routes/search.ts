@@ -1,5 +1,6 @@
 import { asc, desc, ilike, or } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { enhancedTerms as terms } from '../../shared/enhancedSchema';
 import type { ApiResponse, SearchResult } from '../../shared/types';
@@ -34,7 +35,7 @@ export function registerSearchRoutes(app: Express): void {
           limit,
           filters,
           sort
-        } = req.query as any;
+        } = req.query as unknown;
 
         logger.info('Search query:', q);
 
@@ -110,7 +111,7 @@ export function registerSearchRoutes(app: Express): void {
     }),
     async (req: Request, res: Response) => {
     try {
-      const { q: query, limit } = req.query as any;
+      const { q: query, limit } = req.query as unknown;
 
       // Use optimized search for suggestions
       const termSuggestions = await optimizedSearchSuggestions(query, Math.min(limit - 3, 15));
@@ -173,7 +174,7 @@ export function registerSearchRoutes(app: Express): void {
         limit,
         page,
         threshold
-      } = req.query as any;
+      } = req.query as unknown;
 
       // Use same basic search as main endpoint
       const searchResults = await db
@@ -240,7 +241,7 @@ export function registerSearchRoutes(app: Express): void {
     })),
     async (req: Request, res: Response) => {
     try {
-      const { limit } = req.query as any;
+      const { limit } = req.query as unknown;
 
       // Use optimized popular terms for better performance
       const popularTerms = await getOptimizedPopularTerms(limit);

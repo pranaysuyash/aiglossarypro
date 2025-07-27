@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { db } from '../db';
 
 import logger from '../utils/logger';
@@ -27,7 +28,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
       return true; // Allow if user not found (shouldn't happen)
     }
 
-    const user = userInfo.rows[0] as any;
+    const user = userInfo.rows[0] as unknown;
 
     // Premium users have unlimited access
     if (user.lifetime_access) {

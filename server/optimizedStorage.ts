@@ -19,8 +19,8 @@ import {
   userSettings,
   users,
 } from '@shared/enhancedSchema';
-import type { UpsertUser, User } from '@shared/schema';
 import { purchases } from '@shared/schema';
+import type { UpsertUser, User, Purchase } from '@shared/schema';
 import { subDays } from 'date-fns';
 import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
@@ -34,133 +34,78 @@ import {
   getCacheStats,
   queryCache,
 } from './middleware/queryCache';
-import { log } from './utils/logger';
+import logger, { log } from './utils/logger';
+import type {
+  UserProgressStats,
+  RecentPurchase,
+  RevenuePeriodData,
+  CountryRevenue,
+  ConversionFunnel,
+  RefundAnalytics,
+  PurchaseExport,
+  WebhookActivity,
+  PurchaseDetails,
+  UserAccessUpdate,
+  UserSettings,
+  UserDataExport,
+  MaintenanceResult,
+  ContentMetrics,
+  PendingContent,
+  FeedbackResult,
+  FeedbackFilters,
+  PaginatedFeedback,
+  FeedbackStatistics,
+  FeedbackUpdate,
+  OptimizedTerm,
+  SectionProgress,
+  LearningStreak,
+  Achievement,
+} from './types/enhancedStorage.types';
+import type {
+  PaginatedResult,
+  Term,
+} from './types/storage.types';
+import type {
+  IStorage as IStorageTypeSafe,
+  PurchaseData,
+  UserListOptions,
+  UserListResult,
+  DatabaseCleanupResult,
+  DatabaseOperationResult,
+  AdminStats,
+  OptimizedFavoritesResult,
+  FeedbackData,
+  TermSectionUpdate,
+  UserProgressUpdate,
+  CurrencyRevenue,
+  DailyRevenue,
+} from './optimizedStorageTypes';
 
 import logger from './utils/logger';
-// Interface for storage operations (same as original)
-export interface IStorage {
-  // User operations
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+// Additional type definitions
+interface ISubcategory {
+  id: string;
+  name: string;
+  categoryId: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  // Category operations
-  getCategories(): Promise<ICategory[]>;
-  getCategoryById(id: string): Promise<ICategory | null>;
-
-  // Term operations
-  getFeaturedTerms(): Promise<ITerm[]>;
-  getTermById(id: string): Promise<ITerm | null>;
-  getRecentlyViewedTerms(userId: string): Promise<ITerm[]>;
-  recordTermView(termId: string, userId: string | null): Promise<void>;
-  searchTerms(query: string): Promise<ITerm[]>;
-
-  // Favorites operations
-  getUserFavorites(userId: string): Promise<ITerm[]>;
-  getUserFavoritesOptimized?(
-    userId: string,
-    pagination?: { limit?: number; offset?: number; fields?: string[] }
-  ): Promise<{ data: any[]; total: number; hasMore: boolean }>;
-  isTermFavorite(userId: string, termId: string): Promise<boolean>;
-  addFavorite(userId: string, termId: string): Promise<void>;
-  removeFavorite(userId: string, termId: string): Promise<void>;
-
-  // Progress operations
-  getUserProgress(userId: string): Promise<any>;
-  isTermLearned(userId: string, termId: string): Promise<boolean>;
-  markTermAsLearned(userId: string, termId: string): Promise<void>;
-  unmarkTermAsLearned(userId: string, termId: string): Promise<void>;
-
-  // Revenue tracking operations
-  getTotalRevenue(): Promise<number>;
-  getTotalPurchases(): Promise<number>;
-  getRevenueForPeriod(startDate: Date, endDate: Date): Promise<number>;
-  getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number>;
-  getTotalUsers(): Promise<number>;
-  getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>>;
-  getDailyRevenueForPeriod(
-    startDate: Date,
-    endDate: Date
-  ): Promise<Array<{ date: string; revenue: number }>>;
-  getRecentPurchases(limit?: number): Promise<any[]>;
-  getRevenueByPeriod(period: string): Promise<any>;
-  getTopCountriesByRevenue(limit?: number): Promise<any[]>;
-  getConversionFunnel(): Promise<any>;
-  getRefundAnalytics(): Promise<any>;
-  getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]>;
-  getRecentWebhookActivity(limit?: number): Promise<any[]>;
-  getPurchaseByOrderId(orderId: string): Promise<any>;
-  updateUserAccess(orderId: string, updates: any): Promise<void>;
-
-  // Additional user operations
-  getUserByEmail(email: string): Promise<any>;
-  updateUser(userId: string, updates: any): Promise<any>;
-  createPurchase(purchaseData: any): Promise<any>;
-  getUserSettings(userId: string): Promise<any>;
-  updateUserSettings(userId: string, settings: any): Promise<void>;
-  exportUserData(userId: string): Promise<any>;
-  deleteUserData(userId: string): Promise<void>;
-  getUserStreak(userId: string): Promise<any>;
-
-  // Admin user management
-  getAllUsers(options?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }>;
-
-  // Admin data management
-  clearAllData(): Promise<{ tablesCleared: string[] }>;
-  reindexDatabase(): Promise<{
-    success: boolean;
-    operation: string;
-    duration: number;
-    operations: string[];
-    timestamp: Date;
-    message: string;
-  }>;
-  getAdminStats(): Promise<any>;
-  cleanupDatabase(): Promise<{
-    success: boolean;
-    operation: string;
-    duration: number;
-    operations: string[];
-    timestamp: Date;
-    message: string;
-  }>;
-  vacuumDatabase(): Promise<{
-    success: boolean;
-    operation: string;
-    duration: number;
-    operations: string[];
-    timestamp: Date;
-    message: string;
-  }>;
-
-  // Content moderation
-  getPendingContent(): Promise<any[]>;
-  approveContent(id: string): Promise<any>;
-  rejectContent(id: string): Promise<any>;
-
-  // Missing methods for enhanced features
-  getTermsOptimized?(options?: { limit?: number }): Promise<any[]>;
-  getTermsByIds?(ids: string[]): Promise<any[]>;
-  submitFeedback?(data: any): Promise<any>;
-  storeFeedback?(data: any): Promise<any>;
-  getFeedback?(filters: any, pagination: any): Promise<any>;
-  getFeedbackStats?(): Promise<any>;
-  updateFeedbackStatus?(id: string, status: string, notes?: string): Promise<any>;
-  initializeFeedbackSchema?(): Promise<void>;
-  createFeedbackIndexes?(): Promise<void>;
-  updateTermSection?(termId: string, sectionId: string, data: any): Promise<void>;
-  trackTermView?(userId: string, termId: string, sectionId?: string): Promise<void>;
-  trackSectionCompletion?(userId: string, termId: string, sectionId: string): Promise<void>;
-  updateUserProgress?(userId: string, updates: any): Promise<void>;
-  getUserSectionProgress?(userId: string, options?: any): Promise<any[]>;
-  getUserTimeSpent?(userId: string, timeframe?: string): Promise<number>;
-  getCategoryProgress?(userId: string): Promise<any[]>;
-  isAchievementUnlocked?(userId: string, achievementId: string): Promise<boolean>;
-  unlockAchievement?(userId: string, achievementId: string): Promise<any>;
-  getAllTerms?(options?: any): Promise<any>;
+interface TermSection {
+  id: string;
+  termId: string;
+  sectionId: string;
+  title: string;
+  content: string;
+  order: number;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+// Use the type-safe interface from optimizedStorageTypes.ts
+export interface IStorage extends IStorageTypeSafe {
+  // Interface extends IStorageTypeSafe which has all properly typed methods
 }
 
 export class OptimizedStorage implements IStorage {
@@ -513,7 +458,7 @@ export class OptimizedStorage implements IStorage {
     offset?: number;
     limit?: number;
     fields?: string[];
-  }): Promise<{ data: any[]; total: number }> {
+  }): Promise<{ data: ITerm[]; total: number }> {
     const {
       query,
       categoryId,
@@ -551,7 +496,7 @@ export class OptimizedStorage implements IStorage {
         }
 
         // Get total count
-        let totalResult: any;
+        let totalResult: { count: number };
         if (fields.includes('category')) {
           const countWithJoin = db
             .select({ count: sql<number>`count(*)` })
@@ -569,7 +514,7 @@ export class OptimizedStorage implements IStorage {
         const total = totalResult[0]?.count || 0;
 
         // Build dynamic select
-        const selectObj: any = {
+        const selectObj: Record<string, unknown> = {
           relevance: relevanceScore,
         };
 
@@ -586,7 +531,7 @@ export class OptimizedStorage implements IStorage {
         const baseQuery = db.select(selectObj).from(terms);
 
         // Add joins and conditions
-        let results: any;
+        let results: ITerm[];
         if (fields.includes('category')) {
           const joinedQuery = baseQuery
             .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -622,7 +567,7 @@ export class OptimizedStorage implements IStorage {
   async getUserFavoritesOptimized(
     userId: string,
     pagination?: { limit?: number; offset?: number; fields?: string[] }
-  ): Promise<{ data: any[]; total: number; hasMore: boolean }> {
+  ): Promise<OptimizedFavoritesResult> {
     const {
       limit = 50,
       offset = 0,
@@ -641,7 +586,7 @@ export class OptimizedStorage implements IStorage {
         const total = totalResult[0]?.count || 0;
 
         // Build dynamic select based on requested fields
-        const selectObj: any = {
+        const selectObj: Record<string, unknown> = {
           termId: favorites.termId,
           createdAt: favorites.createdAt,
         };
@@ -721,7 +666,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Progress operations (optimized with batching)
-  async getUserProgress(userId: string): Promise<any> {
+  async getUserProgress(userId: string): Promise<UserProgressStats> {
     return cached(
       `user:${userId}:progress`,
       async () => {
@@ -806,7 +751,7 @@ export class OptimizedStorage implements IStorage {
       order?: 'asc' | 'desc';
       fields?: string[];
     } = {}
-  ): Promise<{ data: any[]; total: number }> {
+  ): Promise<{ data: ITerm[]; total: number }> {
     const {
       offset = 0,
       limit = 20,
@@ -821,7 +766,7 @@ export class OptimizedStorage implements IStorage {
       cacheKey,
       async () => {
         // Build dynamic select based on requested fields
-        const selectObj: any = {};
+        const selectObj: Record<string, unknown> = {};
 
         if (fields.includes('id')) {selectObj.id = terms.id;}
         if (fields.includes('name')) {selectObj.name = terms.name;}
@@ -851,7 +796,7 @@ export class OptimizedStorage implements IStorage {
                 ? terms.createdAt
                 : terms.name;
 
-        let results: any;
+        let results: ITerm[];
         if (fields.includes('category')) {
           const query = db
             .select(selectObj)
@@ -882,7 +827,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Statistics and analytics (cached heavily)
-  async getPopularTerms(timeframe: 'day' | 'week' | 'month' = 'week'): Promise<any[]> {
+  async getPopularTerms(timeframe: 'day' | 'week' | 'month' = 'week'): Promise<ITerm[]> {
     return cached(
       CacheKeys.popularTerms(timeframe),
       async () => {
@@ -918,7 +863,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getTrendingTerms(limit = 10): Promise<any[]> {
+  async getTrendingTerms(limit = 10): Promise<ITerm[]> {
     return cached(
       `trending_terms_${limit}`,
       async () => {
@@ -950,7 +895,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async updateTerm(termId: string, updates: any): Promise<any> {
+  async updateTerm(termId: string, updates: Partial<ITerm>): Promise<ITerm> {
     const [updatedTerm] = await db
       .update(terms)
       .set({
@@ -967,7 +912,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Test-specific optimized methods
-  async getTermsOptimized(options: { limit?: number } = {}): Promise<any[]> {
+  async getTermsOptimized(options: { limit?: number } = {}): Promise<OptimizedTerm[]> {
     const { limit = 20 } = options;
 
     return cached(
@@ -1002,7 +947,7 @@ export class OptimizedStorage implements IStorage {
       search?: string;
       includeStats?: boolean;
     } = {}
-  ): Promise<any[]> {
+  ): Promise<ITerm[]> {
     const {
       offset = 0,
       limit = 20,
@@ -1025,7 +970,7 @@ export class OptimizedStorage implements IStorage {
         });
 
         // Build dynamic select based on requested fields
-        const selectObj: any = {};
+        const selectObj: Record<string, unknown> = {};
 
         if (fields.includes('id')) {selectObj.id = categories.id;}
         if (fields.includes('name')) {selectObj.name = categories.name;}
@@ -1036,7 +981,7 @@ export class OptimizedStorage implements IStorage {
           selectObj.termCount = sql<number>`count(DISTINCT ${terms.id})`;
         }
 
-        let query: any = db.select(selectObj).from(categories);
+        let query = db.select(selectObj).from(categories);
 
         // Add join for term count if needed
         if (needsTermCount) {
@@ -1109,7 +1054,7 @@ export class OptimizedStorage implements IStorage {
     return cached(
       cacheKey,
       async () => {
-        let query: any = db.select({ count: sql<number>`count(*)` }).from(categories);
+        let query = db.select({ count: sql<number>`count(*)` }).from(categories);
 
         if (search) {
           query = query.where(ilike(categories.name, `%${search}%`));
@@ -1128,7 +1073,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async bulkCreateTerms(termsData: any[]): Promise<{ success: number; failed: number }> {
+  async bulkCreateTerms(termsData: Partial<ITerm>[]): Promise<{ success: number; failed: number }> {
     if (termsData.length === 0) {
       return { success: 0, failed: 0 };
     }
@@ -1159,7 +1104,14 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getPerformanceMetrics(): Promise<any> {
+  async getPerformanceMetrics(): Promise<{
+    cacheStats: ReturnType<typeof getCacheStats>;
+    databaseStats: {
+      activeConnections: number;
+      pendingQueries: number;
+    };
+    timestamp: Date;
+  }> {
     return {
       cacheHitRate: getCacheStats().hitRate,
       averageQueryTime: getCacheStats().averageResponseTime || 0,
@@ -1171,7 +1123,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Additional methods needed by content.ts
-  async getTerms(options: { limit?: number; offset?: number } = {}): Promise<any[]> {
+  async getTerms(options: { limit?: number; offset?: number } = {}): Promise<ITerm[]> {
     try {
       return await this.getTermsOptimized(options);
     } catch (error) {
@@ -1191,7 +1143,7 @@ export class OptimizedStorage implements IStorage {
       sortOrder?: 'asc' | 'desc';
       fields?: string[];
     } = {}
-  ): Promise<{ data: any[]; terms: any[]; total: number }> {
+  ): Promise<{ data: ICategory[]; terms: ITerm[]; total: number }> {
     const {
       limit = 10000, // Increased default to fetch all terms
       page = 1,
@@ -1209,7 +1161,7 @@ export class OptimizedStorage implements IStorage {
       cacheKey,
       async () => {
         // Build dynamic select based on requested fields
-        const selectObj: any = {};
+        const selectObj: Record<string, unknown> = {};
 
         if (fields.includes('id')) {selectObj.id = terms.id;}
         if (fields.includes('name')) {selectObj.name = terms.name;}
@@ -1221,7 +1173,7 @@ export class OptimizedStorage implements IStorage {
         if (fields.includes('updatedAt')) {selectObj.updatedAt = terms.updatedAt;}
         if (fields.includes('category')) {selectObj.category = categories.name;}
 
-        let query: any = db.select(selectObj).from(terms);
+        let query = db.select(selectObj).from(terms);
 
         // Add joins only if needed
         if (fields.includes('category')) {
@@ -1269,7 +1221,7 @@ export class OptimizedStorage implements IStorage {
     const total = await cached(
       totalCacheKey,
       async () => {
-        let countQuery: any = db.select({ count: sql<number>`count(*)` }).from(terms);
+        let countQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
 
         const whereConditions = [];
         if (categoryId) {
@@ -1313,7 +1265,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getAllTermsForSearch(limit = 1000): Promise<any[]> {
+  async getAllTermsForSearch(limit = 1000): Promise<ITerm[]> {
     return await cached(
       CacheKeys.term(`terms-for-search:${limit}`),
       async () => {
@@ -1336,7 +1288,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // User stats method needed by user.ts
-  async getUserStats(userId: string): Promise<any> {
+  async getUserStats(userId: string): Promise<UserProgressStats> {
     return await cached(
       `user-stats:${userId}`,
       async () => {
@@ -1473,7 +1425,7 @@ export class OptimizedStorage implements IStorage {
     }));
   }
 
-  async getRecentPurchases(limit = 10): Promise<any[]> {
+  async getRecentPurchases(limit = 10): Promise<RecentPurchase[]> {
     return await db
       .select({
         id: purchases.id,
@@ -1491,7 +1443,7 @@ export class OptimizedStorage implements IStorage {
       .limit(limit);
   }
 
-  async getRevenueByPeriod(period: string): Promise<any> {
+  async getRevenueByPeriod(period: string): Promise<RevenuePeriodData> {
     // Simplified implementation - can be enhanced
     // const _now = new Date(); // Commented out as it's not used
     const periods = {
@@ -1504,7 +1456,7 @@ export class OptimizedStorage implements IStorage {
     return periods[period as keyof typeof periods] || [];
   }
 
-  async getTopCountriesByRevenue(limit = 10): Promise<any[]> {
+  async getTopCountriesByRevenue(limit = 10): Promise<CountryRevenue[]> {
     // Extract country from purchase data JSON
     const result = await db
       .select({
@@ -1523,7 +1475,7 @@ export class OptimizedStorage implements IStorage {
     }));
   }
 
-  async getConversionFunnel(): Promise<any> {
+  async getConversionFunnel(): Promise<ConversionFunnel> {
     const totalUsers = await this.getTotalUsers();
     const purchasedUsers = await db
       .select({
@@ -1542,7 +1494,7 @@ export class OptimizedStorage implements IStorage {
     };
   }
 
-  async getRefundAnalytics(): Promise<any> {
+  async getRefundAnalytics(): Promise<RefundAnalytics> {
     const refunds = await db
       .select({
         count: sql<number>`COUNT(*)`,
@@ -1557,7 +1509,7 @@ export class OptimizedStorage implements IStorage {
     };
   }
 
-  async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]> {
+  async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<PurchaseExport[]> {
     const baseQuery = db
       .select({
         orderId: purchases.gumroadOrderId,
@@ -1580,12 +1532,12 @@ export class OptimizedStorage implements IStorage {
     return await baseQuery.orderBy(desc(purchases.createdAt));
   }
 
-  async getRecentWebhookActivity(limit = 20): Promise<any[]> {
+  async getRecentWebhookActivity(limit = 20): Promise<WebhookActivity[]> {
     // For now, return recent purchases as webhook activity
     return await this.getRecentPurchases(limit);
   }
 
-  async getPurchaseByOrderId(orderId: string): Promise<any> {
+  async getPurchaseByOrderId(orderId: string): Promise<PurchaseDetails | null> {
     const result = await db
       .select()
       .from(purchases)
@@ -1595,7 +1547,7 @@ export class OptimizedStorage implements IStorage {
     return result[0];
   }
 
-  async updateUserAccess(orderId: string, updates: any): Promise<void> {
+  async updateUserAccess(orderId: string, updates: UserAccessUpdate): Promise<void> {
     const purchase = await this.getPurchaseByOrderId(orderId);
     if (purchase?.userId) {
       await db
@@ -1609,12 +1561,12 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Additional methods needed by other routes
-  async getUserByEmail(email: string): Promise<any> {
+  async getUserByEmail(email: string): Promise<User | null> {
     const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     return result[0];
   }
 
-  async updateUser(userId: string, updates: any): Promise<any> {
+  async updateUser(userId: string, updates: Partial<User>): Promise<User> {
     const [updatedUser] = await db
       .update(users)
       .set({
@@ -1626,12 +1578,12 @@ export class OptimizedStorage implements IStorage {
     return updatedUser;
   }
 
-  async createPurchase(purchaseData: any): Promise<any> {
+  async createPurchase(purchaseData: PurchaseData): Promise<Purchase> {
     const [purchase] = await db.insert(purchases).values(purchaseData).returning();
     return purchase;
   }
 
-  async getUserSettings(userId: string): Promise<any> {
+  async getUserSettings(userId: string): Promise<UserSettings | null> {
     const result = await db
       .select()
       .from(userSettings)
@@ -1640,7 +1592,7 @@ export class OptimizedStorage implements IStorage {
     return result[0]?.preferences || {};
   }
 
-  async updateUserSettings(userId: string, settings: any): Promise<void> {
+  async updateUserSettings(userId: string, settings: Partial<UserSettings>): Promise<void> {
     await db
       .insert(userSettings)
       .values({
@@ -1657,7 +1609,7 @@ export class OptimizedStorage implements IStorage {
       });
   }
 
-  async exportUserData(userId: string): Promise<any> {
+  async exportUserData(userId: string): Promise<UserDataExport> {
     const user = await this.getUser(userId);
     const favorites = await this.getUserFavorites(userId);
     const progress = await this.getUserProgress(userId);
@@ -1680,7 +1632,7 @@ export class OptimizedStorage implements IStorage {
     await db.delete(users).where(eq(users.id, userId));
   }
 
-  async getUserStreak(userId: string): Promise<any> {
+  async getUserStreak(userId: string): Promise<LearningStreak> {
     // Get all term views for the user, ordered by date
     const allViews = await db
       .select({
@@ -1722,7 +1674,7 @@ export class OptimizedStorage implements IStorage {
     // Check if user has activity today or yesterday to start the streak
     if (viewsByDate.has(todayStr) || viewsByDate.has(yesterdayStr)) {
       currentStreak = 1;
-      let checkDate = viewsByDate.has(todayStr) ? today : yesterday;
+      const checkDate = viewsByDate.has(todayStr) ? today : yesterday;
       
       // Go backwards and count consecutive days
       for (let i = 1; i < sortedDates.length; i++) {
@@ -1789,7 +1741,7 @@ export class OptimizedStorage implements IStorage {
     page?: number;
     limit?: number;
     search?: string;
-  }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }> {
+  }): Promise<UserListResult> {
     const { page = 1, limit = 50, search } = options || {};
     const offset = (page - 1) * limit;
 
@@ -2058,7 +2010,7 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getAdminStats(): Promise<any> {
+  async getAdminStats(): Promise<AdminStats> {
     return cached(
       CacheKeys.term('admin_stats'),
       async () => {
@@ -2353,7 +2305,7 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getPendingContent(): Promise<any[]> {
+  async getPendingContent(): Promise<PendingContent[]> {
     return cached(
       CacheKeys.term('pending_content'),
       async () => {
@@ -2390,7 +2342,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async approveContent(id: string): Promise<any> {
+  async approveContent(id: string): Promise<PendingContent> {
     try {
       // Update feedback status to resolved
       const result = await db.execute(sql`
@@ -2425,7 +2377,7 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async rejectContent(id: string): Promise<any> {
+  async rejectContent(id: string): Promise<PendingContent> {
     try {
       // Update feedback status to dismissed
       const result = await db.execute(sql`
@@ -2460,7 +2412,16 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getCategoryStats(categoryId?: string): Promise<any> {
+  async getCategoryStats(categoryId?: string): Promise<{
+    categories: Array<{
+      id: string;
+      name: string;
+      termCount: number;
+      subcategoryCount: number;
+    }>;
+    totalCategories: number;
+    totalTerms: number;
+  }> {
     try {
       if (categoryId) {
         // Get stats for a specific category
@@ -2507,18 +2468,18 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Additional missing methods implementation
-  async getTermsByIds(ids: string[]): Promise<any[]> {
+  async getTermsByIds(ids: string[]): Promise<Term[]> {
     if (ids.length === 0) {return [];}
 
     return await db.select().from(terms).where(inArray(terms.id, ids));
   }
 
-  async submitFeedback(_data: any): Promise<any> {
+  async submitFeedback(_data: FeedbackData): Promise<FeedbackResult> {
     // Placeholder implementation - would need feedback table schema
     return { success: true, id: `feedback-${Date.now()}` };
   }
 
-  async storeFeedback(data: any): Promise<any> {
+  async storeFeedback(data: FeedbackData): Promise<FeedbackResult> {
     // This is an alias for submitFeedback for backward compatibility
     return this.submitFeedback(data);
   }
@@ -2532,7 +2493,7 @@ export class OptimizedStorage implements IStorage {
   } = {}, pagination: {
     page?: number;
     limit?: number;
-  } = {}): Promise<{ data: any[]; total: number }> {
+  } = {}): Promise<PaginatedFeedback> {
     try {
       const page = pagination.page || 1;
       const limit = pagination.limit || 20;
@@ -2694,9 +2655,9 @@ export class OptimizedStorage implements IStorage {
     status: string, 
     notes?: string,
     reviewerId?: string
-  ): Promise<any> {
+  ): Promise<FeedbackUpdate> {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status,
         updatedAt: new Date(),
       };
@@ -2748,7 +2709,7 @@ export class OptimizedStorage implements IStorage {
     logger.info('Feedback indexes creation placeholder');
   }
 
-  async updateTermSection(termId: string, sectionId: string, data: any): Promise<void> {
+  async updateTermSection(termId: string, sectionId: string, data: TermSectionUpdate): Promise<void> {
     // Placeholder implementation - would need enhanced term sections
     logger.info('Term section update placeholder:', { termId, sectionId, data });
   }
@@ -2762,7 +2723,7 @@ export class OptimizedStorage implements IStorage {
     logger.info('Section completion tracking placeholder:', { userId, termId, sectionId });
   }
 
-  async getUserSectionProgress(userId: string, _options?: any): Promise<any[]> {
+  async getUserSectionProgress(userId: string, _options?: { limit?: number; offset?: number }): Promise<SectionProgress[]> {
     // Return user progress in a different format
     const progress = await this.getUserProgress(userId);
     return progress.learnedTerms || [];
@@ -2773,7 +2734,7 @@ export class OptimizedStorage implements IStorage {
     return 0;
   }
 
-  async getCategoryProgress(_userId: string): Promise<any[]> {
+  async getCategoryProgress(_userId: string): Promise<Array<{ categoryId: string; categoryName: string; termsViewed: number; termsTotal: number; percentComplete: number }>> {
     // Placeholder implementation - would need category progress tracking
     return [];
   }
@@ -2784,7 +2745,7 @@ export class OptimizedStorage implements IStorage {
     return achievements.some(a => a.id === achievementId && a.unlockedAt !== null);
   }
 
-  async unlockAchievement(userId: string, achievementId: string): Promise<any> {
+  async unlockAchievement(userId: string, achievementId: string): Promise<Achievement> {
     const achievement = await this.getAchievementById(achievementId);
     if (!achievement) {
       throw new Error('Achievement not found');
@@ -2808,7 +2769,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Helper method to get all possible achievements
-  private async getAchievementById(achievementId: string): Promise<any> {
+  private async getAchievementById(achievementId: string): Promise<Achievement | null> {
     const achievements = [
       {
         id: 'first-term',
@@ -2872,7 +2833,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Helper method to get user achievements based on their activity
-  async getUserAchievements(userId: string): Promise<any[]> {
+  async getUserAchievements(userId: string): Promise<Achievement[]> {
     const achievements = [];
     
     // Get user stats
@@ -2990,7 +2951,7 @@ export class OptimizedStorage implements IStorage {
     search?: string;
     categoryId?: string;
     includeStats?: boolean;
-  }): Promise<any[]> {
+  }): Promise<ITerm[]> {
     const {
       offset = 0,
       limit = 100,
@@ -3077,7 +3038,7 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getSubcategoryById(id: string): Promise<any | null> {
+  async getSubcategoryById(id: string): Promise<ISubcategory | null> {
     const result = await db
       .select({
         id: subcategories.id,
@@ -3110,7 +3071,7 @@ export class OptimizedStorage implements IStorage {
       order?: 'asc' | 'desc';
       fields?: string[];
     }
-  ): Promise<{ data: any[]; total: number }> {
+  ): Promise<{ data: ITerm[]; total: number }> {
     const { offset = 0, limit = 50, sort = 'name', order = 'asc', _fields = ['*'] } = options;
 
     // Get total count first
@@ -3157,7 +3118,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Section-related methods for 42-section content system
-  async getTermSections(termId: string): Promise<any[]> {
+  async getTermSections(termId: string): Promise<TermSection[]> {
     const cacheKey = `term_sections:${termId}`;
 
     return cached(
@@ -3181,7 +3142,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getSectionById(sectionId: string): Promise<any | null> {
+  async getSectionById(sectionId: string): Promise<TermSection | null> {
     const cacheKey = `section:${sectionId}`;
 
     return cached(
@@ -3204,7 +3165,19 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getContentGallery(sectionName: string, page = 1, limit = 20): Promise<any> {
+  async getContentGallery(sectionName: string, page = 1, limit = 20): Promise<{
+    sectionName: string;
+    totalTerms: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+    terms: Array<{
+      termId: string;
+      termName: string;
+      sectionContent: string;
+      lastUpdated: Date;
+    }>;
+  }> {
     const cacheKey = `content_gallery:${sectionName}:${page}:${limit}`;
 
     return cached(
@@ -3268,7 +3241,7 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getUserProgressSummary(userId: string): Promise<any> {
+  async getUserProgressSummary(userId: string): Promise<UserProgressStats> {
     const cacheKey = `user_progress_summary:${userId}`;
 
     return cached(
@@ -3299,7 +3272,7 @@ export class OptimizedStorage implements IStorage {
     userId: string,
     termId: string,
     _sectionId: string,
-    _progressData: any
+    _progressData: UserProgressUpdate
   ): Promise<void> {
     // For now, use the existing markTermAsLearned method
     await this.markTermAsLearned(userId, termId);
@@ -3309,7 +3282,22 @@ export class OptimizedStorage implements IStorage {
     clearCache(`term_sections:${termId}`);
   }
 
-  async searchSectionContent(query: string, options: any = {}): Promise<any> {
+  async searchSectionContent(query: string, options: {
+    sectionName?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    query: string;
+    total: number;
+    results: Array<{
+      termId: string;
+      termName: string;
+      sectionId: string;
+      sectionName: string;
+      content: string;
+      relevance: number;
+    }>;
+  }> {
     const { contentType, sectionName, page = 1, limit = 20 } = options;
     const cacheKey = `section_search:${query}:${contentType || 'all'}:${sectionName || 'all'}:${page}:${limit}`;
 
@@ -3396,7 +3384,16 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getSectionAnalytics(): Promise<any> {
+  async getSectionAnalytics(): Promise<{
+    sections: Array<{
+      name: string;
+      totalTerms: number;
+      averageContentLength: number;
+      lastUpdated: Date;
+    }>;
+    totalTermsWithContent: number;
+    averageSectionsPerTerm: number;
+  }> {
     const cacheKey = 'section_analytics';
 
     return cached(

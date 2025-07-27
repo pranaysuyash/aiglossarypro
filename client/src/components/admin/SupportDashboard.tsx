@@ -1,6 +1,6 @@
 import { AlertCircle, Calendar, CheckCircle, Clock, Download, Eye, Mail, MessageSquare, Plus, RefreshCw, Search, TrendingUp, Users, XCircle } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -152,7 +152,7 @@ export const SupportDashboard: React.FC = () => {
         setTickets(data.data.tickets);
         setTotalPages(data.data.totalPages);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching tickets:', error);
     } finally {
       setLoading(false);
@@ -171,7 +171,7 @@ export const SupportDashboard: React.FC = () => {
         const data = await response.json();
         setMetrics(data.data);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching metrics:', error);
     }
   };
@@ -194,7 +194,7 @@ export const SupportDashboard: React.FC = () => {
           setSelectedTicket(updatedTicket);
         }
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error updating ticket status:', error);
     }
   };
@@ -211,7 +211,7 @@ export const SupportDashboard: React.FC = () => {
         const data = await response.json();
         return data.data;
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching ticket details:', error);
     }
     return null;
@@ -240,7 +240,7 @@ export const SupportDashboard: React.FC = () => {
         const updatedTicket = await fetchTicketDetails(selectedTicket.id);
         setSelectedTicket(updatedTicket);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error adding message:', error);
     }
   };

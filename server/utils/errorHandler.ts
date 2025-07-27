@@ -128,7 +128,7 @@ export function getStatusCodeForError(error: ErrorCode): number {
 /**
  * Handle database constraint violations
  */
-export function handleDatabaseError(error: any): {
+export function handleDatabaseError(error: Error | unknown): {
   code: ErrorCode;
   message: string;
   details?: string;
@@ -219,7 +219,7 @@ export function handleAuthError(error: string): { code: ErrorCode; message: stri
  * Enhanced error response for development vs production
  */
 export function createDetailedErrorResponse(
-  error: any,
+  error: Error | unknown,
   message: string,
   isDevelopment: boolean = process.env.NODE_ENV === 'development'
 ): ApiError {

@@ -67,9 +67,9 @@ interface ParsedTerm {
   complexity_level?: 'beginner' | 'intermediate' | 'advanced';
   prerequisites: string[];
   related_terms: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   sections?: Map<string, any>;
-  raw_data?: Record<string, any>;
+  raw_data?: Record<string, unknown>;
 }
 
 interface ImportStats {
@@ -109,7 +109,7 @@ class BulkTermImporter {
   private stats: ImportStats;
   private existingTerms: Set<string> = new Set();
   private categoryMap: Map<string, string> = new Map();
-  private errorLog: Array<{ timestamp: Date; error: any }> = [];
+  private errorLog: Array<{ timestamp: Date; error: Error | unknown }> = [];
   private abortController: AbortController;
 
   constructor(options: Partial<ImportOptions>) {
@@ -417,7 +417,7 @@ class BulkTermImporter {
     const content = await fs.readFile(this.options.source, 'utf-8');
     const data = JSON.parse(content);
     
-    let terms: any[] = [];
+    let terms: unknown[] = [];
     
     // Handle different JSON structures
     if (Array.isArray(data)) {
@@ -716,7 +716,7 @@ class BulkTermImporter {
       }
       
       return catId;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       // Handle duplicate key errors
       if (error.code === '23505') {
         // Try to fetch the existing category
@@ -759,7 +759,7 @@ class BulkTermImporter {
     return required.some(req => sectionName.toLowerCase().includes(req));
   }
 
-  private isRetryableError(error: any): boolean {
+  private isRetryableError(error: Error | unknown): boolean {
     if (!error) return false;
     
     const retryableCodes = ['ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'ECONNREFUSED'];

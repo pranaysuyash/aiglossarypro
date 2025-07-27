@@ -371,7 +371,7 @@ async function generateWithRetry(prompt, maxRetries = 3) {
       return response.choices[0].message.content;
     } catch (error) {
       console.error(`Attempt ${attempt} failed:`, error.message);
-      if (attempt === maxRetries) throw error;
+      if (attempt === maxRetries) {throw error;}
       await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
     }
   }

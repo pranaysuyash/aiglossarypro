@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Bot, CheckCircle, RefreshCw, Save, Wand2, X } from 'lucide-react';
-import type React from 'react';
 import { useCallback, useState } from 'react';
+import type React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,7 +55,7 @@ interface BulkOperation {
 }
 
 interface Props {
-  terms: any[];
+  terms: unknown[];
   onTermsUpdated: () => void;
 }
 

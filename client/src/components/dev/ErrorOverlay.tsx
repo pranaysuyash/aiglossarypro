@@ -1,6 +1,6 @@
 import { AlertTriangle, Code, ExternalLink, FileText, X } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 
 interface ErrorInfo {
   message: string;

@@ -277,7 +277,7 @@ export class OptimizedQueries {
     if (termIds.length === 0) {return [];}
 
     // Check cache for each term
-    const cached: any[] = [];
+    const cached: unknown[] = [];
     const uncachedIds: string[] = [];
 
     for (const id of termIds) {
@@ -319,7 +319,7 @@ export class OptimizedQueries {
   }
 
   // Helper methods for caching
-  private static async getCached(key: string): Promise<any> {
+  private static async getCached(key: string): Promise<unknown> {
     // Try memory cache first
     const memCached = memoryCache.get(key);
     if (memCached) {return memCached;}

@@ -6,7 +6,7 @@
  */
 
 // Import functions for dynamic loading
-const preloadMap = new Map<string, () => Promise<any>>();
+const preloadMap = new Map<string, () => Promise<unknown>>();
 
 // Register preloadable components
 preloadMap.set('terms', () => import('@/pages/Terms'));

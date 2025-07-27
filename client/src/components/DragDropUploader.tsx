@@ -24,11 +24,11 @@ interface FileUpload {
   status: 'pending' | 'uploading' | 'completed' | 'error';
   progress: number;
   error?: string;
-  result?: any;
+  result?: Response;
 }
 
 interface DragDropUploaderProps extends BaseComponentProps {
-  onUploadComplete?: (results: any[]) => void;
+  onUploadComplete?: (results: Response[]) => void;
   onUploadError?: (error: string) => void;
   acceptedTypes?: string[];
   maxFileSize?: number; // in bytes
@@ -289,7 +289,7 @@ export default function DragDropUploader({
             xhr.open('POST', '/api/s3/upload');
             xhr.send(formData);
           });
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
           const errorMessage = error instanceof Error ? error?.message : 'Upload failed';
           setFiles(prev =>
             prev.map(f =>
@@ -320,7 +320,7 @@ export default function DragDropUploader({
       if (successfulResults.length > 0 && onUploadComplete) {
         onUploadComplete(successfulResults);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       const errorMessage = error instanceof Error ? error?.message : 'Upload failed';
       setError(errorMessage);
 

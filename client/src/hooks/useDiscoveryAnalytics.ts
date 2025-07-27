@@ -9,7 +9,7 @@ interface DiscoveryEvent {
     | 'relationship_explore'
     | 'search'
     | 'layout_change';
-  eventData: Record<string, any>;
+  eventData: Record<string, unknown>;
   timestamp?: Date;
 }
 
@@ -88,7 +88,7 @@ export function useDiscoveryAnalytics(userId?: string) {
   // Track filter changes
   const trackFilterChange = useCallback(
     (filters: any, previousFilters: any) => {
-      const changes: Record<string, any> = {};
+      const changes: Record<string, unknown> = {};
 
       // Detect which filters changed
       Object.keys(filters).forEach(key => {

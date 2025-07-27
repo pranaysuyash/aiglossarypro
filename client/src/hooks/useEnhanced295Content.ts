@@ -86,7 +86,7 @@ export const useEnhanced295Content = (termId: string, termName?: string) => {
       const [_, __, columnId] = queryKey;
       setColumnContents(prev => ({ ...prev, [columnId]: data }));
     },
-    onError: (error: any) => {
+    onError: (error: Error | unknown) => {
       toast.error(`Failed to fetch column content: ${error.message}`);
     }
   });
@@ -123,7 +123,7 @@ export const useEnhanced295Content = (termId: string, termName?: string) => {
       columnId: string; 
       mode?: 'generate-only' | 'generate-evaluate' | 'full-pipeline';
     }) => {
-      if (!termName) throw new Error('Term name is required for generation');
+      if (!termName) {throw new Error('Term name is required for generation');}
       
       const response = await api.post('/api/enhanced-295/generate-single', {
         termId,
@@ -144,7 +144,7 @@ export const useEnhanced295Content = (termId: string, termName?: string) => {
         toast.error(`Failed to generate content: ${data.error}`);
       }
     },
-    onError: (error: any) => {
+    onError: (error: Error | unknown) => {
       toast.error(`Generation error: ${error.message}`);
     }
   });
@@ -193,7 +193,7 @@ export const useEnhanced295Content = (termId: string, termName?: string) => {
       };
 
       return () => eventSource.close();
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       toast.error(`Failed to start generation: ${error.message}`);
     }
   }, [termId, termName, refetchStatus, refetchContent]);
@@ -222,7 +222,7 @@ export const useEnhanced295Content = (termId: string, termName?: string) => {
         `Batch generation completed: ${data.summary.successCount} successful, ${data.summary.failureCount} failed`
       );
     },
-    onError: (error: any) => {
+    onError: (error: Error | unknown) => {
       toast.error(`Batch generation error: ${error.message}`);
     }
   });
@@ -240,7 +240,7 @@ export const useEnhanced295Content = (termId: string, termName?: string) => {
       queryClient.invalidateQueries({ queryKey: ['term-content-status', termId] });
       queryClient.invalidateQueries({ queryKey: ['term-hierarchical-content', termId] });
     },
-    onError: (error: any) => {
+    onError: (error: Error | unknown) => {
       toast.error(`Failed to delete content: ${error.message}`);
     }
   });
@@ -328,7 +328,7 @@ export const useColumnPrompts = () => {
       toast.success('Prompt template updated successfully');
       queryClient.invalidateQueries({ queryKey: ['column-prompts'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error | unknown) => {
       toast.error(`Failed to update prompt: ${error.message}`);
     }
   });

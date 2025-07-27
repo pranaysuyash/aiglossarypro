@@ -5,7 +5,7 @@
 import type { IUser } from '../../../shared/types';
 
 // Simple debounce implementation to avoid external dependencies
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (...args: unknown[]) => any>(
   func: T,
   wait: number,
   options: { leading?: boolean; trailing?: boolean; maxWait?: number } = {}

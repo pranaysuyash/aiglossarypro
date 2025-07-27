@@ -450,7 +450,7 @@ class HierarchicalRollback {
     console.warn(`⚠️  ${message}`);
   }
 
-  private logError(message: string, error: any): void {
+  private logError(message: string, error: Error | unknown): void {
     this.rollbackLog.push({
       type: 'error',
       message,

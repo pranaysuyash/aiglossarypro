@@ -297,7 +297,7 @@ export const BinarySearchTree: Story = {
     config: bstInsertionConfig,
     renderStep: (step, index) => {
       const renderTree = (node: any, level = 0) => {
-        if (!node) return null;
+        if (!node) {return null;}
 
         return (
           <div className="flex flex-col items-center">

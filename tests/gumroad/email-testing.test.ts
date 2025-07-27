@@ -21,7 +21,7 @@ describe('Premium Welcome Email Testing', () => {
       verify: vi.fn().mockResolvedValue(true),
     };
 
-    (nodemailer.createTransporter as any) = vi.fn().mockReturnValue(mockTransporter);
+    (nodemailer.createTransporter as unknown) = vi.fn().mockReturnValue(mockTransporter);
     vi.clearAllMocks();
   });
 

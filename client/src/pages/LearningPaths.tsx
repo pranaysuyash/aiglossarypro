@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, Clock, Search, TrendingUp, Users } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import type React from 'react';
 import { Link } from 'wouter';
 import type { ICategory, ITerm } from '@/interfaces/interfaces';
 import { Badge } from '../components/ui/badge';
@@ -50,12 +50,12 @@ const LearningPaths: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch categories and terms to generate dynamic learning paths
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery<{data?: any[]} | any[]>({
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery<{data?: unknown[]} | any[]>({
     queryKey: ['/api/categories'],
     refetchOnWindowFocus: false,
   });
 
-  const { data: termsData, isLoading: termsLoading } = useQuery<{data?: any[]} | any[]>({
+  const { data: termsData, isLoading: termsLoading } = useQuery<{data?: unknown[]} | any[]>({
     queryKey: ['/api/terms'],
     refetchOnWindowFocus: false,
   });

@@ -9,7 +9,7 @@ interface SurpriseDiscoveryEvent {
   surpriseReason: string;
   confidenceScore: number;
   actionType: 'discovery' | 'click' | 'share' | 'feedback';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface FeedbackData {
@@ -90,7 +90,7 @@ export function useSurpriseAnalytics() {
       termId: string,
       surpriseReason: string,
       confidenceScore: number,
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
     ) => {
       return trackDiscoveryEvent({
         sessionId,
@@ -112,7 +112,7 @@ export function useSurpriseAnalytics() {
       termId: string,
       surpriseReason: string,
       confidenceScore: number,
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
     ) => {
       return trackDiscoveryEvent({
         sessionId,
@@ -138,7 +138,7 @@ export function useSurpriseAnalytics() {
       surpriseReason: string,
       confidenceScore: number,
       shareMethod: 'native' | 'clipboard' | 'social',
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
     ) => {
       return trackDiscoveryEvent({
         sessionId,
@@ -165,7 +165,7 @@ export function useSurpriseAnalytics() {
       surpriseReason: string,
       confidenceScore: number,
       feedback: FeedbackData,
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
     ) => {
       // Track the feedback event
       await trackDiscoveryEvent({

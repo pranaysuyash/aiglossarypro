@@ -7,8 +7,8 @@ import {
   Filter,
   Search,
 } from 'lucide-react';
-import type React from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
 import { cn } from '@/lib/utils';
 import type { ContentNode } from '@/types/content-structure';
 

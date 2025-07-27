@@ -157,8 +157,8 @@ async function seedTerms(): Promise<void> {
  * Determine which terms to generate based on existing content and requirements
  */
 async function determineTermsToGenerate(
-  existingCategories: any[],
-  existingTerms: any[],
+  existingCategories: unknown[],
+  existingTerms: unknown[],
   targetCategory: string,
   count: number
 ): Promise<TermGenerationConfig[]> {
@@ -220,7 +220,7 @@ async function determineTermsToGenerate(
  */
 async function generateTermSuggestions(
   existingTerms: string[],
-  categories: any[],
+  categories: unknown[],
   count: number,
   focusCategory?: string
 ): Promise<TermGenerationConfig[]> {
@@ -248,8 +248,8 @@ async function generateTermSuggestions(
  */
 async function generateSingleTerm(
   config: TermGenerationConfig,
-  existingTerms: any[]
-): Promise<any> {
+  existingTerms: unknown[]
+): Promise<unknown> {
   try {
     // First, generate the basic term definition
     const termSuggestion = await aiService.generateTermSuggestions(
@@ -295,7 +295,7 @@ async function generateSingleTerm(
 /**
  * Save term to database with proper category associations
  */
-async function saveTerm(termData: any, config: TermGenerationConfig): Promise<void> {
+async function saveTerm(termData: Record<string, unknown>, config: TermGenerationConfig): Promise<void> {
   try {
     // Find the category ID
     const categoryResult = await db
@@ -380,7 +380,7 @@ async function generateComprehensiveContent(newTermCount: number): Promise<void>
 /**
  * Validate existing terms for quality and completeness
  */
-async function validateExistingTerms(existingTerms: any[]): Promise<void> {
+async function validateExistingTerms(existingTerms: unknown[]): Promise<void> {
   logger.info('🔍 Validating existing terms...');
 
   let validCount = 0;

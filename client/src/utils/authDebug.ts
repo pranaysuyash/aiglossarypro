@@ -96,7 +96,7 @@ if (import.meta.env.DEV) {
 
 // Network request interceptor for debugging
 export function setupNetworkDebugger() {
-  if (!import.meta.env.DEV) return;
+  if (!import.meta.env.DEV) {return;}
   
   // Intercept fetch
   const originalFetch = window.fetch;

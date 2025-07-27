@@ -157,7 +157,7 @@ const countriesOptions = [
 ];
 
 // Interactive wrapper for stories
-function SelectWrapper({ options, ...props }: any) {
+function SelectWrapper({ options, ...props }: Record<string, unknown>) {
   const [value, setValue] = useState<string>('');
 
   return (
@@ -165,7 +165,7 @@ function SelectWrapper({ options, ...props }: any) {
       <SearchableSelect value={value} onValueChange={setValue} options={options} {...props} />
       {value && (
         <p className="text-sm text-muted-foreground">
-          Selected: {options.find((opt: any) => opt.value === value)?.label}
+          Selected: {options.find((opt: Record<string, unknown>) => opt.value === value)?.label}
         </p>
       )}
     </div>

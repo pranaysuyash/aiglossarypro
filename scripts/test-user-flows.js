@@ -271,19 +271,19 @@ ${warnings.map(warning => `- ${warning}`).join('\n')}
     const successful = [];
     const { serverImplementation, clientImplementation, apiEndpoints } = this.results;
 
-    if (serverImplementation.gracePeriodFixed) successful.push('Grace period logic fixed');
-    if (serverImplementation.previewEnhanced) successful.push('Enhanced preview functionality');
-    if (serverImplementation.dailyUsageEndpoint) successful.push('Daily usage API endpoint');
-    if (serverImplementation.userFriendlyLimiting) successful.push('User-friendly rate limiting');
+    if (serverImplementation.gracePeriodFixed) {successful.push('Grace period logic fixed');}
+    if (serverImplementation.previewEnhanced) {successful.push('Enhanced preview functionality');}
+    if (serverImplementation.dailyUsageEndpoint) {successful.push('Daily usage API endpoint');}
+    if (serverImplementation.userFriendlyLimiting) {successful.push('User-friendly rate limiting');}
     if (clientImplementation.dailyWarningComponent)
-      successful.push('Daily limit warning component');
-    if (clientImplementation.dailyUsageHook) successful.push('Daily usage React hook');
+      {successful.push('Daily limit warning component');}
+    if (clientImplementation.dailyUsageHook) {successful.push('Daily usage React hook');}
     if (clientImplementation.improvedTermDetailUX)
-      successful.push('Improved TermDetail user experience');
-    if (clientImplementation.headerUsageIntegration) successful.push('Header usage integration');
-    if (clientImplementation.seoComponents) successful.push('SEO and structured data components');
-    if (apiEndpoints.serverStartup) successful.push('Server startup configuration');
-    if (apiEndpoints.routeStructure) successful.push('API routes structure');
+      {successful.push('Improved TermDetail user experience');}
+    if (clientImplementation.headerUsageIntegration) {successful.push('Header usage integration');}
+    if (clientImplementation.seoComponents) {successful.push('SEO and structured data components');}
+    if (apiEndpoints.serverStartup) {successful.push('Server startup configuration');}
+    if (apiEndpoints.routeStructure) {successful.push('API routes structure');}
 
     return successful;
   }
@@ -292,22 +292,22 @@ ${warnings.map(warning => `- ${warning}`).join('\n')}
     const failed = [];
     const { serverImplementation, clientImplementation, apiEndpoints } = this.results;
 
-    if (!serverImplementation.gracePeriodFixed) failed.push('Grace period logic needs fixing');
+    if (!serverImplementation.gracePeriodFixed) {failed.push('Grace period logic needs fixing');}
     if (!serverImplementation.previewEnhanced)
-      failed.push('Preview functionality needs enhancement');
-    if (!serverImplementation.dailyUsageEndpoint) failed.push('Daily usage API endpoint missing');
+      {failed.push('Preview functionality needs enhancement');}
+    if (!serverImplementation.dailyUsageEndpoint) {failed.push('Daily usage API endpoint missing');}
     if (!serverImplementation.userFriendlyLimiting)
-      failed.push('User-friendly rate limiting needs implementation');
+      {failed.push('User-friendly rate limiting needs implementation');}
     if (!clientImplementation.dailyWarningComponent)
-      failed.push('Daily limit warning component missing');
-    if (!clientImplementation.dailyUsageHook) failed.push('Daily usage React hook missing');
+      {failed.push('Daily limit warning component missing');}
+    if (!clientImplementation.dailyUsageHook) {failed.push('Daily usage React hook missing');}
     if (!clientImplementation.improvedTermDetailUX)
-      failed.push('TermDetail UX improvements needed');
+      {failed.push('TermDetail UX improvements needed');}
     if (!clientImplementation.headerUsageIntegration)
-      failed.push('Header usage integration needed');
-    if (!clientImplementation.seoComponents) failed.push('SEO components missing');
-    if (!apiEndpoints.serverStartup) failed.push('Server startup needs attention');
-    if (!apiEndpoints.routeStructure) failed.push('API routes structure needs completion');
+      {failed.push('Header usage integration needed');}
+    if (!clientImplementation.seoComponents) {failed.push('SEO components missing');}
+    if (!apiEndpoints.serverStartup) {failed.push('Server startup needs attention');}
+    if (!apiEndpoints.routeStructure) {failed.push('API routes structure needs completion');}
 
     return failed;
   }

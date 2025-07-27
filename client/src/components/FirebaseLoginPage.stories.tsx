@@ -1,5 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { User } from 'firebase/auth';
 import FirebaseLoginPage from './FirebaseLoginPage';
+
+// Type definition for test accounts
+interface TestAccount {
+  email: string;
+  password: string;
+  role: 'admin' | 'user' | 'premium';
+}
 
 const meta: Meta<typeof FirebaseLoginPage> = {
   title: 'Authentication/FirebaseLoginPage',
@@ -21,8 +29,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
     redirectTo: '/dashboard',
   },
 };
@@ -30,8 +38,8 @@ export const Default: Story = {
 export const WithRegistration: Story = {
   args: {
     initialMode: 'register',
-    onLoginSuccess: (user: any) => console.log('Registration successful:', user),
-    onLoginError: (error: any) => console.log('Registration error:', error),
+    onLoginSuccess: (user: User) => console.log('Registration successful:', user),
+    onLoginError: (error: Error) => console.log('Registration error:', error),
     onModeChange: (mode: string) => console.log('Mode changed to:', mode),
     redirectTo: '/onboarding',
   },
@@ -41,8 +49,8 @@ export const WithSocialProviders: Story = {
   args: {
     socialProviders: ['google', 'github', 'twitter'],
     onSocialLogin: (provider: string) => console.log('Social login with:', provider),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -50,7 +58,7 @@ export const PasswordReset: Story = {
   args: {
     initialMode: 'reset-password',
     onPasswordResetSent: (email: string) => console.log('Password reset sent to:', email),
-    onLoginError: (error: any) => console.log('Reset error:', error),
+    onLoginError: (error: Error) => console.log('Reset error:', error),
     onModeChange: (mode: string) => console.log('Mode changed to:', mode),
   },
 };
@@ -60,8 +68,8 @@ export const WithEmailVerification: Story = {
     requireEmailVerification: true,
     onEmailVerificationSent: (email: string) => console.log('Verification sent to:', email),
     onEmailVerified: () => console.log('Email verified successfully'),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -69,8 +77,8 @@ export const LoadingState: Story = {
   args: {
     loading: true,
     loadingMessage: 'Authenticating with Firebase...',
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -80,16 +88,16 @@ export const WithValidationErrors: Story = {
       email: 'Please enter a valid email address',
       password: 'Password must be at least 6 characters',
     },
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
 export const LoginError: Story = {
   args: {
     initialError: 'Invalid email or password. Please try again.',
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
     onRetry: () => console.log('Retry login'),
   },
 };
@@ -99,8 +107,8 @@ export const WithMultiFactorAuth: Story = {
     mfaEnabled: true,
     initialMode: 'mfa-challenge',
     onMFAVerify: (code: string) => console.log('MFA code entered:', code),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -113,8 +121,8 @@ export const EnterpriseSSO: Story = {
       { id: 'gsuite', name: 'Google Workspace', logo: '/logos/gsuite.svg' },
     ],
     onSSOLogin: (providerId: string) => console.log('SSO login with:', providerId),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -127,8 +135,8 @@ export const CustomBranding: Story = {
       primaryColor: '#6366F1',
       backgroundColor: '#F8FAFC',
     },
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -136,8 +144,8 @@ export const MobileOptimized: Story = {
   args: {
     mobileOptimized: true,
     socialProviders: ['google', 'apple'],
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
   parameters: {
     viewport: {
@@ -153,8 +161,8 @@ export const WithTermsAndPrivacy: Story = {
     privacyUrl: '/privacy-policy',
     onTermsClick: () => console.log('Terms clicked'),
     onPrivacyClick: () => console.log('Privacy clicked'),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -169,8 +177,8 @@ export const FreeTrial: Story = {
       'No credit card required',
     ],
     onStartTrial: () => console.log('Start free trial'),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -191,16 +199,16 @@ export const RegionalCompliance: Story = {
     cookieConsent: true,
     dataProcessingAgreement: true,
     onGDPRConsent: (consent: boolean) => console.log('GDPR consent:', consent),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
 export const DarkMode: Story = {
   args: {
     socialProviders: ['google', 'github'],
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
   parameters: {
     themes: {
@@ -217,8 +225,8 @@ export const AccessibilityOptimized: Story = {
       keyboardNavigation: true,
       screenReaderOptimized: true,
     },
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };
 
@@ -230,8 +238,8 @@ export const DeveloperMode: Story = {
       { email: 'user@test.com', password: 'user123', role: 'user' },
       { email: 'premium@test.com', password: 'premium123', role: 'premium' },
     ],
-    onQuickLogin: (account: any) => console.log('Quick login with:', account),
-    onLoginSuccess: (user: any) => console.log('Login successful:', user),
-    onLoginError: (error: any) => console.log('Login error:', error),
+    onQuickLogin: (account: TestAccount) => console.log('Quick login with:', account),
+    onLoginSuccess: (user: User) => console.log('Login successful:', user),
+    onLoginError: (error: Error) => console.log('Login error:', error),
   },
 };

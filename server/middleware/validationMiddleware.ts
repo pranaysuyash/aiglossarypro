@@ -1,4 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z, ZodError, ZodSchema } from 'zod';
 import logger from '../utils/logger';
 import DOMPurify from 'isomorphic-dompurify';
@@ -64,7 +65,7 @@ export class ValidationMiddleware {
         }
 
         const validatedData = await schema.parseAsync(data);
-        req.query = validatedData as any;
+        req.query = validatedData as unknown;
         
         next();
       } catch (error) {
@@ -86,7 +87,7 @@ export class ValidationMiddleware {
         }
 
         const validatedData = await schema.parseAsync(data);
-        req.params = validatedData as any;
+        req.params = validatedData as unknown;
         
         next();
       } catch (error) {
@@ -105,7 +106,7 @@ export class ValidationMiddleware {
   }, options: ValidationOptions = {}) {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const errors: any[] = [];
+        const errors: Error | unknown[] = [];
         
         // Validate body
         if (schemas.body) {
@@ -141,7 +142,7 @@ export class ValidationMiddleware {
               queryData = this.sanitizeSqlRecursive(queryData);
             }
             
-            req.query = await schemas.query.parseAsync(queryData) as any;
+            req.query = await schemas.query.parseAsync(queryData) as unknown;
           } catch (error) {
             if (error instanceof ZodError) {
               errors.push(...error.errors.map(e => ({ ...e, source: 'query' })));
@@ -158,7 +159,7 @@ export class ValidationMiddleware {
               paramsData = this.sanitizeSqlRecursive(paramsData);
             }
             
-            req.params = await schemas.params.parseAsync(paramsData) as any;
+            req.params = await schemas.params.parseAsync(paramsData) as unknown;
           } catch (error) {
             if (error instanceof ZodError) {
               errors.push(...error.errors.map(e => ({ ...e, source: 'params' })));
@@ -184,7 +185,7 @@ export class ValidationMiddleware {
   /**
    * Recursively sanitize HTML in an object
    */
-  private static sanitizeHtmlRecursive(obj: any): any {
+  private static sanitizeHtmlRecursive(obj: any) {
     if (typeof obj === 'string') {
       return DOMPurify.sanitize(obj, {
         ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'code', 'pre', 'p', 'br', 'ul', 'ol', 'li'],
@@ -212,7 +213,7 @@ export class ValidationMiddleware {
   /**
    * Recursively sanitize SQL injection attempts
    */
-  private static sanitizeSqlRecursive(obj: any): any {
+  private static sanitizeSqlRecursive(obj: any) {
     if (typeof obj === 'string') {
       // Basic SQL injection prevention
       return sqlstring.escape(obj).slice(1, -1); // Remove quotes added by escape

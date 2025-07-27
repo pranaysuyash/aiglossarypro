@@ -33,7 +33,7 @@ interface SectionItem {
     | 'table'
     | 'video';
   displayOrder: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   isAiGenerated: boolean;
   verificationStatus: 'unverified' | 'verified' | 'flagged' | 'expert_reviewed';
 }
@@ -143,7 +143,7 @@ export default function SectionContentRenderer({
               />
             );
           }
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
           console.error('Failed to parse interactive content:', error);
         }
         return (
@@ -202,7 +202,7 @@ export default function SectionContentRenderer({
               {...tableProps}
             />
           );
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
           console.error('Failed to parse table content:', error);
           return (
             <div className="p-4 border-2 border-dashed border-red-300 dark:border-red-600 rounded-lg">

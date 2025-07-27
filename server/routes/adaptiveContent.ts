@@ -3,7 +3,8 @@
  * Provides endpoints for AI-powered content organization based on learning patterns
  */
 
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { adaptiveContentService } from '../services/adaptiveContentService';

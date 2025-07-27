@@ -87,7 +87,7 @@ async function debugLogin() {
     const errors = await page.locator('.error, [role="alert"], .text-red-500').all();
     for (const error of errors) {
       const text = await error.textContent();
-      if (text) console.log(chalk.red(`Error found: ${text}`));
+      if (text) {console.log(chalk.red(`Error found: ${text}`));}
     }
     
     // Final screenshot

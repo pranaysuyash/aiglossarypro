@@ -36,7 +36,7 @@ Examples:
   const filePath = resolve(args[0]);
 
   // Parse command line options
-  const options: any = {};
+  const options: Record<string, unknown> = {};
 
   for (let i = 1; i < args.length; i += 2) {
     const flag = args[i];

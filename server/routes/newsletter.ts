@@ -32,7 +32,7 @@ const contactSchema = z.object({
 });
 
 // Helper function to extract location data from request
-function extractLocationData(req: any) {
+function extractLocationData(req: Request) {
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
   const userAgent = req.get('User-Agent') || 'unknown';
   const acceptLanguage = req.get('Accept-Language') || 'en';

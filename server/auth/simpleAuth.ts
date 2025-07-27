@@ -10,7 +10,8 @@
  * - Admin user management
  */
 
-import type { Express, NextFunction, Request, Response } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { AuthenticatedRequest } from '../../shared/types';
 import { optimizedStorage as storage } from '../optimizedStorage';
@@ -54,7 +55,7 @@ export function generateToken(user: any): string {
 /**
  * Verify JWT token
  */
-export function verifyToken(token: string): any {
+export function verifyToken(token: string) {
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (_error) {
@@ -339,7 +340,7 @@ export function setupSimpleAuth(app: Express) {
     
     // Destroy session if it exists
     if ((req as any).session?.destroy) {
-      (req as any).session.destroy((err: any) => {
+      (req as any).session.destroy((err: Request) => {
         if (err) {
           console.error('Session destruction error:', err);
         }

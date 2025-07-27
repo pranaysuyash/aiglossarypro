@@ -141,7 +141,7 @@ export function AIContentFeedback({
       } else {
         throw new Error(result.error || 'Failed to submit feedback');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error submitting feedback:', error);
       toast({
         title: 'Error',

@@ -202,7 +202,7 @@ export const InteractiveDemo: Story = {
     const [uploadResults, setUploadResults] = React.useState<any[]>([]);
     const [uploadErrors, setUploadErrors] = React.useState<string[]>([]);
 
-    const handleUploadComplete = (results: any[]) => {
+    const handleUploadComplete = (results: Response[]) => {
       setUploadResults(prev => [...prev, ...results]);
       console.log('Upload completed:', results);
     };

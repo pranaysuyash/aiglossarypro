@@ -24,7 +24,7 @@ interface ServiceHealth {
   responseTime?: number;
   message: string;
   lastChecked: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 interface DetailedHealthCheck {

@@ -20,8 +20,8 @@ import {
   User,
   Zap,
 } from 'lucide-react';
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import usePredictiveAnalytics from '../hooks/usePredictiveAnalytics';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';

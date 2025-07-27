@@ -165,7 +165,7 @@ export function AIFeedbackDashboard() {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error loading dashboard data:', error);
       toast({
         title: 'Error',
@@ -215,7 +215,7 @@ export function AIFeedbackDashboard() {
       setSelectedFeedback(null);
       setReviewNotes('');
       setNewStatus('');
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error updating feedback:', error);
       toast({
         title: 'Error',

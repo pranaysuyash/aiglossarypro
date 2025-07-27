@@ -12,7 +12,7 @@ export interface S3OperationLog {
   fileSize?: number;
   duration?: number; // in milliseconds
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   userId?: string;
   sessionId?: string;
   ipAddress?: string;
@@ -174,7 +174,7 @@ class S3MonitoringService {
   public logOperationStart(
     operation: S3OperationLog['operation'],
     fileKey?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     context?: {
       userId?: string;
       sessionId?: string;
@@ -205,7 +205,7 @@ class S3MonitoringService {
     duration?: number,
     fileSize?: number,
     error?: string,
-    additionalMetadata?: Record<string, any>
+    additionalMetadata?: Record<string, unknown>
   ) {
     const existingLogIndex = this.logs.findIndex(log => log.id === logId);
 

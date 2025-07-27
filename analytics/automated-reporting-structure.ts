@@ -405,7 +405,7 @@ export const generateReport = async (
   dateRange: { from: Date; to: Date }
 ) => {
   const template = reportTemplates.find(t => t.id === templateId);
-  if (!template) throw new Error(`Template ${templateId} not found`);
+  if (!template) {throw new Error(`Template ${templateId} not found`);}
 
   // Report generation logic would go here
   return {
@@ -421,7 +421,7 @@ export const generateReport = async (
 };
 
 // Export function for creating PostHog annotations
-export const createTestAnnotations = (testId: string, events: any[]) => {
+export const createTestAnnotations = (testId: string, events: unknown[]) => {
   return events.map(event => ({
     content: event.description,
     date_marker: event.timestamp,

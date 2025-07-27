@@ -3,7 +3,8 @@
  * Verifies Firebase ID tokens and manages user sessions
  */
 
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../../shared/types';
 import { setCustomUserClaims, verifyFirebaseToken } from '../config/firebase';
 import { optimizedStorage as storage } from '../optimizedStorage';

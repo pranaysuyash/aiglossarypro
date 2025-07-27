@@ -39,7 +39,7 @@ async function clearAllData() {
         const afterCount = (afterResult.rows[0] as any).count;
 
         console.log(`✅ ${tableName}: ${beforeCount} → ${afterCount} records`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`⚠️ ${tableName}: ${error.message}`);
       }
     }
@@ -56,7 +56,7 @@ async function clearAllData() {
       try {
         await db.execute(sql.raw(resetSql));
         console.log(`✅ Reset sequence: ${resetSql.split(' ')[4]}`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`⚠️ Sequence reset: ${error.message}`);
       }
     }
@@ -72,7 +72,7 @@ async function clearAllData() {
         const status =
           count === 0 ? '✅ EMPTY' : tableName === 'users' ? '👥 PRESERVED' : '⚠️ NOT EMPTY';
         console.log(`${tableName}: ${count} records ${status}`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`${tableName}: ERROR - ${error.message}`);
       }
     }

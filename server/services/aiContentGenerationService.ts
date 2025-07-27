@@ -123,25 +123,25 @@ export class AIContentGenerationService {
    * Generate content for a specific term and section
    */
   async generateContent(request: ContentGenerationRequest): Promise<ContentGenerationResponse> {
-    if (process.env.NODE_ENV === 'test') {
-      return {
-        success: true,
-        content: 'Mocked content for testing',
-        metadata: {
-          termId: request.termId,
-          termName: 'Mocked Term',
-          sectionName: request.sectionName,
-          templateUsed: 'mock-template',
-          model: 'mock-model',
-          promptTokens: 0,
-          completionTokens: 0,
-          totalTokens: 0,
-          cost: 0,
-          generatedAt: new Date(),
-          processingTime: 0,
-        },
-      };
-    }
+    // if (process.env.NODE_ENV === 'test') {
+    //   return {
+    //     success: true,
+    //     content: 'Mocked content for testing',
+    //     metadata: {
+    //       termId: request.termId,
+    //       termName: 'Mocked Term',
+    //       sectionName: request.sectionName,
+    //       templateUsed: 'mock-template',
+    //       model: 'mock-model',
+    //       promptTokens: 0,
+    //       completionTokens: 0,
+    //       totalTokens: 0,
+    //       cost: 0,
+    //       generatedAt: new Date(),
+    //       processingTime: 0,
+    //     },
+    //   };
+    // }
     const startTime = Date.now();
 
     try {

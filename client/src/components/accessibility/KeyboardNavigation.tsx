@@ -32,7 +32,7 @@ export function KeyboardNavigation({
     const currentIndexRef = useRef(startIndex);
 
     const getFocusableElements = useCallback(() => {
-        if (!containerRef.current) return [];
+        if (!containerRef.current) {return [];}
 
         const focusableSelectors = [
             'a[href]',
@@ -75,7 +75,7 @@ export function KeyboardNavigation({
 
     const handleKeyDown = useCallback((event: KeyboardEvent) => {
         const elements = getFocusableElements();
-        if (elements.length === 0) return;
+        if (elements.length === 0) {return;}
 
         const currentIndex = currentIndexRef.current;
         let newIndex = currentIndex;
@@ -146,7 +146,7 @@ export function KeyboardNavigation({
 
     useEffect(() => {
         const container = containerRef.current;
-        if (!container) return;
+        if (!container) {return;}
 
         // Initialize tabindex for all focusable elements
         const elements = getFocusableElements();
@@ -204,7 +204,7 @@ export function MenuNavigation({
     const handleKeyDown = useCallback((event: KeyboardEvent) => {
         switch (event.key) {
             case 'Enter':
-            case ' ':
+            case ' ': {
                 event.preventDefault();
                 const elements = Array.from(
                     (event.currentTarget as HTMLElement).querySelectorAll('[role="menuitem"]')
@@ -215,6 +215,7 @@ export function MenuNavigation({
                     onSelect?.(index);
                 }
                 break;
+            }
 
             case 'Escape':
                 event.preventDefault();
@@ -318,7 +319,7 @@ export function GridNavigation({
     const currentPositionRef = useRef({ row: 0, col: 0 });
 
     const getFocusableElements = useCallback(() => {
-        if (!containerRef.current) return [];
+        if (!containerRef.current) {return [];}
 
         const focusableSelectors = [
             'a[href]',
@@ -362,7 +363,7 @@ export function GridNavigation({
 
     const handleKeyDown = useCallback((event: KeyboardEvent) => {
         const elements = getFocusableElements();
-        if (elements.length === 0) return;
+        if (elements.length === 0) {return;}
 
         const { row, col } = currentPositionRef.current;
         const totalRows = Math.ceil(elements.length / columns);
@@ -430,7 +431,7 @@ export function GridNavigation({
 
     useEffect(() => {
         const container = containerRef.current;
-        if (!container) return;
+        if (!container) {return;}
 
         // Initialize tabindex
         const elements = getFocusableElements();

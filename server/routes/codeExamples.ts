@@ -4,7 +4,8 @@
  */
 
 import { and, desc, eq, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import {
   codeExampleRuns,
   codeExamples,

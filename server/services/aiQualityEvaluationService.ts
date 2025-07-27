@@ -698,7 +698,7 @@ Return as JSON:
   /**
    * Generate mock trends for analytics
    */
-  private generateMockTrends(request: QualityAnalyticsRequest): any[] {
+  private generateMockTrends(request: QualityAnalyticsRequest): Request[] {
     const trends = [];
     const days = 30;
     const baseDate = request.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -728,7 +728,7 @@ Return as JSON:
   /**
    * Generate mock distribution
    */
-  private generateMockDistribution(): any[] {
+  private generateMockDistribution(): unknown[] {
     return [
       { scoreRange: '8-10', count: 45, percentage: 30 },
       { scoreRange: '6-8', count: 60, percentage: 40 },
@@ -741,7 +741,7 @@ Return as JSON:
   /**
    * Generate mock common issues
    */
-  private generateMockCommonIssues(): any[] {
+  private generateMockCommonIssues(): unknown[] {
     return [
       {
         issue: 'Insufficient practical examples',

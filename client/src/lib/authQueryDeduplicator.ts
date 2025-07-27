@@ -4,9 +4,9 @@
  */
 
 interface AuthQueryState {
-  promise: Promise<any> | null;
+  promise: Promise<unknown> | null;
   lastQueryTime: number;
-  result: any;
+  result: Response;
   consecutiveQueries: number;
   lastResultHash: string | null;
 }
@@ -37,14 +37,14 @@ class AuthQueryDeduplicator {
   /**
    * Simple hash function for result comparison
    */
-  private hashResult(result: any): string {
+  private hashResult(result: Response): string {
     return JSON.stringify(result);
   }
 
   /**
    * Execute auth query with enhanced deduplication and loop prevention
    */
-  async executeQuery(queryFn: () => Promise<any>): Promise<any> {
+  async executeQuery(queryFn: () => Promise<unknown>): Promise<unknown> {
     const now = Date.now();
 
     // If we have a pending promise, return it (deduplication)

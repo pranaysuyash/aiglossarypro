@@ -25,7 +25,7 @@ export function useAuth() {
   // Subscribe to auth state changes from AuthStateManager with proper cleanup
   useEffect(() => {
     const unsubscribe = authStateManager.subscribe((newState) => {
-      if (isUnmountedRef.current) return; // Prevent state updates after unmount
+      if (isUnmountedRef.current) {return;} // Prevent state updates after unmount
 
       setAuthState(newState);
       // Update React Query cache when auth state changes (single source of truth)
@@ -101,7 +101,7 @@ export function useAuth() {
   // Simplified cross-tab communication to prevent loops with proper cleanup
   useEffect(() => {
     const handleAuthChange = (event: MessageEvent) => {
-      if (isUnmountedRef.current) return; // Prevent actions after unmount
+      if (isUnmountedRef.current) {return;} // Prevent actions after unmount
 
       // Filter out messages from this tab
       if (event.data?.source === getTabId()) {
@@ -119,7 +119,7 @@ export function useAuth() {
     };
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (isUnmountedRef.current) return; // Prevent actions after unmount
+      if (isUnmountedRef.current) {return;} // Prevent actions after unmount
 
       if (event.key === 'authToken' && event.newValue === null) {
         console.log('🔄 Auth token removed from localStorage');

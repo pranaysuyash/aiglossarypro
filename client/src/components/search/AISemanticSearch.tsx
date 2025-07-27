@@ -21,8 +21,8 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
 import { useAdPlacement } from '../../hooks/useAdSense';
 import { GoogleAd } from '../ads/GoogleAd';
 import { Badge } from '../ui/badge';

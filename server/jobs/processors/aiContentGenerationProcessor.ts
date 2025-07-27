@@ -240,7 +240,7 @@ function buildPrompt(template: string, termName: string, termData: any): string 
 /**
  * Parse and structure generated content based on section type
  */
-function parseGeneratedContent(section: string, content: string): any {
+function parseGeneratedContent(section: string, content: string) {
   // Remove any markdown formatting for consistent structure
   const cleanContent = content.trim();
 

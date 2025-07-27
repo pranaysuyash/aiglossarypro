@@ -3,7 +3,8 @@
  * API endpoints for learning outcome predictions and insights
  */
 
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../middleware/errorHandler';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
@@ -152,7 +153,7 @@ router.get(
       // Get learning outcome predictions
       const outcomes = await predictiveAnalyticsService.predictLearningOutcomes(userId);
 
-      const response: any = {
+      const response: Response = {
         success: true,
         data: outcomes,
       };
@@ -665,7 +666,7 @@ router.post(
         });
       }
 
-      const results: Record<string, any> = {};
+      const results: Record<string, unknown> = {};
 
       // Process users in parallel (with concurrency limit)
       const concurrency = 5;

@@ -164,7 +164,7 @@ export const getPromptsForColumn = (columnId: string): PromptTriplet | undefined
 // Export a function to generate prompts with term substitution
 export const generatePromptsForTerm = (columnId: string, termName: string): PromptTriplet | null => {
   const template = COLUMN_PROMPT_TEMPLATES[columnId];
-  if (!template) return null;
+  if (!template) {return null;}
 
   return {
     generative: template.generative.replace(/\*\*\[TERM\]\*\*/g, `**${termName}**`),

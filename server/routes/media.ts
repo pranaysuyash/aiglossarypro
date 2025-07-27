@@ -6,7 +6,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sql } from 'drizzle-orm';
-import { type Request, type Response, Router } from 'express';
+import { type Request, type Response, Router } from 'express'
+import type { Request, Response } from 'express';
 import multer from 'multer';
 import type { ApiResponse } from '../../shared/types';
 import { db } from '../db';
@@ -392,7 +393,7 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
       });
     }
 
-    const file = fileInfo.rows[0] as any;
+    const file = fileInfo.rows[0] as unknown;
 
     // Security: Sanitize headers to prevent header injection
     const safeOriginalName = (file.original_name || 'download').replace(/["\\r\\n]/g, '');

@@ -93,7 +93,7 @@ class AIContentGenerator {
     return report;
   }
 
-  private createSampleEnhancedContent(): any[] {
+  private createSampleEnhancedContent(): unknown[] {
     return [
       {
         name: 'Neural Network',
@@ -153,7 +153,7 @@ class AIContentGenerator {
     ];
   }
 
-  private createGenerationReport(initialGaps: any, enhancedContent: any[]): GenerationReport {
+  private createGenerationReport(initialGaps: any, enhancedContent: unknown[]): GenerationReport {
     const contentGenerated = {
       definitions: 0,
       shortDefinitions: 0,

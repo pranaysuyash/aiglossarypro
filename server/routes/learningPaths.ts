@@ -4,7 +4,8 @@
  */
 
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import {
   type InsertLearningPath,
   type InsertLearningPathStep,
@@ -29,6 +30,30 @@ import {
 } from '../validation/learningPaths';
 
 import logger from '../utils/logger';
+
+// Types
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    isAdmin?: boolean;
+    lifetimeAccess?: boolean;
+  };
+}
+
+interface LearningPathStep {
+  term_id: string;
+  step_order?: number;
+  is_optional?: boolean;
+  estimated_time?: number;
+  step_type?: string;
+  content?: Record<string, unknown>;
+}
+
+interface StepOrder {
+  stepId: string;
+  order: number;
+}
+
 export function registerLearningPathsRoutes(app: Express): void {
   /**
    * Get all learning paths with filtering and pagination
@@ -37,7 +62,7 @@ export function registerLearningPathsRoutes(app: Express): void {
   app.get(
     '/api/learning-paths',
     validateQuery(learningPathsQuerySchema),
-    async (req: ValidatedRequest<any, LearningPathsQuery>, res: Response) => {
+    async (req: ValidatedRequest<never, LearningPathsQuery>, res: Response) => {
       try {
         const {
           category,
@@ -200,7 +225,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     validateBody(createLearningPathSchema),
     async (req: ValidatedRequest<CreateLearningPathInput>, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         if (!user) {
           return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
         }
@@ -246,14 +271,14 @@ export function registerLearningPathsRoutes(app: Express): void {
 
         // Create steps if provided
         if (steps && Array.isArray(steps)) {
-          const stepData: InsertLearningPathStep[] = steps.map((step: any, index: number) => ({
+          const stepData: InsertLearningPathStep[] = steps.map((step: LearningPathStep, index: number) => ({
             learning_path_id: createdPath.id,
             term_id: step.term_id,
             step_order: step.step_order || index + 1,
             is_optional: step.is_optional || false,
             estimated_time: step.estimated_time,
             step_type: step.step_type || 'concept',
-            content: step.content || {},
+            content: step.content || {} as Record<string, unknown>,
           }));
 
           await db.insert(learningPathSteps).values(stepData);
@@ -281,7 +306,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { id } = req.params;
 
         if (!user) {
@@ -397,7 +422,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { pathId, stepId } = req.params;
         const { time_spent, notes } = req.body;
 
@@ -504,7 +529,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
 
         if (!user) {
           return res.status(401).json({
@@ -558,7 +583,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { limit = LEARNING_PATHS_LIMITS.RECOMMENDED_LIMIT } = req.query;
 
         const recommendationLimit = Math.min(Number(limit), LEARNING_PATHS_LIMITS.MAX_LIMIT);
@@ -723,7 +748,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { id } = req.params;
 
         if (!user) {
@@ -800,7 +825,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { pathId } = req.params;
         const { term_id, step_order, is_optional, estimated_time, step_type, content } = req.body;
 
@@ -881,7 +906,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { pathId, stepId } = req.params;
         const { term_id, step_order, is_optional, estimated_time, step_type, content } = req.body;
 
@@ -970,7 +995,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { pathId, stepId } = req.params;
 
         if (!user) {
@@ -1045,7 +1070,7 @@ export function registerLearningPathsRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = (req as AuthenticatedRequest).user;
         const { pathId } = req.params;
         const { stepOrders } = req.body; // Array of { stepId, order }
 

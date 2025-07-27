@@ -59,6 +59,7 @@ import { registerUserProgressRoutes } from './user/progress';
 import { setupSupportRoutes } from './support';
 // Import enhanced 295-column routes
 import enhanced295Routes from './enhanced295Routes';
+import enhancedTermsRoutes from './enhancedTerms';
 
 /**
  * Main route registration function
@@ -186,6 +187,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     // Register 295-column content generation routes
     app.use('/api/enhanced-295', enhanced295Routes);
     logger.info('✅ Enhanced 295-column content generation routes registered');
+
+    // Register enhanced terms routes
+    enhancedTermsRoutes(app);
+    logger.info('✅ Enhanced terms routes registered');
 
     // Register cache management routes (currently disabled - cache.ts is empty)
     // app.use('/api/cache', cacheRoutes);

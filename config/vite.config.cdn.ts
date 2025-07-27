@@ -38,8 +38,8 @@ const CDN_CONFIG = {
 
 // Determine active CDN configuration
 const getActiveCDN = () => {
-  if (CDN_CONFIG.cloudflare.enabled) return CDN_CONFIG.cloudflare;
-  if (CDN_CONFIG.cloudfront.enabled) return CDN_CONFIG.cloudfront;
+  if (CDN_CONFIG.cloudflare.enabled) {return CDN_CONFIG.cloudflare;}
+  if (CDN_CONFIG.cloudfront.enabled) {return CDN_CONFIG.cloudfront;}
   return CDN_CONFIG.local;
 };
 
@@ -49,10 +49,10 @@ const useCDN = isProd && (CDN_CONFIG.cloudflare.enabled || CDN_CONFIG.cloudfront
 
 // CDN Asset URL Builder
 const buildCDNUrl = (assetPath: string) => {
-  if (!useCDN) return assetPath;
+  if (!useCDN) {return assetPath;}
 
   // Don't modify absolute URLs
-  if (assetPath.startsWith('http')) return assetPath;
+  if (assetPath.startsWith('http')) {return assetPath;}
 
   // Build CDN URL
   const cdnBase = activeCDN.baseUrl.replace(/\/$/, '');

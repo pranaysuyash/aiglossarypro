@@ -1,5 +1,5 @@
-import type React from 'react';
 import { useCallback, useMemo } from 'react';
+import type React from 'react';
 import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import type { ITerm } from '../../../shared/types';

@@ -60,7 +60,7 @@ describe('AISemanticSearch', () => {
 
   it('shows loading state during search', async () => {
     // Mock a delayed API response
-    (global.fetch as any).mockImplementation(
+    (global.fetch as unknown).mockImplementation(
       () =>
         new Promise(resolve =>
           setTimeout(
@@ -137,7 +137,7 @@ describe('AISemanticSearch', () => {
       },
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockResults),
     });
@@ -219,7 +219,7 @@ describe('AISemanticSearch', () => {
       },
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockResults),
     });
@@ -264,7 +264,7 @@ describe('AISemanticSearch', () => {
       },
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockResults),
     });
@@ -283,7 +283,7 @@ describe('AISemanticSearch', () => {
   });
 
   it.skip('handles search errors gracefully', async () => {
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
     renderWithQueryClient(<AISemanticSearch />);
 

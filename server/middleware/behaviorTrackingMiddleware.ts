@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { personalizationService } from '../services/personalizationService';
 import { log as logger } from '../utils/logger';
 
@@ -58,7 +59,7 @@ export const behaviorTrackingMiddleware = (
 
   // Override res.json to track API responses
   const originalJson = res.json;
-  res.json = function (data: any) {
+  res.json = function (data: Response) {
     if (userId && req.startTime) {
       const responseTime = Date.now() - req.startTime;
       trackAPIInteraction(req.trackingContext!, req.path, req.method, res.statusCode, responseTime);
@@ -77,7 +78,7 @@ export const trackUserAction = async (
   actionType: string,
   entityType: string,
   entityId: string,
-  additionalContext?: Record<string, any>
+  additionalContext?: Record<string, unknown>
 ) => {
   if (!req.trackingContext?.userId) {return;}
 
@@ -115,7 +116,7 @@ export const enhancedBehaviorTracking = (options: {
     // Add client-side tracking script injection for enhanced tracking
     if (options.trackScrollDepth || options.trackTimeSpent || options.trackInteractions) {
       const originalSend = res.send;
-      res.send = function (data: any) {
+      res.send = function (data: Response) {
         if (typeof data === 'string' && data.includes('</body>')) {
           const trackingScript = generateTrackingScript(options);
           data = data.replace('</body>', `${trackingScript}</body>`);
@@ -385,7 +386,7 @@ function generateTrackingScript(options: {
 /**
  * Route-specific tracking helpers
  */
-export const trackTermView = (req: BehaviorTrackingRequest, termId: string, termData?: any) => {
+export const trackTermView = (req: BehaviorTrackingRequest, termId: string, termData?: Request) => {
   return trackUserAction(req, 'view', 'term', termId, { termData });
 };
 
@@ -397,7 +398,7 @@ export const trackTermFavorite = (
   return trackUserAction(req, 'favorite', 'term', termId, { action });
 };
 
-export const trackSearch = (req: BehaviorTrackingRequest, query: string, results?: any[]) => {
+export const trackSearch = (req: BehaviorTrackingRequest, query: string, results?: Request[]) => {
   return trackUserAction(req, 'search', 'search', query, {
     query,
     resultCount: results?.length,

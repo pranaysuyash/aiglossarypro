@@ -137,7 +137,7 @@ test.describe('Purchase and Premium Features', () => {
             }
           }
 
-          if (purchaseInitiated) break;
+          if (purchaseInitiated) {break;}
         }
       }
 

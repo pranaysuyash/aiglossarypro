@@ -315,7 +315,7 @@ export const monitoringConfig = {
 // Export functions for PostHog dashboard creation
 export const createDashboard = (testId: string) => {
   const test = abTests.find(t => t.id === testId);
-  if (!test) throw new Error(`Test ${testId} not found`);
+  if (!test) {throw new Error(`Test ${testId} not found`);}
 
   return {
     name: test.name,

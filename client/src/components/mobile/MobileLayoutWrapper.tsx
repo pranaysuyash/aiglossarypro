@@ -3,8 +3,8 @@
  * Comprehensive mobile-optimized layout with enhanced touch interactions
  */
 
-import type React from 'react';
 import { type ReactNode, useEffect } from 'react';
+import type React from 'react';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { cn } from '../../lib/utils';
 import MobileNavigation from './MobileNavigation';

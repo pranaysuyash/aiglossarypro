@@ -78,7 +78,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
           message: response.data?.error || 'Verification failed',
         });
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       const errorMessage = err.response?.data?.error || 'Failed to verify purchase';
       setError(errorMessage);
 

@@ -16,6 +16,52 @@ import { log } from '../utils/logger';
 import { validate } from '../middleware/validationMiddleware';
 import { contentSchemas, paramSchemas } from '../schemas/apiValidation';
 
+// Types
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+  };
+}
+
+interface AccessibilityScore {
+  score: number;
+  level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  improvements?: string[];
+}
+
+interface SimplificationSuggestion {
+  simplifiedText: string;
+  technicalTerms: string[];
+}
+
+interface TermAccessibilityResult {
+  termId: string;
+  termName: string;
+  accessibilityScore: AccessibilityScore;
+  simplificationSuggestion: SimplificationSuggestion | null;
+  needsImprovement: boolean;
+}
+
+interface AccessibilityReport {
+  summary: {
+    totalTerms: number;
+    averageScore: number;
+    distribution: {
+      beginner: number;
+      intermediate: number;
+      advanced: number;
+      expert: number;
+    };
+  };
+  recommendations: string[];
+}
+
+interface TermData {
+  id: string;
+  name: string;
+  definition: string;
+}
+
 /**
  * Content accessibility and improvement routes
  */
@@ -40,7 +86,13 @@ export function registerContentRoutes(app: Express): void {
       const suggestion =
         score.level !== 'beginner' ? generateSimplificationSuggestion(term.definition) : null;
 
-      const response: ApiResponse<any> = {
+      const response: ApiResponse<{
+        termId: string;
+        termName: string;
+        accessibilityScore: AccessibilityScore;
+        simplificationSuggestion: SimplificationSuggestion | null;
+        needsImprovement: boolean;
+      }> = {
         success: true,
         data: {
           termId: term.id,
@@ -95,7 +147,7 @@ export function registerContentRoutes(app: Express): void {
         } else {
           // Analyze all terms (with limit)
           const allTerms = await storage.getAllTerms({ limit: limit || 100, page: 1 });
-          terms = allTerms.terms.map((term: any) => ({
+          terms = allTerms.terms.map((term) => ({
             id: term.id,
             name: term.name,
             definition: term.definition,
@@ -104,7 +156,7 @@ export function registerContentRoutes(app: Express): void {
 
         log.info('Starting batch accessibility analysis', {
           termCount: terms.length,
-          requestedBy: (req.user as any)?.id,
+          requestedBy: (req as AuthenticatedRequest).user?.id,
         });
 
         const results = await processTermsForAccessibility(terms);
@@ -114,7 +166,15 @@ export function registerContentRoutes(app: Express): void {
           results.map(r => ({ score: r.accessibilityScore, termName: r.termName }))
         );
 
-        const response: ApiResponse<any> = {
+        const response: ApiResponse<{
+          results: TermAccessibilityResult[];
+          report: AccessibilityReport;
+          analyzedCount: number;
+          summary: {
+            needsImprovement: number;
+            averageScore: number;
+          };
+        }> = {
           success: true,
           data: {
             results,
@@ -159,7 +219,14 @@ export function registerContentRoutes(app: Express): void {
       const suggestion = generateSimplificationSuggestion(term.definition);
       const enhancedDefinition = addBeginnerContext(term.definition, term.name);
 
-      const response: ApiResponse<any> = {
+      const response: ApiResponse<{
+        termId: string;
+        termName: string;
+        originalDefinition: string;
+        simplificationSuggestion: SimplificationSuggestion;
+        enhancedDefinition: string;
+        technicalTerms: string[];
+      }> = {
         success: true,
         data: {
           termId: term.id,
@@ -232,7 +299,12 @@ export function registerContentRoutes(app: Express): void {
           improvement: newScore.score - calculateAccessibilityScore(term.definition).score,
         });
 
-        const response: ApiResponse<any> = {
+        const response: ApiResponse<{
+          termId: string;
+          updatedDefinition: string;
+          newAccessibilityScore: AccessibilityScore;
+          message: string;
+        }> = {
           success: true,
           data: {
             termId,
@@ -268,7 +340,7 @@ export function registerContentRoutes(app: Express): void {
         const sampleSize = parseInt(req.query.sampleSize as string) || 500;
         const allTerms = await storage.getAllTerms({ limit: sampleSize, page: 1 });
 
-        const termsData = allTerms.data.map((term: any) => ({
+        const termsData = allTerms.data.map((term) => ({
           id: term.id,
           name: term.name,
           definition: term.definition,
@@ -276,7 +348,7 @@ export function registerContentRoutes(app: Express): void {
 
         log.info('Generating accessibility report', {
           sampleSize: termsData.length,
-          requestedBy: (req.user as any)?.id,
+          requestedBy: (req as AuthenticatedRequest).user?.id,
         });
 
         const results = await processTermsForAccessibility(termsData);
@@ -297,7 +369,18 @@ export function registerContentRoutes(app: Express): void {
             improvements: r.accessibilityScore.improvements,
           }));
 
-        const response: ApiResponse<any> = {
+        const response: ApiResponse<{
+          report: AccessibilityReport;
+          termsNeedingImprovement: Array<{
+            termId: string;
+            termName: string;
+            score: number;
+            level: string;
+            improvements?: string[];
+          }>;
+          analyzedTermsCount: number;
+          timestamp: string;
+        }> = {
           success: true,
           data: {
             report,
@@ -336,13 +419,20 @@ export function registerContentRoutes(app: Express): void {
     validateQuery(accessibilitySearchSchema),
     async (req: Request, res: Response) => {
       try {
-        const { level, minScore, maxScore, needsImprovement, limit, page } = req.query as any;
+        const { level, minScore, maxScore, needsImprovement, limit, page } = req.query as {
+          level?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+          minScore?: number;
+          maxScore?: number;
+          needsImprovement?: boolean;
+          limit: number;
+          page: number;
+        };
 
         // Get terms (this is a simplified implementation - in production,
         // you'd want to cache accessibility scores in the database)
         const allTerms = await storage.getAllTerms({ limit: 1000, page: 1 });
 
-        const termsWithScores = allTerms.data.map((term: any) => {
+        const termsWithScores = allTerms.data.map((term) => {
           const score = calculateAccessibilityScore(term.definition);
           return {
             ...term,
@@ -377,7 +467,20 @@ export function registerContentRoutes(app: Express): void {
         const endIndex = startIndex + limit;
         const paginatedTerms = filteredTerms.slice(startIndex, endIndex);
 
-        const response: ApiResponse<any> = {
+        const response: ApiResponse<{
+          terms: Array<{
+            id: string;
+            name: string;
+            definition: string;
+            accessibilityScore: AccessibilityScore;
+          }>;
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+          };
+        }> = {
           success: true,
           data: {
             terms: paginatedTerms.map(term => ({

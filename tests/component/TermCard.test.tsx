@@ -221,7 +221,7 @@ describe('TermCard Component', () => {
         id: null,
         name: '',
         definition: null,
-      } as any;
+      } as unknown;
 
       // Should not crash with malformed data
       expect(() => {

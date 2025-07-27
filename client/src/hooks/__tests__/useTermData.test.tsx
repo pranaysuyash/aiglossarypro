@@ -171,7 +171,7 @@ describe('useTermActions', () => {
   });
 
   it('should track term view', async () => {
-    (apiRequest as any).mockResolvedValueOnce({ success: true });
+    (apiRequest as unknown).mockResolvedValueOnce({ success: true });
 
     const { result } = renderHook(() => useTermActions('term123', true));
 
@@ -185,7 +185,7 @@ describe('useTermActions', () => {
   });
 
   it('should handle view tracking errors gracefully', async () => {
-    (apiRequest as any).mockRejectedValueOnce(new Error('Network error'));
+    (apiRequest as unknown).mockRejectedValueOnce(new Error('Network error'));
 
     const { result } = renderHook(() => useTermActions('term123', true));
 
@@ -206,7 +206,7 @@ describe('useTermActions', () => {
   });
 
   it('should handle section interaction', async () => {
-    (apiRequest as any).mockResolvedValueOnce({ success: true });
+    (apiRequest as unknown).mockResolvedValueOnce({ success: true });
 
     const { result } = renderHook(() => useTermActions('term123', true));
 
@@ -223,7 +223,7 @@ describe('useTermActions', () => {
   });
 
   it('should handle interactive element interaction', async () => {
-    (apiRequest as any).mockResolvedValueOnce({ success: true });
+    (apiRequest as unknown).mockResolvedValueOnce({ success: true });
 
     const { result } = renderHook(() => useTermActions('term123', true));
 
@@ -244,7 +244,7 @@ describe('useTermActions', () => {
   });
 
   it('should handle interaction errors gracefully', async () => {
-    (apiRequest as any).mockRejectedValueOnce(new Error('API error'));
+    (apiRequest as unknown).mockRejectedValueOnce(new Error('API error'));
 
     const { result } = renderHook(() => useTermActions('term123', true));
 

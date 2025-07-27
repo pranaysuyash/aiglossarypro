@@ -398,7 +398,7 @@ function parseCSVApplications(value: string): Array<{ name: string; description:
 async function processBatch(
   batch: ImportRecord[],
   existingTermNames: Set<string>,
-  existingCategories: any[],
+  existingCategories: unknown[],
   enhance: boolean,
   validate: boolean,
   dryRun: boolean
@@ -486,7 +486,7 @@ async function processBatch(
  */
 async function ensureCategoryExists(
   categoryName: string,
-  existingCategories: any[],
+  existingCategories: unknown[],
   dryRun: boolean
 ): Promise<string | null> {
   // Check if category already exists

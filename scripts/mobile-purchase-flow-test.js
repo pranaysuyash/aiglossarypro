@@ -131,8 +131,8 @@ function generateMobileTestReport() {
   console.log('\n🔄 Purchase Flow Steps:');
   purchaseFlowSteps.forEach(step => {
     console.log(`\n   Step ${step.step}: ${step.name}`);
-    if (step.url) console.log(`      URL: ${step.url}`);
-    if (step.action) console.log(`      Action: ${step.action}`);
+    if (step.url) {console.log(`      URL: ${step.url}`);}
+    if (step.action) {console.log(`      Action: ${step.action}`);}
     console.log(`      Checks:`);
     step.checks.forEach(check => {
       console.log(`        • ${check}`);
@@ -151,8 +151,8 @@ function generateMobileTestReport() {
 
     purchaseFlowSteps.forEach(step => {
       console.log(`      ${step.step}. ${step.name}`);
-      if (step.action) console.log(`         Action: ${step.action}`);
-      if (step.url && step.step > 1) console.log(`         Expected URL: ${step.url}`);
+      if (step.action) {console.log(`         Action: ${step.action}`);}
+      if (step.url && step.step > 1) {console.log(`         Expected URL: ${step.url}`);}
     });
 
     console.log(`   5. Document any issues or UX problems`);

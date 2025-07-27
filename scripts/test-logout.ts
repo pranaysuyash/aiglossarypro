@@ -15,7 +15,7 @@ async function testLogout() {
     // Handle cookie consent
     try {
       const acceptButton = await page.waitForSelector('button:has-text("Accept")', { timeout: 2000 });
-      if (acceptButton) await acceptButton.click();
+      if (acceptButton) {await acceptButton.click();}
     } catch {}
     
     // Login

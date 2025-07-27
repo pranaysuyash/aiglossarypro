@@ -116,7 +116,7 @@ export class MonitoredPool extends Pool {
     });
 
     // Track errors
-    this.on('error', (err: Error, client: any) => {
+    this.on('error', (err: Error, client: Error | unknown) => {
       const metrics = this.connectionMetrics.get(client);
       if (metrics) {
         metrics.errors++;
@@ -130,7 +130,7 @@ export class MonitoredPool extends Pool {
   }
 
   private calculateAverage(values: number[]): number {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {return 0;}
     return values.reduce((sum, val) => sum + val, 0) / values.length;
   }
 
@@ -182,7 +182,7 @@ export class MonitoredPool extends Pool {
     this.metricsEmitter.on('metrics', callback);
   }
 
-  public async connect(): Promise<any> {
+  public async connect(): Promise<unknown> {
     const metrics: ConnectionMetrics = {
       acquireStartTime: Date.now(),
       queryCount: 0,
@@ -200,7 +200,7 @@ export class MonitoredPool extends Pool {
       
       // Wrap query method to track metrics
       const originalQuery = client.query.bind(client);
-      client.query = async (...args: any[]) => {
+      client.query = async (...args: unknown[]) => {
         const queryStart = Date.now();
         const clientMetrics = this.connectionMetrics.get(client);
         

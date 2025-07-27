@@ -1,6 +1,6 @@
 import { BarChart3, CheckCircle, Download, Play } from 'lucide-react';
-import type React from 'react';
 import { useCallback, useRef, useState } from 'react';
+import type React from 'react';
 import { createLargeDataset, performanceTestData } from '@/data/test-dataset';
 import type { ContentNode } from '@/types/content-structure';
 import {
@@ -98,7 +98,7 @@ const NavigationPerformanceTest: React.FC = () => {
       return new Promise(resolve => {
         setTimeout(() => {
           // Simple mock search - filter nodes by name
-          const results: any[] = [];
+          const results: Response[] = [];
           const searchInNodes = (nodes: ContentNode[]) => {
             nodes.forEach(node => {
               if (node.name.toLowerCase().includes(query.toLowerCase())) {
@@ -155,7 +155,7 @@ const NavigationPerformanceTest: React.FC = () => {
         setResults(prev => [...prev, result]);
         endOperation('full_benchmark');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Benchmark failed:', error);
     } finally {
       setIsRunning(false);

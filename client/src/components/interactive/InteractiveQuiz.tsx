@@ -82,7 +82,7 @@ export default function InteractiveQuiz({
 
       return () => clearInterval(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [timeLimit, timeRemaining, isCompleted]);
 
   const formatTime = (seconds: number): string => {

@@ -116,7 +116,7 @@ export default function LandingPage() {
             if (!result.success) {
               throw new Error(result.message);
             }
-          } catch (error: any) {
+          } catch (error: Error | unknown) {
             console.error('Newsletter subscription error:', error);
             throw error; // Re-throw so Footer can handle the error display
           }

@@ -146,7 +146,7 @@ export class ContentPopulator {
 
   private async loadTermsFromCSV(inputPath: string): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      const terms: any[] = [];
+      const terms: unknown[] = [];
 
       fs.createReadStream(inputPath)
         .pipe(csvParser())
@@ -161,7 +161,7 @@ export class ContentPopulator {
     });
   }
 
-  private async enhanceTerms(terms: any[]): Promise<EnhancedTermData[]> {
+  private async enhanceTerms(terms: unknown[]): Promise<EnhancedTermData[]> {
     const enhanced: EnhancedTermData[] = [];
 
     for (let i = 0; i < terms.length; i++) {

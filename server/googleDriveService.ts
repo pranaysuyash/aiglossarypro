@@ -151,7 +151,7 @@ export async function processExcelFromDrive(
   _auth: GoogleDriveAuth,
   _credentials: DriveCredentials,
   _fileId: string
-): Promise<any> {
+): Promise<unknown> {
   try {
     logger.info('⚠️  Excel processing functionality has been removed');
     throw new Error('Excel processing functionality has been removed');
@@ -190,7 +190,7 @@ export async function streamExcelFromDrive(
   auth: GoogleDriveAuth,
   credentials: DriveCredentials,
   fileId: string
-): Promise<any> {
+): Promise<unknown> {
   const drive = getDriveClient(auth, credentials);
 
   // Get metadata to check file size

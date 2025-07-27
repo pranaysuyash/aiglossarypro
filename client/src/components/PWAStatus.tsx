@@ -19,8 +19,8 @@ import {
   WifiOff,
   XCircle,
 } from 'lucide-react';
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import usePWA from '../hooks/usePWA';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';

@@ -61,7 +61,7 @@ class FirebaseVisualAuditor {
   private baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   private screenshotDir: string;
   private reportDir: string;
-  private issues: any[] = [];
+  private issues: unknown[] = [];
   private testUsers: TestUser[] = [
     {
       email: 'test.user@example.com',

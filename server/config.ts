@@ -252,7 +252,7 @@ export function logConfigStatus() {
 }
 
 // Security helper to check if any sensitive data might be logged
-export function sanitizeLogData(data: any): any {
+export function sanitizeLogData(data: any) {
   if (typeof data !== 'object' || data === null) {return data;}
 
   const sensitiveKeys = [

@@ -1,5 +1,6 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
-import { type Request, type Response, Router } from 'express';
+import { type Request, type Response, Router } from 'express'
+import type { Request, Response } from 'express';
 import { aiUsageAnalytics } from '../../../shared/enhancedSchema';
 import { db } from '../../db';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';

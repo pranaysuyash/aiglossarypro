@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, like, or, sql } from 'drizzle-orm';
-import type { Express } from 'express';
+import type { Express } from 'express'
+import type { Request, Response } from 'express';
 import { enhancedTerms } from '../../../shared/enhancedSchema';
 // import { aiService } from '../../aiService'; // Commented out until AI service is implemented
 import { db } from '../../db';
@@ -118,7 +119,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
         // const userId = req.user.id;
@@ -362,7 +363,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/bulk-update',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         const userId = req.user.id;
 
@@ -501,7 +502,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/bulk-verify',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         const userId = req.user.id;
 
@@ -550,7 +551,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/quality-analysis',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
         // const userId = req.user.id;
@@ -733,7 +734,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/analytics',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
         // const userId = req.user.id;
@@ -856,7 +857,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/export',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
         // const userId = req.user.id;
@@ -1028,7 +1029,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/create-single',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         const userId = req.user.id;
 
@@ -1195,7 +1196,7 @@ export function registerAdminTermsRoutes(app: Express): void {
     '/api/admin/terms/:termId',
     authenticateFirebaseToken,
     requireFirebaseAdmin,
-    async (req: any, res) => {
+    async (req: Request, res) => {
       try {
         const userId = req.user.id;
 

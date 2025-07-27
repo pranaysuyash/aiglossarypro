@@ -1,5 +1,5 @@
-import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import type React from 'react';
 import { cn } from '@/lib/utils';
 import {
   ImageOptimizationService,
@@ -233,7 +233,7 @@ export const useImagePreload = (
           format: optimalFormat,
           ...params,
         });
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.warn('Failed to preload image:', src, error);
       }
     };

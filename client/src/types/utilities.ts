@@ -5,7 +5,7 @@ export type DeepPartial<T> = {
 
 export type Nullable<T> = T | null;
 export type Maybe<T> = T | undefined;
-export type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (
+export type AsyncReturnType<T extends (...args: any) => Promise<unknown>> = T extends (
   ...args: any
 ) => Promise<infer R>
   ? R

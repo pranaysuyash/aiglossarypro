@@ -24,7 +24,7 @@ async function backupDatabase() {
         data: result.rows,
       };
       console.log(`✅ Backed up ${table}: ${result.rows.length} records`);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.log(`⚠️ Error backing up ${table}:`, error.message);
       backup[table] = { count: 0, data: [], error: error.message };
     }

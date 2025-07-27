@@ -35,7 +35,7 @@ describe('useAuth', () => {
     sessionStorage.clear();
     
     // Reset fetch mock
-    (global.fetch as any).mockReset();
+    (global.fetch as unknown).mockReset();
   });
 
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -78,7 +78,7 @@ describe('useAuth', () => {
       useLocation: () => ['/current-path', mockNavigate]
     }));
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true })
     });
@@ -108,10 +108,10 @@ describe('useAuth', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     // Mock Firebase signout to throw error
-    (signOutUser as any).mockRejectedValueOnce(new Error('Firebase error'));
+    (signOutUser as unknown).mockRejectedValueOnce(new Error('Firebase error'));
     
     // Mock backend logout to fail
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 

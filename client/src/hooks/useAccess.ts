@@ -122,7 +122,7 @@ export function useViewTerm() {
       } 
         return { success: false, error: response.data.error || 'Failed to view term' };
       
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       const errorMessage = error.response?.data?.error || 'Failed to view term';
       return { success: false, error: errorMessage };
     }

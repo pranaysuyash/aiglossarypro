@@ -6,7 +6,7 @@ interface TrackingEvent {
   eventType: string;
   entityType: string;
   entityId: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 interface EngagementData {
@@ -50,7 +50,7 @@ export const usePersonalizationTracking = () => {
 
   // Track page view
   const trackPageView = useCallback(
-    (path: string, additionalContext?: Record<string, any>) => {
+    (path: string, additionalContext?: Record<string, unknown>) => {
       if (!isAuthenticated) {return;}
 
       // Update current path
@@ -104,7 +104,7 @@ export const usePersonalizationTracking = () => {
 
   // Track search
   const trackSearch = useCallback(
-    (query: string, filters?: any, results?: any[]) => {
+    (query: string, filters?: Response, results?: Response[]) => {
       trackEvent({
         eventType: 'search',
         entityType: 'search',

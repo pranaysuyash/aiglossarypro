@@ -39,7 +39,9 @@ import type {
   FeedbackStatus,
   FeedbackUpdate,
   GeneralFeedback,
+  InteractiveElement,
   InteractiveElementState,
+  LearningPath,
   LearningStreak,
   MaintenanceResult,
   PaginatedFeedback,
@@ -63,6 +65,39 @@ import type {
 } from './types/storage.types';
 
 import logger from './utils/logger';
+
+import type {
+  EnhancedTermWithSections,
+  EnhancedSearchFacets,
+  AutocompleteSuggestion,
+  UserPreferences,
+  UserSettings,
+  TermAnalytics,
+  AnalyticsOverview,
+  QualityReport,
+  ProcessingStats,
+  SchemaInfo,
+  HealthStatus,
+  TermRelationships,
+  RecentPurchase,
+  RevenuePeriodData,
+  CountryRevenue,
+  ConversionFunnel,
+  RefundAnalytics,
+  PurchaseExport,
+  WebhookActivity,
+  PurchaseDetails,
+  UserAccessUpdate,
+  UserDataExport,
+  OptimizedTerm,
+  RecentActivity,
+  AdminActivity,
+  CategoryWithStats,
+  CategoryStats,
+  MaintenanceStatus,
+  BackupResult,
+  EnhancedTermsStats,
+} from './types/enhancedStorage.types';
 // ===== CORE INTERFACES =====
 
 export interface IEnhancedStorage extends IStorage {
@@ -126,27 +161,27 @@ export interface IEnhancedStorage extends IStorage {
   getCategoryProgress(userId: string): Promise<CategoryProgress[]>;
 
   // Enhanced Terms Integration (delegates to enhancedTermsStorage)
-  getEnhancedTermWithSections(identifier: string, userId?: string | null): Promise<any>;
-  enhancedSearch(params: any, userId?: string | null): Promise<any>;
-  advancedFilter(params: any, userId?: string | null): Promise<any>;
-  getSearchFacets(): Promise<any>;
-  getAutocompleteSuggestions(query: string, limit: number): Promise<any>;
-  getInteractiveElements(termId: string): Promise<any>;
+  getEnhancedTermWithSections(identifier: string, userId?: string | null): Promise<EnhancedTermWithSections>;
+  enhancedSearch(params: SearchFilters & PaginationOptions, userId?: string | null): Promise<SearchResult>;
+  advancedFilter(params: SearchFilters & PaginationOptions, userId?: string | null): Promise<SearchResult>;
+  getSearchFacets(): Promise<EnhancedSearchFacets>;
+  getAutocompleteSuggestions(query: string, limit: number): Promise<AutocompleteSuggestion[]>;
+  getInteractiveElements(termId: string): Promise<InteractiveElement[]>;
   updateInteractiveElementState(
     elementId: string,
-    state: any,
+    state: InteractiveElementState,
     userId?: string | null
   ): Promise<void>;
-  getUserPreferences(userId: string): Promise<any>;
-  updateUserPreferences(userId: string, preferences: any): Promise<void>;
-  getPersonalizedRecommendations(userId: string, limit: number): Promise<any>;
-  getTermAnalytics(termId: string): Promise<any>;
-  getAnalyticsOverview(): Promise<any>;
+  getUserPreferences(userId: string): Promise<UserPreferences>;
+  updateUserPreferences(userId: string, preferences: Partial<UserPreferences>): Promise<void>;
+  getPersonalizedRecommendations(userId: string, limit: number): Promise<PersonalizedRecommendation[]>;
+  getTermAnalytics(termId: string): Promise<TermAnalytics>;
+  getAnalyticsOverview(): Promise<AnalyticsOverview>;
   recordInteraction(
     termId: string,
     sectionName?: string | null,
     interactionType?: string,
-    data?: any,
+    data?: Record<string, unknown>,
     userId?: string | null
   ): Promise<void>;
   submitRating(
@@ -156,12 +191,12 @@ export interface IEnhancedStorage extends IStorage {
     feedback?: string,
     userId?: string
   ): Promise<void>;
-  getQualityReport(): Promise<any>;
-  getTermRelationships(termId: string): Promise<any>;
-  getLearningPath(termId: string, userId?: string | null): Promise<any>;
-  getProcessingStats(): Promise<any>;
-  getSchemaInfo(): Promise<any>;
-  getHealthStatus(): Promise<any>;
+  getQualityReport(): Promise<QualityReport>;
+  getTermRelationships(termId: string): Promise<TermRelationships>;
+  getLearningPath(termId: string, userId?: string | null): Promise<LearningPath>;
+  getProcessingStats(): Promise<ProcessingStats>;
+  getSchemaInfo(): Promise<SchemaInfo>;
+  getHealthStatus(): Promise<HealthStatus>;
 
   // Revenue tracking methods
   getTotalRevenue(): Promise<number>;
@@ -174,31 +209,56 @@ export interface IEnhancedStorage extends IStorage {
     startDate: Date,
     endDate: Date
   ): Promise<Array<{ date: string; revenue: number }>>;
-  getRecentPurchases(limit?: number): Promise<any[]>;
-  getRevenueByPeriod(period: string): Promise<any>;
-  getTopCountriesByRevenue(limit?: number): Promise<any[]>;
-  getConversionFunnel(): Promise<any>;
-  getRefundAnalytics(): Promise<any>;
-  getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]>;
-  getRecentWebhookActivity(limit?: number): Promise<any[]>;
-  getPurchaseByOrderId(orderId: string): Promise<any>;
-  updateUserAccess(orderId: string, updates: any): Promise<void>;
+  getRecentPurchases(limit?: number): Promise<RecentPurchase[]>;
+  getRevenueByPeriod(period: string): Promise<RevenuePeriodData>;
+  getTopCountriesByRevenue(limit?: number): Promise<CountryRevenue[]>;
+  getConversionFunnel(): Promise<ConversionFunnel>;
+  getRefundAnalytics(): Promise<RefundAnalytics>;
+  getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<PurchaseExport[]>;
+  getRecentWebhookActivity(limit?: number): Promise<WebhookActivity[]>;
+  getPurchaseByOrderId(orderId: string): Promise<PurchaseDetails>;
+  updateUserAccess(orderId: string, updates: UserAccessUpdate): Promise<void>;
 
   // Additional user operations
-  getUserByEmail(email: string): Promise<any>;
-  updateUser(userId: string, updates: any): Promise<any>;
-  createPurchase(purchaseData: any): Promise<any>;
-  getUserSettings(userId: string): Promise<any>;
-  updateUserSettings(userId: string, settings: any): Promise<void>;
-  exportUserData(userId: string): Promise<any>;
+  getUserByEmail(email: string): Promise<User | null>;
+  updateUser(userId: string, updates: Partial<User>): Promise<User>;
+  createPurchase(purchaseData: PurchaseData): Promise<Purchase>;
+  getUserSettings(userId: string): Promise<UserSettings>;
+  updateUserSettings(userId: string, settings: Partial<UserSettings>): Promise<void>;
+  exportUserData(userId: string): Promise<UserDataExport>;
   deleteUserData(userId: string): Promise<void>;
-  getUserStreak(userId: string): Promise<any>;
-  getTermsOptimized(options?: { limit?: number }): Promise<any[]>;
+  getUserStreak(userId: string): Promise<LearningStreak>;
+  getTermsOptimized(options?: { limit?: number }): Promise<OptimizedTerm[]>;
 }
 
 // ===== TYPE DEFINITIONS =====
 
 // Additional interfaces needed for enhanced storage that aren't in storage.types.ts
+interface PurchaseData {
+  orderId: string;
+  email: string;
+  userId?: string;
+  productId: string;
+  productName: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  provider: 'gumroad' | 'stripe' | 'other';
+  metadata?: Record<string, unknown>;
+  createdAt?: Date;
+}
+
+interface Purchase extends PurchaseData {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userAccess?: {
+    granted: boolean;
+    grantedAt?: Date;
+    expiresAt?: Date;
+  };
+}
+
 interface TableStatistics {
   tableName: string;
   rowCount: number;
@@ -244,14 +304,14 @@ interface RequestContext {
     isAdmin: boolean;
     first_name?: string;
     last_name?: string;
-    claims?: any;
+    claims?: Record<string, unknown>;
   };
   userId?: string;
   requestId?: string;
   timestamp: Date;
-  headers?: any;
+  headers?: Record<string, string>;
   ip?: string;
-  analytics?: any;
+  analytics?: TermAnalytics;
 }
 
 class UnauthorizedError extends Error {
@@ -308,7 +368,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     return this.baseStorage.getUser(id);
   }
 
-  async upsertUser(user: any) {
+  async upsertUser(user: Partial<User>) {
     return this.baseStorage.upsertUser(user);
   }
 
@@ -374,51 +434,79 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   // ===== ENHANCED TERMS INTEGRATION (delegates to termsStorage) =====
 
-  async getEnhancedTermWithSections(identifier: string, userId?: string | null) {
+  async getEnhancedTermWithSections(identifier: string, userId?: string | null): Promise<EnhancedTermWithSections> {
     return this.termsStorage.getEnhancedTermWithSections(identifier, userId);
   }
 
-  async enhancedSearch(params: any, userId?: string | null) {
-    return this.termsStorage.enhancedSearch(params, userId);
+  async enhancedSearch(params: SearchFilters & PaginationOptions, userId?: string | null): Promise<SearchResult> {
+    // Map SearchFilters & PaginationOptions to EnhancedSearchParams
+    const enhancedParams = {
+      query: params.query || '',
+      page: params.page || 1,
+      limit: params.limit || 20,
+      categories: params.categories?.join(','),
+      difficultyLevel: params.difficulty,
+      hasCodeExamples: params.hasCodeExamples,
+      hasInteractiveElements: params.hasInteractiveElements,
+      applicationDomains: params.applicationDomains?.join(','),
+      techniques: params.techniques?.join(','),
+    };
+    return this.termsStorage.enhancedSearch(enhancedParams, userId);
   }
 
-  async advancedFilter(params: any, userId?: string | null) {
-    return this.termsStorage.advancedFilter(params, userId);
+  async advancedFilter(params: SearchFilters & PaginationOptions, userId?: string | null): Promise<SearchResult> {
+    // Map SearchFilters & PaginationOptions to FilterParams
+    const filterParams = {
+      page: params.page || 1,
+      limit: params.limit || 20,
+      mainCategories: params.categories?.join(','),
+      subCategories: params.subcategories?.join(','),
+      difficultyLevel: params.difficulty,
+      applicationDomains: params.applicationDomains?.join(','),
+      techniques: params.techniques?.join(','),
+      hasImplementation: params.hasContent,
+      hasInteractiveElements: params.hasInteractiveElements,
+      hasCaseStudies: params.hasCaseStudies,
+      hasCodeExamples: params.hasCodeExamples,
+      sortBy: params.sortBy || 'relevance',
+      sortOrder: params.sortOrder || 'desc',
+    };
+    return this.termsStorage.advancedFilter(filterParams, userId);
   }
 
-  async getSearchFacets() {
+  async getSearchFacets(): Promise<EnhancedSearchFacets> {
     return this.termsStorage.getSearchFacets();
   }
 
-  async getAutocompleteSuggestions(query: string, limit: number) {
+  async getAutocompleteSuggestions(query: string, limit: number): Promise<AutocompleteSuggestion[]> {
     return this.termsStorage.getAutocompleteSuggestions(query, limit);
   }
 
-  async getInteractiveElements(termId: string) {
+  async getInteractiveElements(termId: string): Promise<InteractiveElement[]> {
     return this.termsStorage.getInteractiveElements(termId);
   }
 
-  async updateInteractiveElementState(elementId: string, state: any, userId?: string | null) {
+  async updateInteractiveElementState(elementId: string, state: InteractiveElementState, userId?: string | null) {
     return this.termsStorage.updateInteractiveElementState(elementId, state, userId);
   }
 
-  async getUserPreferences(userId: string) {
+  async getUserPreferences(userId: string): Promise<UserPreferences> {
     return this.termsStorage.getUserPreferences(userId);
   }
 
-  async updateUserPreferences(userId: string, preferences: any) {
+  async updateUserPreferences(userId: string, preferences: Partial<UserPreferences>) {
     return this.termsStorage.updateUserPreferences(userId, preferences);
   }
 
-  async getPersonalizedRecommendations(userId: string, limit: number) {
+  async getPersonalizedRecommendations(userId: string, limit: number): Promise<PersonalizedRecommendation[]> {
     return this.termsStorage.getPersonalizedRecommendations(userId, limit);
   }
 
-  async getTermAnalytics(termId: string) {
+  async getTermAnalytics(termId: string): Promise<TermAnalytics> {
     return this.termsStorage.getTermAnalytics(termId);
   }
 
-  async getAnalyticsOverview() {
+  async getAnalyticsOverview(): Promise<AnalyticsOverview> {
     return this.termsStorage.getAnalyticsOverview();
   }
 
@@ -426,7 +514,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     termId: string,
     sectionName?: string | null,
     interactionType?: string,
-    data?: any,
+    data?: Record<string, unknown>,
     userId?: string | null
   ) {
     return this.termsStorage.recordInteraction(termId, sectionName, interactionType, data, userId);
@@ -442,27 +530,27 @@ export class EnhancedStorage implements IEnhancedStorage {
     return this.termsStorage.submitRating(termId, sectionName, rating, feedback, userId);
   }
 
-  async getQualityReport() {
+  async getQualityReport(): Promise<QualityReport> {
     return this.termsStorage.getQualityReport();
   }
 
-  async getTermRelationships(termId: string) {
+  async getTermRelationships(termId: string): Promise<TermRelationships> {
     return this.termsStorage.getTermRelationships(termId);
   }
 
-  async getLearningPath(termId: string, userId?: string | null) {
+  async getLearningPath(termId: string, userId?: string | null): Promise<LearningPath> {
     return this.termsStorage.getLearningPath(termId, userId);
   }
 
-  async getProcessingStats() {
+  async getProcessingStats(): Promise<ProcessingStats> {
     return this.termsStorage.getProcessingStats();
   }
 
-  async getSchemaInfo() {
+  async getSchemaInfo(): Promise<SchemaInfo> {
     return this.termsStorage.getSchemaInfo();
   }
 
-  async getHealthStatus() {
+  async getHealthStatus(): Promise<HealthStatus> {
     return this.termsStorage.getHealthStatus();
   }
 
@@ -494,7 +582,15 @@ export class EnhancedStorage implements IEnhancedStorage {
         totalTerms: contentMetrics.totalTerms,
         totalCategories: categories.length,
         totalViews: contentMetrics.totalViews || 0, // Add totalViews
-        recentActivity: await this.getRecentActivity(),
+        recentActivity: (await this.getRecentActivity()).map(activity => ({
+          id: activity.id,
+          userId: activity.userId,
+          action: activity.type as 'view' | 'favorite' | 'search' | 'create' | 'update',
+          entityType: 'term',
+          entityId: activity.termId || '',
+          metadata: activity.metadata || {},
+          createdAt: activity.timestamp,
+        } as UserActivity)),
         systemHealth: {
           database: (await this.checkDatabaseHealth()) ? 'healthy' : 'warning',
           s3: (await this.checkS3Health()).healthy ? 'healthy' : 'warning',
@@ -544,6 +640,19 @@ export class EnhancedStorage implements IEnhancedStorage {
             ? processingStats.totalSections / processingStats.totalTerms
             : 0,
         lastUpdated: new Date(),
+        verificationStats: {
+          unverified: 0, // TODO: Implement actual counts
+          verified: processingStats.totalTerms,
+          flagged: 0,
+          needsReview: 0,
+          expertReviewed: 0,
+        },
+        categoryDistribution: categories.map(cat => ({
+          categoryId: cat.id,
+          categoryName: cat.name,
+          termCount: 0, // TODO: Implement actual count per category
+          percentage: 0,
+        })),
       };
 
       // Cache for 10 minutes (content changes less frequently)
@@ -692,7 +801,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async getRecentActivity(): Promise<any[]> {
+  async getRecentActivity(): Promise<RecentActivity[]> {
     try {
       // Get recent term views and favorites from both storage layers
       const [recentViews, recentFavorites] = await Promise.all([
@@ -705,7 +814,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             // Get recent views for active users
             const viewPromises = users.data.map(async user => {
               return this.baseStorage.getRecentlyViewedTerms(user.id).then(views =>
-                views.slice(0, 3).map((view: any) => ({
+                views.slice(0, 3).map((view) => ({
                   id: `view_${user.id}_${view.id}`,
                   userId: user.id,
                   action: 'view' as const,
@@ -733,7 +842,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
             const favoritePromises = users.data.map(async user => {
               return this.baseStorage.getUserFavorites(user.id).then(favorites =>
-                favorites.slice(0, 2).map((fav: any) => ({
+                favorites.slice(0, 2).map((fav) => ({
                   id: `favorite_${user.id}_${fav.id}`,
                   userId: user.id,
                   action: 'favorite' as const,
@@ -741,10 +850,10 @@ export class EnhancedStorage implements IEnhancedStorage {
                   entityId: fav.id,
                   metadata: {
                     termName: fav.name,
-                    category: fav.category,
-                    favoriteDate: fav.favoriteDate || new Date().toISOString(),
+                    category: fav.category || 'General',
+                    favoriteDate: new Date().toISOString(),
                   },
-                  createdAt: new Date(fav.favoriteDate || new Date()),
+                  createdAt: new Date(),
                 }))
               );
             });
@@ -798,7 +907,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Check if optimizedStorage has clearAllData method
       if ('clearAllData' in this.baseStorage) {
-        const result = await (this.baseStorage as any).clearAllData();
+        const result = await this.baseStorage.clearAllData();
         tablesCleared.push(...(result.tablesCleared || []));
       } else {
         logger.warn('[EnhancedStorage] clearAllData: No clearAllData method in baseStorage');
@@ -953,7 +1062,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     try {
       // Use optimizedStorage if it has a user listing method
       if ('getAllUsers' in this.baseStorage) {
-        return await (this.baseStorage as any).getAllUsers(options);
+        return await this.baseStorage.getAllUsers(options);
       }
 
       // If not available, implement basic user retrieval
@@ -1005,10 +1114,10 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get pending feedback if available
         if ('getPendingFeedback' in this.baseStorage) {
-          const pendingFeedback = await (this.baseStorage as any).getPendingFeedback();
+          const pendingFeedback = await this.baseStorage.getPendingFeedback();
           if (Array.isArray(pendingFeedback)) {
             pendingContent.push(
-              ...pendingFeedback.map((feedback: any) => ({
+              ...pendingFeedback.map((feedback: PendingContent) => ({
                 id: feedback.id,
                 type: 'feedback' as const,
                 title: `Feedback for ${feedback.termName || 'Unknown Term'}`,
@@ -1029,10 +1138,10 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get pending term suggestions if available
         if ('getPendingTermSuggestions' in this.baseStorage) {
-          const pendingSuggestions = await (this.baseStorage as any).getPendingTermSuggestions();
+          const pendingSuggestions = await this.baseStorage.getPendingTermSuggestions();
           if (Array.isArray(pendingSuggestions)) {
             pendingContent.push(
-              ...pendingSuggestions.map((suggestion: any) => ({
+              ...pendingSuggestions.map((suggestion: PendingContent) => ({
                 id: suggestion.id,
                 type: 'term_suggestion' as const,
                 title: `New Term: ${suggestion.termName}`,
@@ -1052,10 +1161,10 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get pending AI-generated content if available
         if ('getPendingAiContent' in this.baseStorage) {
-          const pendingAiContent = await (this.baseStorage as any).getPendingAiContent();
+          const pendingAiContent = await this.baseStorage.getPendingAiContent();
           if (Array.isArray(pendingAiContent)) {
             pendingContent.push(
-              ...pendingAiContent.map((aiContent: any) => ({
+              ...pendingAiContent.map((aiContent: PendingContent) => ({
                 id: aiContent.id,
                 type: 'ai_generated' as const,
                 title: `AI Content: ${aiContent.title || aiContent.termName}`,
@@ -1164,7 +1273,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async approveContent(id: string): Promise<any> {
+  async approveContent(id: string): Promise<PendingContent> {
     this.requireAdminAuth();
     logger.info(`[EnhancedStorage] approveContent called for ID: ${id}`);
 
@@ -1196,7 +1305,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback: Try base storage
       try {
         if ('approveContent' in this.baseStorage) {
-          const result = await (this.baseStorage as any).approveContent(id);
+          const result = await this.baseStorage.approveContent(id);
           logger.info(`[EnhancedStorage] approveContent: Content ${id} approved via base storage`);
           return result;
         }
@@ -1231,7 +1340,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async rejectContent(id: string): Promise<any> {
+  async rejectContent(id: string): Promise<PendingContent> {
     this.requireAdminAuth();
     logger.info(`[EnhancedStorage] rejectContent called for ID: ${id}`);
 
@@ -1263,7 +1372,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback: Try base storage
       try {
         if ('rejectContent' in this.baseStorage) {
-          const result = await (this.baseStorage as any).rejectContent(id);
+          const result = await this.baseStorage.rejectContent(id);
           logger.info(`[EnhancedStorage] rejectContent: Content ${id} rejected via base storage`);
           return result;
         }
@@ -1388,7 +1497,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Use the top terms from analytics data
       if (analyticsData.topTerms && analyticsData.topTerms.length > 0) {
-        const topTerms = analyticsData.topTerms.slice(0, limit).map((term: any, index: number) => ({
+        const topTerms = analyticsData.topTerms.slice(0, limit).map((term: PopularTerm, index: number) => ({
           termId: term.id || term.termId || `term_${index}`,
           name: term.name,
           searchCount: term.viewCount || 0,
@@ -1413,7 +1522,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         { name: 'Natural Language Processing', searchCount: 75 },
       ];
 
-      return mockTerms.slice(0, limit).map((term: any, index: number) => ({
+      return mockTerms.slice(0, limit).map((term: { name: string; searchCount: number }, index: number) => ({
         termId: `mock_term_${index}`,
         name: term.name,
         searchCount: term.searchCount,
@@ -1652,7 +1761,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const offset = pagination.offset || 0;
 
       // Try to get feedback from base storage
-      let feedbackItems: any[] = [];
+      let feedbackItems: FeedbackItem[] = [];
       let totalCount = 0;
 
       try {
@@ -1870,7 +1979,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   /**
    * Generate mock feedback for development
    */
-  private generateMockFeedback(filters: FeedbackFilters, limit: number, offset: number): any[] {
+  private generateMockFeedback(filters: FeedbackFilters, limit: number, offset: number): FeedbackItem[] {
     const mockFeedback = [];
     const categories = ['general', 'term', 'bug', 'feature'];
     const statuses: FeedbackStatus[] = ['pending', 'reviewed', 'resolved', 'archived'];
@@ -1974,7 +2083,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         // Check if optimizedStorage has performance metrics method
         if ('getPerformanceMetrics' in this.baseStorage) {
-          performanceMetrics = await (this.baseStorage as any).getPerformanceMetrics();
+          performanceMetrics = await this.baseStorage.getPerformanceMetrics();
         }
       } catch (error) {
         logger.warn('[EnhancedStorage] Could not get performance metrics:', error);
@@ -2079,7 +2188,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       let popularTerms = [];
       try {
         if ('getPopularTerms' in this.baseStorage) {
-          popularTerms = await (this.baseStorage as any).getPopularTerms(timeframe);
+          popularTerms = await this.baseStorage.getPopularTerms(timeframe);
         }
       } catch (error) {
         logger.warn('[EnhancedStorage] Could not get popular terms:', error);
@@ -2098,13 +2207,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         totalSearches: totalViews,
         uniqueTermsSearched: totalTerms,
         averageSearchTime: 150, // Estimated 150ms average
-        popularSearchTerms: popularTerms.slice(0, 10).map((term: any) => ({
+        popularSearchTerms: popularTerms.slice(0, 10).map((term: PopularTerm) => ({
           term: term.name || term.termName || 'Unknown',
           searchCount: term.recentViews || term.viewCount || 0,
           clickThrough: 0.85, // Estimated 85% click-through rate
         })),
         searchCategories:
-          searchFacets.categories?.slice(0, 5).map((cat: any) => ({
+          searchFacets.categories?.slice(0, 5).map((cat: FacetValue) => ({
             category: cat.category,
             searchCount: cat.count || 0,
             percentage: 0, // Will calculate below
@@ -2181,7 +2290,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const terms = (await this.baseStorage.getTermsByIds?.(ids)) || [];
 
       // Transform to ITerm format
-      const transformedTerms = terms.map((term: any) => ({
+      const transformedTerms = terms.map((term: PopularTerm) => ({
         id: term.id,
         name: term.name,
         definition: term.shortDefinition || '',
@@ -2367,7 +2476,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           includeEnhanced: filters?.includeEnhanced || false,
           version: '1.0',
         },
-        terms: termsData.terms.map(term => ({
+        terms: termsData.terms.map((term) => ({
           id: term.id,
           name: term.name,
           slug: term.slug,
@@ -2383,10 +2492,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           // Only include enhanced data if requested
           ...(filters?.includeEnhanced && {
             enhancedData: {
-              applicationDomains: (term as any).applicationDomains || [],
-              techniques: (term as any).techniques || [],
-              keywords: (term as any).keywords || [],
-              searchText: (term as any).searchText || '',
+              applicationDomains: term.applicationDomains || [],
+              techniques: term.techniques || [],
+              keywords: term.keywords || [],
+              searchText: term.searchText || '',
             },
           }),
         })),
@@ -2432,15 +2541,15 @@ export class EnhancedStorage implements IEnhancedStorage {
             return {
               ...enhancedTerm,
               definition:
-                (enhancedTerm as any).definition || (enhancedTerm as any).shortDefinition || '',
+                enhancedTerm.definition || enhancedTerm.shortDefinition || '',
               category:
-                (enhancedTerm as any).category || (enhancedTerm as any).mainCategories?.[0] || '',
+                enhancedTerm.category || enhancedTerm.mainCategories?.[0] || '',
               shortDefinition: enhancedTerm.shortDefinition || undefined,
               viewCount: enhancedTerm.viewCount || 0,
               createdAt: enhancedTerm.createdAt || undefined,
               updatedAt: enhancedTerm.updatedAt || undefined,
               sections:
-                enhancedTerm.sections?.map((section: any, index: number) => ({
+                enhancedTerm.sections?.map((section: TermSection, index: number) => ({
                   id: parseInt(section.id) || index + 1,
                   termId: parseInt(enhancedTerm.id) || 0,
                   name: section.sectionName || section.title || '',
@@ -2503,15 +2612,27 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Try to get sections from enhanced storage
       try {
         if (this.termsStorage && typeof this.termsStorage.getTermSections === 'function') {
-          const sections = await this.termsStorage.getTermSections(termId);
-          if (sections && sections.length > 0) {
-            logger.info(`[EnhancedStorage] getTermSections: Found ${sections.length} sections`);
-            return sections.map(section => ({
-              ...section,
+          const dbSections = await this.termsStorage.getTermSections(termId);
+          if (dbSections && dbSections.length > 0) {
+            logger.info(`[EnhancedStorage] getTermSections: Found ${dbSections.length} sections`);
+            
+            // Convert database sections to TermSection format
+            return dbSections.map(section => ({
+              id: section.id,
+              termId: section.termId,
+              sectionName: section.sectionName,
+              sectionData: section.sectionData || {},
+              displayType: section.displayType || 'text',
               priority: section.priority ?? undefined,
-              isInteractive: section.isInteractive ?? undefined,
+              isInteractive: section.isInteractive ?? false,
               createdAt: section.createdAt ?? undefined,
               updatedAt: section.updatedAt ?? undefined,
+              // Additional fields for compatibility
+              title: section.sectionName,
+              content: section.sectionData?.content || '',
+              order: section.priority ?? undefined,
+              metadata: section.sectionData || {},
+              isCompleted: section.sectionData?.content ? true : false,
             }));
           }
         }
@@ -2545,6 +2666,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         content: '',
         order: section.displayOrder ?? undefined,
         metadata: {},
+        isCompleted: false,
       }));
 
       return termSections;
@@ -2556,7 +2678,32 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async updateTermSection(termId: string, sectionId: string, data: any): Promise<void> {
+  async getTermContent(termId: string): Promise<unknown> {
+    try {
+      logger.info(`[EnhancedStorage] getTermContent called for term: ${termId}`);
+      
+      // Get sections that have AI-generated content
+      const sections = await this.getTermSections(termId);
+      const aiContent: Record<string, unknown> = {};
+      
+      sections.forEach(section => {
+        if (section.sectionData?.content || section.content) {
+          aiContent[section.sectionName] = {
+            content: section.sectionData?.content || section.content,
+            generatedAt: section.updatedAt,
+            metadata: section.metadata,
+          };
+        }
+      });
+      
+      return aiContent;
+    } catch (error) {
+      logger.error('[EnhancedStorage] getTermContent error:', error);
+      return {};
+    }
+  }
+
+  async updateTermSection(termId: string, sectionId: string, data: Partial<TermSection>): Promise<void> {
     this.requireAuth();
 
     try {
@@ -2616,7 +2763,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         const categoriesResult = await this.getCategories();
         allCategories = Array.isArray(categoriesResult)
           ? categoriesResult
-          : (categoriesResult as any).data || [];
+          : categoriesResult.data || [];
       } catch (error) {
         logger.warn('[EnhancedStorage] Failed to get categories:', error);
         allCategories = [];
@@ -2790,15 +2937,15 @@ export class EnhancedStorage implements IEnhancedStorage {
           const stats: UserProgressStats = {
             userId,
             totalTermsViewed:
-              (userAnalytics as any).totalViews || userAnalytics.totalTermsViewed || 0,
+              userAnalytics.totalViews || userAnalytics.totalTermsViewed || 0,
             totalTimeSpent: userAnalytics.totalTimeSpent || 0,
-            streakDays: (userAnalytics as any).currentStreak || 0,
-            favoriteTerms: (userAnalytics as any).favoriteCount || 0,
-            completedSections: (userAnalytics as any).sectionsCompleted || 0,
-            averageRating: (userAnalytics as any).averageRating || 0,
-            categoryProgress: (userAnalytics as any).categoryProgress || {},
-            achievements: (userAnalytics as any).achievements || [],
-            lastActivity: (userAnalytics as any).lastActivity || new Date(),
+            streakDays: userAnalytics.currentStreak || 0,
+            favoriteTerms: userAnalytics.favoriteCount || 0,
+            completedSections: userAnalytics.sectionsCompleted || 0,
+            averageRating: userAnalytics.averageRating || 0,
+            categoryProgress: userAnalytics.categoryProgress || {},
+            achievements: userAnalytics.achievements || [],
+            lastActivity: userAnalytics.lastActivity || new Date(),
           };
 
           logger.info(`[EnhancedStorage] getUserProgressStats: Retrieved stats for user ${userId}`);
@@ -2814,7 +2961,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get user streak if available
         if ('getUserStreak' in this.baseStorage) {
-          const userStreak = await (this.baseStorage as any).getUserStreak(userId);
+          const userStreak = await this.baseStorage.getUserStreak(userId);
           if (userStreak) {
             defaultStats.streakDays = userStreak.currentStreak || 0;
             defaultStats.lastActivity = userStreak.lastActivity || new Date();
@@ -2823,7 +2970,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get favorites count if available
         if ('getUserFavorites' in this.baseStorage) {
-          const favorites = await (this.baseStorage as any).getUserFavorites(userId);
+          const favorites = await this.baseStorage.getUserFavorites(userId);
           if (Array.isArray(favorites)) {
             defaultStats.favoriteTerms = favorites.length;
           }
@@ -2831,7 +2978,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get view count from analytics if available
         if ('getUserViewCount' in this.baseStorage) {
-          const viewCount = await (this.baseStorage as any).getUserViewCount(userId);
+          const viewCount = await this.baseStorage.getUserViewCount(userId);
           if (typeof viewCount === 'number') {
             defaultStats.totalTermsViewed = viewCount;
           }
@@ -2839,7 +2986,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get category progress from user analytics if available
         if ('getUserCategoryStats' in this.baseStorage) {
-          const categoryStats = await (this.baseStorage as any).getUserCategoryStats(userId);
+          const categoryStats = await this.baseStorage.getUserCategoryStats(userId);
           if (categoryStats && typeof categoryStats === 'object') {
             defaultStats.categoryProgress = categoryStats;
           }
@@ -3117,9 +3264,9 @@ export class EnhancedStorage implements IEnhancedStorage {
         if (existingStreak) {
           logger.info('[EnhancedStorage] updateLearningStreak: Found existing streak');
 
-          const lastActivityDate = new Date(
-            (existingStreak as any).lastActivityDate ||
-              (existingStreak as any).lastActivity ||
+          const lastActivityDate = new Date
+            (existingStreak.lastActivityDate ||
+              existingStreak.lastActivity ||
               new Date()
           );
           const lastActivityDay = new Date(
@@ -3185,7 +3332,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback: Try base storage
       try {
         if ('getUserStreak' in this.baseStorage) {
-          const baseStreak = await (this.baseStorage as any).getUserStreak(userId);
+          const baseStreak = await this.baseStorage.getUserStreak(userId);
           if (baseStreak) {
             logger.info('[EnhancedStorage] updateLearningStreak: Using base storage streak');
 
@@ -3238,7 +3385,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
             // Update in base storage if possible
             if ('updateUserStreak' in this.baseStorage) {
-              await (this.baseStorage as any).updateUserStreak(userId, updatedStreak);
+              await this.baseStorage.updateUserStreak(userId, updatedStreak);
             }
 
             logger.info(
@@ -3268,7 +3415,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         if (typeof this.termsStorage.updateUserStreak === 'function') {
           await this.termsStorage.updateUserStreak(userId, newStreak);
         } else if ('updateUserStreak' in this.baseStorage) {
-          await (this.baseStorage as any).updateUserStreak(userId, newStreak);
+          await this.baseStorage.updateUserStreak(userId, newStreak);
         }
         logger.info(
           `[EnhancedStorage] updateLearningStreak: Created new streak for user ${userId}`
@@ -3493,7 +3640,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         const categoriesResult = await this.getCategories();
         const categories = Array.isArray(categoriesResult)
           ? categoriesResult
-          : (categoriesResult as any)?.data || [];
+          : categoriesResult?.data || [];
 
         // Get user progress stats
         const userStats = await this.getUserProgressStats(userId);
@@ -3610,54 +3757,54 @@ export class EnhancedStorage implements IEnhancedStorage {
     return await this.baseStorage.getDailyRevenueForPeriod(startDate, endDate);
   }
 
-  async getRecentPurchases(limit = 10): Promise<any[]> {
+  async getRecentPurchases(limit = 10): Promise<RecentPurchase[]> {
     this.requireAdminAuth();
     return await this.baseStorage.getRecentPurchases(limit);
   }
 
-  async getRevenueByPeriod(period: string): Promise<any> {
+  async getRevenueByPeriod(period: string): Promise<RevenuePeriodData> {
     this.requireAdminAuth();
     return await this.baseStorage.getRevenueByPeriod(period);
   }
 
-  async getTopCountriesByRevenue(limit = 10): Promise<any[]> {
+  async getTopCountriesByRevenue(limit = 10): Promise<CountryRevenue[]> {
     this.requireAdminAuth();
     return await this.baseStorage.getTopCountriesByRevenue(limit);
   }
 
-  async getConversionFunnel(): Promise<any> {
+  async getConversionFunnel(): Promise<ConversionFunnel> {
     this.requireAdminAuth();
     return await this.baseStorage.getConversionFunnel();
   }
 
-  async getRefundAnalytics(): Promise<any> {
+  async getRefundAnalytics(): Promise<RefundAnalytics> {
     this.requireAdminAuth();
     return await this.baseStorage.getRefundAnalytics();
   }
 
-  async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]> {
+  async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<PurchaseExport[]> {
     this.requireAdminAuth();
     return await this.baseStorage.getPurchasesForExport(startDate, endDate);
   }
 
-  async getRecentWebhookActivity(limit = 20): Promise<any[]> {
+  async getRecentWebhookActivity(limit = 20): Promise<WebhookActivity[]> {
     this.requireAdminAuth();
     return await this.baseStorage.getRecentWebhookActivity(limit);
   }
 
-  async getPurchaseByOrderId(orderId: string): Promise<any> {
+  async getPurchaseByOrderId(orderId: string): Promise<PurchaseDetails> {
     this.requireAdminAuth();
     return await this.baseStorage.getPurchaseByOrderId(orderId);
   }
 
-  async updateUserAccess(orderId: string, updates: any): Promise<void> {
+  async updateUserAccess(orderId: string, updates: UserAccessUpdate): Promise<void> {
     this.requireAdminAuth();
     return await this.baseStorage.updateUserAccess(orderId, updates);
   }
 
   // ===== MISSING ADMIN METHODS =====
 
-  async getAllTerms(options?: any): Promise<any> {
+  async getAllTerms(options?: PaginationOptions): Promise<PaginatedResult<Term>> {
     try {
       if (typeof this.baseStorage.getAllTerms === 'function') {
         return await this.baseStorage.getAllTerms(options);
@@ -3670,10 +3817,10 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async getRecentTerms(limit: number): Promise<any[]> {
+  async getRecentTerms(limit: number): Promise<Term[]> {
     try {
-      if (typeof (this.baseStorage as any).getRecentTerms === 'function') {
-        return await (this.baseStorage as any).getRecentTerms(limit);
+      if (typeof this.baseStorage.getRecentTerms === 'function') {
+        return await this.baseStorage.getRecentTerms(limit);
       }
       // Fallback implementation
       return [];
@@ -3683,10 +3830,10 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async getRecentFeedback(limit: number): Promise<any[]> {
+  async getRecentFeedback(limit: number): Promise<FeedbackItem[]> {
     try {
-      if (typeof (this.baseStorage as any).getRecentFeedback === 'function') {
-        return await (this.baseStorage as any).getRecentFeedback(limit);
+      if (typeof this.baseStorage.getRecentFeedback === 'function') {
+        return await this.baseStorage.getRecentFeedback(limit);
       }
       // Fallback implementation
       return [];
@@ -3698,8 +3845,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async deleteTerm(id: string): Promise<void> {
     try {
-      if (typeof (this.baseStorage as any).deleteTerm === 'function') {
-        await (this.baseStorage as any).deleteTerm(id);
+      if (typeof this.baseStorage.deleteTerm === 'function') {
+        await this.baseStorage.deleteTerm(id);
       } else {
         logger.warn('[EnhancedStorage] deleteTerm not implemented in base storage');
       }
@@ -3709,10 +3856,10 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async bulkDeleteTerms(ids: string[]): Promise<any> {
+  async bulkDeleteTerms(ids: string[]): Promise<BulkDeleteResult> {
     try {
-      if (typeof (this.baseStorage as any).bulkDeleteTerms === 'function') {
-        return await (this.baseStorage as any).bulkDeleteTerms(ids);
+      if (typeof this.baseStorage.bulkDeleteTerms === 'function') {
+        return await this.baseStorage.bulkDeleteTerms(ids);
       }
       // Fallback implementation
       return { success: false, message: 'Bulk delete not implemented' };
@@ -3722,10 +3869,10 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async bulkUpdateTermCategory(ids: string[], categoryId: string): Promise<any> {
+  async bulkUpdateTermCategory(ids: string[], categoryId: string): Promise<BulkUpdateResult> {
     try {
-      if (typeof (this.baseStorage as any).bulkUpdateTermCategory === 'function') {
-        return await (this.baseStorage as any).bulkUpdateTermCategory(ids, categoryId);
+      if (typeof this.baseStorage.bulkUpdateTermCategory === 'function') {
+        return await this.baseStorage.bulkUpdateTermCategory(ids, categoryId);
       }
       // Fallback implementation
       return { success: false, message: 'Bulk update category not implemented' };
@@ -3735,10 +3882,10 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async bulkUpdateTermStatus(ids: string[], status: string): Promise<any> {
+  async bulkUpdateTermStatus(ids: string[], status: string): Promise<BulkUpdateResult> {
     try {
-      if (typeof (this.baseStorage as any).bulkUpdateTermStatus === 'function') {
-        return await (this.baseStorage as any).bulkUpdateTermStatus(ids, status);
+      if (typeof this.baseStorage.bulkUpdateTermStatus === 'function') {
+        return await this.baseStorage.bulkUpdateTermStatus(ids, status);
       }
       // Fallback implementation
       return { success: false, message: 'Bulk update status not implemented' };
@@ -3750,27 +3897,27 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   // ===== MISSING USER MANAGEMENT METHODS =====
 
-  async getUserByEmail(email: string): Promise<any> {
+  async getUserByEmail(email: string): Promise<User | null> {
     return this.baseStorage.getUserByEmail(email);
   }
 
-  async updateUser(userId: string, updates: any): Promise<any> {
-    return this.baseStorage.updateUser(userId, updates);
+  async updateUser(userId: string, updates: Partial<User>): Promise<User> {
+    return this.baseStorage.updateUser(userId, updates) as Promise<User>;
   }
 
-  async createPurchase(purchaseData: any): Promise<any> {
-    return this.baseStorage.createPurchase(purchaseData);
+  async createPurchase(purchaseData: PurchaseData): Promise<Purchase> {
+    return this.baseStorage.createPurchase(purchaseData) as Promise<Purchase>;
   }
 
-  async getUserSettings(userId: string): Promise<any> {
+  async getUserSettings(userId: string): Promise<UserSettings> {
     return this.baseStorage.getUserSettings(userId);
   }
 
-  async updateUserSettings(userId: string, settings: any): Promise<void> {
+  async updateUserSettings(userId: string, settings: Partial<UserSettings>): Promise<void> {
     return this.baseStorage.updateUserSettings(userId, settings);
   }
 
-  async exportUserData(userId: string): Promise<any> {
+  async exportUserData(userId: string): Promise<UserDataExport> {
     return this.baseStorage.exportUserData(userId);
   }
 
@@ -3778,17 +3925,17 @@ export class EnhancedStorage implements IEnhancedStorage {
     return this.baseStorage.deleteUserData(userId);
   }
 
-  async getUserStreak(userId: string): Promise<any> {
+  async getUserStreak(userId: string): Promise<LearningStreak> {
     return this.baseStorage.getUserStreak(userId);
   }
 
-  async getTermsOptimized(options?: { limit?: number }): Promise<any[]> {
+  async getTermsOptimized(options?: { limit?: number }): Promise<OptimizedTerm[]> {
     return this.baseStorage.getTermsOptimized?.(options) || [];
   }
 
   // ===== MISSING ADMIN METHODS =====
 
-  async getUserById(userId: string): Promise<any> {
+  async getUserById(userId: string): Promise<User | null> {
     return this.baseStorage.getUser(userId);
   }
 
@@ -3796,7 +3943,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     return this.baseStorage.deleteUserData(userId);
   }
 
-  async getUserActivity(_userId: string): Promise<any> {
+  async getUserActivity(_userId: string): Promise<RecentActivity[]> {
     // Return mock user activity for now
     return {
       recentViews: [],
@@ -3806,7 +3953,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     };
   }
 
-  async updateFeedback(id: string, updates: any): Promise<any> {
+  async updateFeedback(id: string, updates: Partial<FeedbackItem>): Promise<FeedbackUpdate> {
     // Mock implementation for feedback updates
     return {
       id,
@@ -3815,7 +3962,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     };
   }
 
-  async getCategoriesWithStats(): Promise<any> {
+  async getCategoriesWithStats(): Promise<CategoryWithStats[]> {
     const categories = await this.baseStorage.getCategories();
     return categories.map(category => ({
       ...category,
@@ -3827,7 +3974,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }));
   }
 
-  async getCategoryStats(categoryId: string): Promise<any> {
+  async getCategoryStats(categoryId: string): Promise<CategoryStats> {
     return {
       categoryId,
       termCount: 0,
@@ -3842,7 +3989,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     logger.info(`Category ${categoryId} deletion requested`);
   }
 
-  async getMaintenanceStatus(): Promise<any> {
+  async getMaintenanceStatus(): Promise<MaintenanceStatus> {
     return {
       isMaintenanceMode: false,
       lastMaintenance: new Date(),
@@ -3851,7 +3998,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     };
   }
 
-  async createBackup(): Promise<any> {
+  async createBackup(): Promise<BackupResult> {
     return {
       success: true,
       backupId: `backup_${Date.now()}`,
@@ -3865,14 +4012,14 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async incrementTermViewCount(termId: string): Promise<void> {
     try {
-      await (this.baseStorage as any).incrementTermViewCount?.(termId);
+      await this.baseStorage.incrementTermViewCount?.(termId);
     } catch (error) {
       logger.warn('[EnhancedStorage] incrementTermViewCount fallback:', error);
     }
   }
 
   // Methods for import-all-terms.ts
-  async createEnhancedTerm(termData: any): Promise<any> {
+  async createEnhancedTerm(termData: Partial<Term>): Promise<Term> {
     try {
       logger.info('[EnhancedStorage] createEnhancedTerm called');
       
@@ -3918,8 +4065,8 @@ export class EnhancedStorage implements IEnhancedStorage {
       }
 
       // Fallback to base storage
-      if (typeof (this.baseStorage as any).createTerm === 'function') {
-        return await (this.baseStorage as any).createTerm(termData);
+      if (typeof this.baseStorage.createTerm === 'function') {
+        return await this.baseStorage.createTerm(termData);
       }
 
       // Return mock success
@@ -3934,7 +4081,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async createTermSection(sectionData: any): Promise<any> {
+  async createTermSection(sectionData: Partial<TermSection>): Promise<TermSection> {
     try {
       logger.info('[EnhancedStorage] createTermSection called');
       
@@ -3971,7 +4118,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async createInteractiveElement(elementData: any): Promise<any> {
+  async createInteractiveElement(elementData: Partial<InteractiveElement>): Promise<InteractiveElement> {
     try {
       logger.info('[EnhancedStorage] createInteractiveElement called');
       
@@ -4017,7 +4164,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }
   }
 
-  async getEnhancedTermsStats(): Promise<any> {
+  async getEnhancedTermsStats(): Promise<EnhancedTermsStats> {
     try {
       logger.info('[EnhancedStorage] getEnhancedTermsStats called');
       
@@ -4034,15 +4181,15 @@ export class EnhancedStorage implements IEnhancedStorage {
         totalTerms: terms.length,
         totalCategories: categories.length,
         termsWithEnhancements: {
-          withCodeExamples: terms.filter((t: any) => t.codeExamples?.length > 0).length,
-          withInteractiveElements: terms.filter((t: any) => t.hasInteractiveElements).length,
-          withMathFormulas: terms.filter((t: any) => t.mathFormulation).length,
-          withVisualizations: terms.filter((t: any) => t.visualizations?.length > 0).length,
+          withCodeExamples: terms.filter((t: Term) => t.codeExamples?.length > 0).length,
+          withInteractiveElements: terms.filter((t: Term) => t.hasInteractiveElements).length,
+          withMathFormulas: terms.filter((t: Term) => t.mathFormulation).length,
+          withVisualizations: terms.filter((t: Term) => t.visualizations?.length > 0).length,
         },
         contentQuality: {
-          averageDefinitionLength: this.calculateAverageLength(terms.map((t: any) => t.definition)),
-          termsWithExamples: terms.filter((t: any) => t.examples?.length > 0).length,
-          termsWithReferences: terms.filter((t: any) => t.references?.length > 0).length,
+          averageDefinitionLength: this.calculateAverageLength(terms.map((t: Term) => t.definition)),
+          termsWithExamples: terms.filter((t: Term) => t.examples?.length > 0).length,
+          termsWithReferences: terms.filter((t: Term) => t.references?.length > 0).length,
           completenessScore: this.calculateCompletenessScore(terms),
         },
         userEngagement: {
@@ -4073,42 +4220,42 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   // Helper methods for calculations
-  private calculateReadingTime(content: any): number {
-    if (!content) return 0;
+  private calculateReadingTime(content: string | { content: string }): number {
+    if (!content) {return 0;}
     const text = typeof content === 'string' ? content : JSON.stringify(content);
     const wordsPerMinute = 200;
     const wordCount = text.split(/\s+/).length;
     return Math.ceil(wordCount / wordsPerMinute);
   }
 
-  private assessDifficulty(content: any): 'beginner' | 'intermediate' | 'advanced' {
-    if (!content) return 'beginner';
+  private assessDifficulty(content: string | { content: string }): 'beginner' | 'intermediate' | 'advanced' {
+    if (!content) {return 'beginner';}
     const text = typeof content === 'string' ? content : JSON.stringify(content);
     
     // Simple heuristic based on technical terms and complexity
     const technicalTerms = ['algorithm', 'optimization', 'gradient', 'neural', 'quantum', 'cryptographic'];
     const matches = technicalTerms.filter(term => text.toLowerCase().includes(term)).length;
     
-    if (matches >= 3) return 'advanced';
-    if (matches >= 1) return 'intermediate';
+    if (matches >= 3) {return 'advanced';}
+    if (matches >= 1) {return 'intermediate';}
     return 'beginner';
   }
 
   private calculateAverageLength(texts: string[]): number {
-    if (!texts || texts.length === 0) return 0;
+    if (!texts || texts.length === 0) {return 0;}
     const totalLength = texts.reduce((sum, text) => sum + (text?.length || 0), 0);
     return Math.round(totalLength / texts.length);
   }
 
-  private calculateCompletenessScore(terms: any[]): number {
-    if (!terms || terms.length === 0) return 0;
+  private calculateCompletenessScore(terms: Term[]): number {
+    if (!terms || terms.length === 0) {return 0;}
     
-    const scores = terms.map((term: any) => {
+    const scores = terms.map((term: PopularTerm) => {
       let score = 0;
-      if (term.definition) score += 25;
-      if (term.examples?.length > 0) score += 25;
-      if (term.references?.length > 0) score += 25;
-      if (term.relatedTerms?.length > 0) score += 25;
+      if (term.definition) {score += 25;}
+      if (term.examples?.length > 0) {score += 25;}
+      if (term.references?.length > 0) {score += 25;}
+      if (term.relatedTerms?.length > 0) {score += 25;}
       return score;
     });
     

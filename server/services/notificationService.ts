@@ -380,7 +380,7 @@ Time: ${notification.timestamp.toLocaleString()}
   /**
    * Format Slack message
    */
-  private formatSlackMessage(notification: NotificationData): any {
+  private formatSlackMessage(notification: NotificationData) {
     const priorityColor = {
       low: '#36a64f',
       medium: '#ffb347',

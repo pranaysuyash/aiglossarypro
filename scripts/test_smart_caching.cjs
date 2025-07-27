@@ -40,7 +40,7 @@ async function testSmartCaching() {
     requiredFeatures.forEach(feature => {
       const found = content.includes(feature);
       console.log(`${found ? '✅' : '❌'} ${feature}`);
-      if (!found) allFeaturesFound = false;
+      if (!found) {allFeaturesFound = false;}
     });
     
     // Check for specific smart caching patterns
@@ -58,7 +58,7 @@ async function testSmartCaching() {
     patterns.forEach(({ name, pattern }) => {
       const found = content.includes(pattern);
       console.log(`${found ? '✅' : '❌'} ${name}`);
-      if (!found) allFeaturesFound = false;
+      if (!found) {allFeaturesFound = false;}
     });
     
     // Check cost optimization features
@@ -75,7 +75,7 @@ async function testSmartCaching() {
     costFeatures.forEach(({ name, pattern }) => {
       const found = content.includes(pattern);
       console.log(`${found ? '✅' : '❌'} ${name}`);
-      if (!found) allFeaturesFound = false;
+      if (!found) {allFeaturesFound = false;}
     });
     
     console.log('\n📊 Integration Summary:');

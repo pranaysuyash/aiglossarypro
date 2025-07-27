@@ -198,7 +198,7 @@ export function MobileSearchOverlay({
 
     setIsVoiceListening(true);
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: Response) => {
       const transcript = event.results[0][0].transcript;
       setQuery(transcript);
       performSearch(transcript);

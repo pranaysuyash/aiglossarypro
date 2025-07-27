@@ -27,7 +27,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
   const originalSend = res.send;
 
   // Override res.json to add compression
-  res.json = function (this: Response, body: any) {
+  res.json = function (this: Response, body: Response) {
     const jsonString = JSON.stringify(body);
     const sizeInBytes = Buffer.byteLength(jsonString, 'utf8');
 
@@ -86,10 +86,10 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
 
     // No compression needed or supported
     return originalJson.call(this, body);
-  } as any;
+  } as unknown;
 
   // Override res.send for other content types
-  res.send = function (this: Response, body: any) {
+  res.send = function (this: Response, body: Response) {
     if (typeof body === 'string' && body.length > 1024) {
       const acceptEncoding = req.headers['accept-encoding'] || '';
       const sizeInBytes = Buffer.byteLength(body, 'utf8');
@@ -132,7 +132,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
     }
 
     return originalSend.call(this, body);
-  } as any;
+  } as unknown;
 
   next();
 }
@@ -141,7 +141,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
 export function responseMonitoringMiddleware(req: Request, res: Response, next: NextFunction) {
   const originalJson = res.json;
 
-  res.json = function (body: any) {
+  res.json = function (body: Response) {
     const jsonString = JSON.stringify(body);
     const sizeInBytes = Buffer.byteLength(jsonString, 'utf8');
 
@@ -194,7 +194,7 @@ export function performanceMiddleware() {
 }
 
 // Utility function to check if compression is beneficial
-export function shouldCompress(data: any): boolean {
+export function shouldCompress(data: Response): boolean {
   const jsonString = JSON.stringify(data);
   const sizeInBytes = Buffer.byteLength(jsonString, 'utf8');
 
@@ -203,7 +203,7 @@ export function shouldCompress(data: any): boolean {
 }
 
 // Helper to estimate compression savings
-export function estimateCompressionSavings(data: any): {
+export function estimateCompressionSavings(data: Response): {
   originalSize: number;
   estimatedCompressedSize: number;
   estimatedSavings: number;

@@ -69,7 +69,7 @@ router.get(
   }),
   async (req, res) => {
     try {
-      const { startDate, endDate, cacheType, interval } = req.query as any;
+      const { startDate, endDate, cacheType, interval } = req.query as unknown;
 
       let metrics;
       if (interval) {
@@ -193,17 +193,17 @@ router.post('/clear', async (req, res) => {
 });
 
 // Helper functions
-function calculateAverage(metrics: any[], field: string): number {
+function calculateAverage(metrics: unknown[], field: string): number {
   if (metrics.length === 0) {return 0;}
   const sum = metrics.reduce((acc, m) => acc + (m[field] || 0), 0);
   return sum / metrics.length;
 }
 
-function sumValues(metrics: any[], field: string): number {
+function sumValues(metrics: unknown[], field: string): number {
   return metrics.reduce((acc, m) => acc + (m[field] || 0), 0);
 }
 
-function analyzeTrends(metrics: any[]): any {
+function analyzeTrends(metrics: unknown[]) {
   if (metrics.length < 2) {return { improving: false, degrading: false };}
 
   const firstHalf = metrics.slice(0, Math.floor(metrics.length / 2));
@@ -223,7 +223,7 @@ function analyzeTrends(metrics: any[]): any {
   };
 }
 
-function generateKeyRecommendations(hotKeys: any[], coldKeys: any[]): string[] {
+function generateKeyRecommendations(hotKeys: unknown[], coldKeys: unknown[]): string[] {
   const recommendations: string[] = [];
 
   if (hotKeys.length > 0 && hotKeys[0].hits > 100) {
@@ -237,7 +237,7 @@ function generateKeyRecommendations(hotKeys: any[], coldKeys: any[]): string[] {
   return recommendations;
 }
 
-function generateRecommendations(metrics: any[], currentStats: any, health: any): string[] {
+function generateRecommendations(metrics: unknown[], currentStats: any, health: any): string[] {
   const recommendations: string[] = [...health.recommendations];
 
   // Add metric-based recommendations

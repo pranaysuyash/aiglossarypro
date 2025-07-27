@@ -18,7 +18,7 @@ const mockStripe = {
   redirectToCheckout: vi.fn(),
 };
 
-(global as any).Stripe = vi.fn(() => mockStripe);
+(global as unknown).Stripe = vi.fn(() => mockStripe);
 
 const mockToast = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({
@@ -46,7 +46,7 @@ describe('TestPurchaseButton', () => {
   };
 
   it('should render purchase button for unauthenticated users', () => {
-    (useAuth as any).mockReturnValue({
+    (useAuth as unknown).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -57,7 +57,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should show verification status for authenticated users with lifetime access', () => {
-    (useAuth as any).mockReturnValue({
+    (useAuth as unknown).mockReturnValue({
       isAuthenticated: true,
       user: {
         id: '1',
@@ -73,7 +73,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should handle successful test purchase', async () => {
-    (useAuth as any).mockReturnValue({
+    (useAuth as unknown).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -85,7 +85,7 @@ describe('TestPurchaseButton', () => {
       purchaseDate: new Date().toISOString(),
     };
 
-    (api.post as any).mockResolvedValueOnce({
+    (api.post as unknown).mockResolvedValueOnce({
       success: true,
       data: {
         message: 'Test purchase successful',
@@ -111,12 +111,12 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should handle purchase errors', async () => {
-    (useAuth as any).mockReturnValue({
+    (useAuth as unknown).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
 
-    (api.post as any).mockResolvedValueOnce({
+    (api.post as unknown).mockResolvedValueOnce({
       success: false,
       error: 'Purchase failed',
     });
@@ -136,18 +136,18 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should show loading state during purchase', async () => {
-    (useAuth as any).mockReturnValue({
+    (useAuth as unknown).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
 
     // Create a promise that we can control
-    let resolvePromise: any;
+    let resolvePromise: Response;
     const purchasePromise = new Promise(resolve => {
       resolvePromise = resolve;
     });
 
-    (api.post as any).mockReturnValueOnce(purchasePromise);
+    (api.post as unknown).mockReturnValueOnce(purchasePromise);
 
     renderComponent();
 
@@ -172,7 +172,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should display payment information correctly', async () => {
-    (useAuth as any).mockReturnValue({
+    (useAuth as unknown).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -183,7 +183,7 @@ describe('TestPurchaseButton', () => {
       environment: 'test',
     };
 
-    (api.post as any).mockResolvedValueOnce({
+    (api.post as unknown).mockResolvedValueOnce({
       success: true,
       data: {
         message: 'Test purchase successful',

@@ -21,7 +21,7 @@ interface AdminStats {
   userCount: number;
   termCount: number;
   categoryCount: number;
-  recentActivity?: any[];
+  recentActivity?: unknown[];
 }
 
 interface SystemHealth {
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
       } else {
         throw new Error(data.message || 'Failed to load admin statistics');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching admin stats:', error);
       const errorMessage =
         error instanceof Error ? error?.message : 'Failed to load admin statistics';
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
       } else {
         throw new Error(data.message || 'Health check returned invalid data');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching system health:', error);
       const errorMessage = error instanceof Error ? error?.message : 'Failed to load system health';
 
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
       } else {
         throw new Error(data.message || 'Failed to parse user data');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching users:', error);
       const errorMessage = error instanceof Error ? error?.message : 'Failed to load users';
 
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
           console.error(`Failed to load ${operationNames[index]}:`, result.reason);
         }
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Critical error loading dashboard data:', error);
       toast({
         title: 'Critical Error',
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
       } else {
         throw new Error(data.message || 'Generation failed');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Content generation error:', error);
       setGenerationResult('Content generation failed. Please try again.');
       toast({

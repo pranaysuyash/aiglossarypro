@@ -61,7 +61,7 @@ export function AIDefinitionImprover({
       } else {
         throw new Error(result.error || 'Failed to generate improvements');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error generating improvements:', error);
       toast({
         title: GENERIC_MESSAGES.ERROR.title,
@@ -104,7 +104,7 @@ export function AIDefinitionImprover({
       } else {
         throw new Error(result.error || 'Failed to apply improvements');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error applying improvements:', error);
       toast({
         title: GENERIC_MESSAGES.ERROR.title,

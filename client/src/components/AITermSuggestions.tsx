@@ -70,7 +70,7 @@ export function AITermSuggestions({
       } else {
         throw new Error(result.error || 'Failed to generate suggestions');
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error generating suggestions:', error);
       toast({
         title: 'Error',

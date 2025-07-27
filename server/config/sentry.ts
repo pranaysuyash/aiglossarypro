@@ -165,7 +165,7 @@ export function captureException(
   context?: {
     user?: { id?: string; email?: string; username?: string };
     tags?: Record<string, string>;
-    extra?: Record<string, any>;
+    extra?: Record<string, unknown>;
     level?: 'fatal' | 'error' | 'warning' | 'info' | 'debug';
   }
 ): string | undefined {
@@ -208,7 +208,7 @@ export function captureMessage(
   context?: {
     user?: { id?: string; email?: string; username?: string };
     tags?: Record<string, string>;
-    extra?: Record<string, any>;
+    extra?: Record<string, unknown>;
   }
 ): string | undefined {
   if (process.env.NODE_ENV !== 'production') {
@@ -264,7 +264,7 @@ export function addBreadcrumb(
   message: string,
   category = 'default',
   level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 ): void {
   if (process.env.NODE_ENV !== 'production') {
     logger.debug('Breadcrumb (Sentry disabled):', { message, category, level, data });

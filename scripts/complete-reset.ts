@@ -83,7 +83,7 @@ async function completeReset() {
         } else {
           console.log(`✅ ${tableName}: Already empty`);
         }
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         if (error.message.includes('does not exist')) {
           console.log(`✅ ${tableName}: Table doesn't exist`);
         } else {
@@ -107,7 +107,7 @@ async function completeReset() {
         // Recreate table
         await db.execute(sql.raw(createSql));
         console.log(`✅ Recreated ${name}: Fresh empty table`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`❌ ${name}: ${error.message.split('\\n')[0]}`);
       }
     }
@@ -151,7 +151,7 @@ async function completeReset() {
         }
 
         console.log(`${tableName.padEnd(20)}: ${String(count).padStart(6)} records ${status}`);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.log(`${tableName.padEnd(20)}: ERROR - Table may not exist`);
       }
     }

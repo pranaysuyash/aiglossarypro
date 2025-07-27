@@ -3,8 +3,8 @@
  * AI-powered adaptive homepage with personalized content and navigation
  */
 
-import type React from 'react';
 import { useEffect } from 'react';
+import type React from 'react';
 import PersonalizedDashboard from '../components/PersonalizedDashboard';
 import { useAuth } from '../hooks/useAuth';
 

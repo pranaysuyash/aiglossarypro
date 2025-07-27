@@ -285,8 +285,8 @@ describe('Database Storage Operations', () => {
   describe('Error Handling', () => {
     it('should handle database connection errors gracefully', async () => {
       // Mock a database error
-      const originalDb = (storage as any).db;
-      (storage as any).db = {
+      const originalDb = (storage as unknown).db;
+      (storage as unknown).db = {
         select: () => {
           throw new Error('Database connection failed');
         },
@@ -295,7 +295,7 @@ describe('Database Storage Operations', () => {
       await expect(storage.getTerms({ limit: 10 })).rejects.toThrow('Database connection failed');
 
       // Restore original database
-      (storage as any).db = originalDb;
+      (storage as unknown).db = originalDb;
     });
 
     it('should handle malformed queries safely', async () => {

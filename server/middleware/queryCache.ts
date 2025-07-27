@@ -432,7 +432,7 @@ export const CacheWarming = {
 };
 
 // Cache statistics middleware
-export function cacheStatsMiddleware(_req: any, res: any, next: any) {
+export function cacheStatsMiddleware(_req: Request, res: Request, next: Request) {
   // Add cache stats to response headers in development
   if (process.env.NODE_ENV === 'development') {
     const stats = queryCache.getStats();

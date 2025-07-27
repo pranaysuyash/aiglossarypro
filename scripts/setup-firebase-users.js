@@ -10,7 +10,7 @@ dotenv.config();
 let adminInitialized = false;
 
 function initializeFirebaseAdmin() {
-  if (adminInitialized) return;
+  if (adminInitialized) {return;}
 
   try {
     let privateKey;

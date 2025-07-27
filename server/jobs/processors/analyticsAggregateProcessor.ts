@@ -117,7 +117,7 @@ async function aggregateSearchAnalytics(
   });
 
   // Mock implementation - replace with actual database queries
-  const searchData: Record<string, any> = {
+  const searchData: Record<string, unknown> = {
     totalSearches: await getSearchCount(timeRange),
     uniqueUsers: await getUniqueSearchUsers(timeRange),
     topQueries: await getTopSearchQueries(timeRange, 10),
@@ -162,7 +162,7 @@ async function aggregateUserEngagement(
     stage: 'processing',
   });
 
-  const engagementData: Record<string, any> = {
+  const engagementData: Record<string, unknown> = {
     activeUsers: await getActiveUsers(timeRange),
     newUsers: await getNewUsers(timeRange),
     returningUsers: await getReturningUsers(timeRange),
@@ -320,7 +320,7 @@ async function getTopSearchQueries(
   }));
 }
 
-async function getSearchTrends(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getSearchTrends(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     trend: 'increasing',
     changePercent: Math.random() * 50,
@@ -394,7 +394,7 @@ async function getBounceRate(_timeRange: { start: Date; end: Date }): Promise<nu
   return Math.random() * 0.4 + 0.2; // 20-60% bounce rate
 }
 
-async function getUserRetention(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getUserRetention(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     day1: Math.random() * 0.5 + 0.3,
     day7: Math.random() * 0.3 + 0.2,
@@ -411,7 +411,7 @@ async function getFeatureUsage(_timeRange: { start: Date; end: Date }): Promise<
   }));
 }
 
-async function getCohortAnalysis(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getCohortAnalysis(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     cohorts: Array.from({ length: 12 }, (_, i) => ({
       month: new Date(Date.now() - i * 30 * 24 * 60 * 60 * 1000),
@@ -448,7 +448,7 @@ async function getCategoryPopularity(timeRange: { start: Date; end: Date }): Pro
   return getSearchCategoryDistribution(timeRange);
 }
 
-async function getContentQualityMetrics(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getContentQualityMetrics(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     avgCompleteness: Math.random() * 0.3 + 0.7, // 70-100%
     avgRating: Math.random() * 2 + 3, // 3-5 stars
@@ -456,7 +456,7 @@ async function getContentQualityMetrics(_timeRange: { start: Date; end: Date }):
   };
 }
 
-async function getUserFeedbackMetrics(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getUserFeedbackMetrics(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     totalFeedback: Math.floor(Math.random() * 500),
     positiveFeedback: Math.floor(Math.random() * 400),
@@ -465,7 +465,7 @@ async function getUserFeedbackMetrics(_timeRange: { start: Date; end: Date }): P
   };
 }
 
-async function getSearchResultPerformance(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getSearchResultPerformance(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     avgResultsReturned: Math.random() * 10 + 5,
     avgRelevanceScore: Math.random() * 0.3 + 0.7,
@@ -474,7 +474,7 @@ async function getSearchResultPerformance(_timeRange: { start: Date; end: Date }
 }
 
 // System performance metrics
-async function getApiResponseTimes(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getApiResponseTimes(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     avg: Math.random() * 200 + 50, // 50-250ms
     p95: Math.random() * 500 + 100,
@@ -482,7 +482,7 @@ async function getApiResponseTimes(_timeRange: { start: Date; end: Date }): Prom
   };
 }
 
-async function getErrorRates(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getErrorRates(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     rate: Math.random() * 0.05, // 0-5% error rate
     total: Math.floor(Math.random() * 100),
@@ -493,7 +493,7 @@ async function getErrorRates(_timeRange: { start: Date; end: Date }): Promise<an
   };
 }
 
-async function getCacheHitRates(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getCacheHitRates(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     overall: Math.random() * 0.3 + 0.7, // 70-100%
     redis: Math.random() * 0.2 + 0.8,
@@ -501,7 +501,7 @@ async function getCacheHitRates(_timeRange: { start: Date; end: Date }): Promise
   };
 }
 
-async function getDatabasePerformance(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getDatabasePerformance(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     avgQueryTime: Math.random() * 50 + 10, // 10-60ms
     slowQueries: Math.floor(Math.random() * 20),
@@ -512,7 +512,7 @@ async function getDatabasePerformance(_timeRange: { start: Date; end: Date }): P
   };
 }
 
-async function getJobQueueMetrics(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getJobQueueMetrics(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     totalJobs: Math.floor(Math.random() * 1000),
     completedJobs: Math.floor(Math.random() * 800),
@@ -521,7 +521,7 @@ async function getJobQueueMetrics(_timeRange: { start: Date; end: Date }): Promi
   };
 }
 
-async function getResourceUtilization(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getResourceUtilization(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     cpu: Math.random() * 0.5 + 0.2, // 20-70%
     memory: Math.random() * 0.4 + 0.3, // 30-70%
@@ -566,7 +566,7 @@ async function getImportSources(_timeRange: { start: Date; end: Date }): Promise
   ];
 }
 
-async function getAIProcessingMetrics(_timeRange: { start: Date; end: Date }): Promise<any> {
+async function getAIProcessingMetrics(_timeRange: { start: Date; end: Date }): Promise<unknown> {
   return {
     totalAIJobs: Math.floor(Math.random() * 200),
     successfulAIJobs: Math.floor(Math.random() * 180),

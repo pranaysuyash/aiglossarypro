@@ -299,7 +299,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
 
 // Helper Functions
 
-function generateConceptRelationships(result: any, allResults: any[]): string[] {
+function generateConceptRelationships(result: Response, allResults: Response[]): string[] {
   // Generate related concepts based on category similarity and common terms
   const relationships: string[] = [];
 
@@ -332,7 +332,7 @@ function generateConceptRelationships(result: any, allResults: any[]): string[] 
   return [...new Set(relationships)].slice(0, 5);
 }
 
-function generatePrerequisites(result: any, _query: string): string[] {
+function generatePrerequisites(result: Request, _query: string): string[] {
   // Generate suggested prerequisites based on term complexity
   const prerequisites: string[] = [];
 
@@ -376,7 +376,7 @@ function calculateQueryComplexity(query: string): 'basic' | 'intermediate' | 'ad
   return 'basic';
 }
 
-function calculateSuggestionScore(result: any, query: string): number {
+function calculateSuggestionScore(result: Response, query: string): number {
   let score = result.relevanceScore || 0;
 
   // Boost score for exact matches
@@ -413,7 +413,7 @@ function highlightSearchTerms(text: string, query: string): string {
   });
 }
 
-function calculateRelationshipType(_result: any): string {
+function calculateRelationshipType(_result: Response): string {
   // Simple relationship classification
   const relationships = ['prerequisite', 'related', 'advanced', 'application', 'component'];
   return relationships[Math.floor(Math.random() * relationships.length)];

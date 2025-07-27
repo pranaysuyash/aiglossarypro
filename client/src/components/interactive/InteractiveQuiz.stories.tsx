@@ -154,7 +154,7 @@ export const Default: Story = {
     title: basicQuizData.title,
     description: basicQuizData.description,
     timeLimit: basicQuizData.timeLimit,
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
   },
 };
 
@@ -164,7 +164,7 @@ export const AdvancedQuiz: Story = {
     title: advancedQuizData.title,
     description: advancedQuizData.description,
     timeLimit: advancedQuizData.timeLimit,
-    onComplete: (results: any) => console.log('Advanced quiz completed:', results),
+    onComplete: (results: Response) => console.log('Advanced quiz completed:', results),
     showExplanations: true,
   },
 };
@@ -175,7 +175,7 @@ export const MathematicsQuiz: Story = {
     title: mathQuizData.title,
     description: mathQuizData.description,
     timeLimit: mathQuizData.timeLimit,
-    onComplete: (results: any) => console.log('Math quiz completed:', results),
+    onComplete: (results: Response) => console.log('Math quiz completed:', results),
     showExplanations: true,
   },
 };
@@ -185,7 +185,7 @@ export const TimedQuiz: Story = {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
     timeLimit: basicQuizData.timeLimit,
-    onComplete: (results: any) => console.log('Timed quiz completed:', results),
+    onComplete: (results: Response) => console.log('Timed quiz completed:', results),
   },
 };
 
@@ -193,7 +193,7 @@ export const PracticeMode: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Practice completed:', results),
+    onComplete: (results: Response) => console.log('Practice completed:', results),
     showExplanations: true,
     allowRetry: true,
   },
@@ -203,7 +203,7 @@ export const AssessmentMode: Story = {
   args: {
     questions: advancedQuizData.questions,
     title: advancedQuizData.title,
-    onComplete: (results: any) => console.log('Assessment completed:', results),
+    onComplete: (results: Response) => console.log('Assessment completed:', results),
     showExplanations: false,
     allowRetry: false,
   },
@@ -213,7 +213,7 @@ export const WithProgress: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
   },
 };
 
@@ -221,7 +221,7 @@ export const CustomStyling: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Styled quiz completed:', results),
+    onComplete: (results: Response) => console.log('Styled quiz completed:', results),
     className: 'bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-lg text-white',
   },
 };
@@ -230,7 +230,7 @@ export const AdaptiveQuiz: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Adaptive quiz completed:', results),
+    onComplete: (results: Response) => console.log('Adaptive quiz completed:', results),
     showExplanations: true,
   },
 };
@@ -239,7 +239,7 @@ export const MultipleAttempts: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Quiz attempt completed:', results),
+    onComplete: (results: Response) => console.log('Quiz attempt completed:', results),
     allowRetry: true,
   },
 };
@@ -248,7 +248,7 @@ export const WithHints: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Quiz with hints completed:', results),
+    onComplete: (results: Response) => console.log('Quiz with hints completed:', results),
     showExplanations: true,
   },
 };
@@ -257,7 +257,7 @@ export const LoadingState: Story = {
   args: {
     questions: [],
     title: 'Loading Quiz...',
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
   },
 };
 
@@ -265,7 +265,7 @@ export const ErrorState: Story = {
   args: {
     questions: [],
     title: 'Quiz Error',
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
   },
 };
 
@@ -273,7 +273,7 @@ export const CompletedState: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
     showExplanations: true,
   },
 };
@@ -282,7 +282,7 @@ export const DarkMode: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
     className: 'bg-gray-900 text-white',
   },
   parameters: {
@@ -296,7 +296,7 @@ export const MobileView: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Quiz completed:', results),
+    onComplete: (results: Response) => console.log('Quiz completed:', results),
     className: 'max-w-sm mx-auto',
   },
   parameters: {
@@ -310,7 +310,7 @@ export const AccessibleQuiz: Story = {
   args: {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
-    onComplete: (results: any) => console.log('Accessible quiz completed:', results),
+    onComplete: (results: Response) => console.log('Accessible quiz completed:', results),
     showExplanations: true,
   },
 };

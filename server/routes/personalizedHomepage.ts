@@ -16,13 +16,36 @@ import {
 } from '../services/userProfilingService';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 import { log } from '../utils/logger';
+
+// Types for request objects
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email?: string;
+  };
+}
+
+interface RecentActivityItem {
+  termId: string | null;
+  termName: string | null;
+  interactionType: string | null;
+  timestamp: Date | null;
+}
+
+interface ContinueLearningItem {
+  pathId: string | null;
+  pathName: string | null;
+  completionPercentage: number | null;
+  lastAccessed: Date | null;
+}
+
 interface PersonalizedHomepageData {
   userProfile: UserProfile;
   recommendations: PersonalizedRecommendation[];
   personalizedSections: {
-    recentActivity: any[];
+    recentActivity: RecentActivityItem[];
     recommendedForYou: PersonalizedRecommendation[];
-    continuelearning: any[];
+    continuelearning: ContinueLearningItem[];
     exploreNew: PersonalizedRecommendation[];
     trending: PersonalizedRecommendation[];
   };
@@ -41,9 +64,9 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
   app.get(
     '/api/personalized/homepage',
     multiAuthMiddleware,
-    async (req: Request, res: Response) => {
+    async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = req.user;
 
         if (!user) {
           return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
@@ -93,7 +116,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
       } catch (error) {
         log.error('Get personalized homepage error', {
           error: error instanceof Error ? error.message : String(error),
-          userId: (req as any).user?.id,
+          userId: req.user?.id,
         });
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -105,9 +128,9 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
    * Get user profile
    * GET /api/personalized/profile
    */
-  app.get('/api/personalized/profile', multiAuthMiddleware, async (req: Request, res: Response) => {
+  app.get('/api/personalized/profile', multiAuthMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const user = (req as any).user;
+      const user = req.user;
 
       if (!user) {
         return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
@@ -134,7 +157,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
     } catch (error) {
       log.error('Get user profile error', {
         error: error instanceof Error ? error.message : String(error),
-        userId: (req as any).user?.id,
+        userId: req.user?.id,
       });
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -148,9 +171,9 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
   app.post(
     '/api/personalized/profile/regenerate',
     multiAuthMiddleware,
-    async (req: Request, res: Response) => {
+    async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = req.user;
 
         if (!user) {
           return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
@@ -167,7 +190,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
       } catch (error) {
         log.error('Regenerate user profile error', {
           error: error instanceof Error ? error.message : String(error),
-          userId: (req as any).user?.id,
+          userId: req.user?.id,
         });
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -182,9 +205,9 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
   app.get(
     '/api/personalized/recommendations',
     multiAuthMiddleware,
-    async (req: Request, res: Response) => {
+    async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = req.user;
         const { type = 'all', limit = '10' } = req.query;
 
         if (!user) {
@@ -221,7 +244,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
       } catch (error) {
         log.error('Get personalized recommendations error', {
           error: error instanceof Error ? error.message : String(error),
-          userId: (req as any).user?.id,
+          userId: req.user?.id,
         });
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -236,9 +259,9 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
   app.put(
     '/api/personalized/preferences',
     multiAuthMiddleware,
-    async (req: Request, res: Response) => {
+    async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = req.user;
         const { preferredCategories, learningStyle, difficultyPreference, contentTypes } = req.body;
 
         if (!user) {
@@ -286,9 +309,9 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
   app.post(
     '/api/personalized/feedback',
     multiAuthMiddleware,
-    async (req: Request, res: Response) => {
+    async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const user = (req as any).user;
+        const user = req.user;
         const { recommendationId, recommendationType, feedback, rating, action } = req.body;
 
         if (!user) {
@@ -354,7 +377,7 @@ async function cacheUserProfile(userProfile: UserProfile): Promise<void> {
 /**
  * Get user's recent activity
  */
-async function getRecentActivity(userId: string): Promise<any[]> {
+async function getRecentActivity(userId: string): Promise<RecentActivityItem[]> {
   try {
     const recentActivity = await db
       .select({
@@ -379,7 +402,7 @@ async function getRecentActivity(userId: string): Promise<any[]> {
 /**
  * Get continue learning data
  */
-async function getContinueLearning(userId: string): Promise<any[]> {
+async function getContinueLearning(userId: string): Promise<ContinueLearningItem[]> {
   try {
     const continueLearning = await db
       .select({

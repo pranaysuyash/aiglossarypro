@@ -76,8 +76,8 @@ describe('FirebaseLoginPage', () => {
       lifetimeAccess: false,
     };
 
-    (signInWithProvider as any).mockResolvedValueOnce({ idToken: mockIdToken });
-    (api.post as any).mockResolvedValueOnce({
+    (signInWithProvider as unknown).mockResolvedValueOnce({ idToken: mockIdToken });
+    (api.post as unknown).mockResolvedValueOnce({
       success: true,
       data: {
         token: 'mock-jwt-token',
@@ -110,8 +110,8 @@ describe('FirebaseLoginPage', () => {
       lifetimeAccess: true,
     };
 
-    (signInWithEmail as any).mockResolvedValueOnce({ idToken: mockIdToken });
-    (api.post as any).mockResolvedValueOnce({
+    (signInWithEmail as unknown).mockResolvedValueOnce({ idToken: mockIdToken });
+    (api.post as unknown).mockResolvedValueOnce({
       success: true,
       data: {
         token: 'mock-jwt-token',
@@ -141,7 +141,7 @@ describe('FirebaseLoginPage', () => {
   });
 
   it('should handle authentication errors', async () => {
-    (signInWithProvider as any).mockRejectedValueOnce({
+    (signInWithProvider as unknown).mockRejectedValueOnce({
       code: 'auth/user-not-found',
       message: 'User not found',
     });

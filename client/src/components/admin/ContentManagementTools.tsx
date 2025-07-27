@@ -25,8 +25,8 @@ import {
   Code,
   Eye
 } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ContentStats {
@@ -51,7 +51,7 @@ interface BulkOperation {
   processedItems: number;
   startedAt?: string;
   completedAt?: string;
-  results?: any;
+  results?: Response;
   errors?: string[];
 }
 
@@ -86,7 +86,7 @@ export function ContentManagementTools() {
 
   // Bulk operation mutations
   const startBulkOperation = useMutation({
-    mutationFn: async ({ type, options }: { type: string; options?: any }) => {
+    mutationFn: async ({ type, options }: { type: string; options?: Record<string, unknown> }) => {
       const response = await fetch('/api/admin/content/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ export function ContentManagementTools() {
               prev.map(prevOp => (prevOp.id === op.id ? result.data : prevOp))
             );
           }
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
           console.error('Error polling operation status:', error);
         }
       }
@@ -138,7 +138,7 @@ export function ContentManagementTools() {
     return () => clearInterval(interval);
   }, [bulkOperations]);
 
-  const handleBulkOperation = (type: string, options?: any) => {
+  const handleBulkOperation = (type: string, options?: Record<string, unknown>) => {
     startBulkOperation.mutate({ type, options });
   };
 

@@ -42,7 +42,7 @@ export interface PersonalizedRecommendation {
   description: string;
   relevanceScore: number;
   reason: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 /**
@@ -117,7 +117,7 @@ export async function generateUserProfile(userId: string): Promise<UserProfile> 
 /**
  * Calculate user interest scores for each category
  */
-async function calculateCategoryInterests(interactions: any[]): Promise<CategoryInterest[]> {
+async function calculateCategoryInterests(interactions: Response[]): Promise<CategoryInterest[]> {
   const categoryMap = new Map<string, CategoryInterest>();
 
   interactions.forEach(interaction => {
@@ -176,7 +176,7 @@ async function calculateCategoryInterests(interactions: any[]): Promise<Category
  */
 async function calculateSkillLevel(
   userId: string,
-  interactions: any[]
+  interactions: unknown[]
 ): Promise<UserProfile['skillLevel']> {
   // Get learning path progress
   const learningProgress = await db
@@ -223,7 +223,7 @@ async function calculateSkillLevel(
 /**
  * Analyze learning style preferences
  */
-function calculateLearningStyle(interactions: any[]): UserProfile['learningStyle'] {
+function calculateLearningStyle(interactions: unknown[]): UserProfile['learningStyle'] {
   const styleScores = {
     visual: 0, // Interactions with visual content
     theoretical: 0, // Long reading sessions
@@ -261,7 +261,7 @@ function calculateLearningStyle(interactions: any[]): UserProfile['learningStyle
 /**
  * Calculate user activity level
  */
-function calculateActivityLevel(interactions: any[]): UserProfile['activityLevel'] {
+function calculateActivityLevel(interactions: unknown[]): UserProfile['activityLevel'] {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const recentInteractions = interactions.filter(i => new Date(i.timestamp) >= sevenDaysAgo);
 
@@ -275,7 +275,7 @@ function calculateActivityLevel(interactions: any[]): UserProfile['activityLevel
 /**
  * Determine preferred content types
  */
-function calculatePreferredContentTypes(interactions: any[]): string[] {
+function calculatePreferredContentTypes(interactions: Error | unknown[]): string[] {
   const typeScores = new Map<string, number>();
 
   interactions.forEach(interaction => {
@@ -292,7 +292,7 @@ function calculatePreferredContentTypes(interactions: any[]): string[] {
 /**
  * Extract recent topics of interest
  */
-function extractRecentTopics(interactions: any[], since: Date): string[] {
+function extractRecentTopics(interactions: unknown[], since: Date): string[] {
   const recentTerms = interactions
     .filter(i => new Date(i.timestamp) >= since)
     .map(i => i.termName)
@@ -305,7 +305,7 @@ function extractRecentTopics(interactions: any[], since: Date): string[] {
 /**
  * Calculate overall engagement score
  */
-function calculateEngagementScore(interactions: any[]): number {
+function calculateEngagementScore(interactions: unknown[]): number {
   if (interactions.length === 0) {return 0;}
 
   const totalDuration = interactions.reduce((sum, i) => sum + (i.duration || 30), 0);

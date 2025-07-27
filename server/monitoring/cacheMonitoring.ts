@@ -271,7 +271,7 @@ export class CacheMonitoringService extends EventEmitter {
     return this.alertHistory.filter(alert => alert.timestamp > cutoff);
   }
 
-  async generateHealthReport(): Promise<any> {
+  async generateHealthReport(): Promise<unknown> {
     const checks = await this.runHealthChecks();
     const stats = getCacheStats();
 
@@ -308,7 +308,7 @@ export class CacheMonitoringService extends EventEmitter {
     return 'healthy';
   }
 
-  private analyzePerformanceTrends(metrics: any[]): any {
+  private analyzePerformanceTrends(metrics: unknown[]) {
     if (metrics.length < 2) {
       return { trending: 'stable', details: 'Insufficient data' };
     }
@@ -385,7 +385,7 @@ export const cacheMonitor = new CacheMonitoringService();
 // Export monitoring integration functions
 export function setupCacheMonitoring(app: any): void {
   // Add monitoring middleware
-  app.use('/api', (_req: any, res: any, next: any) => {
+  app.use('/api', (_req: Request, res: Request, next: Request) => {
     // Add cache performance headers
     const stats = getCacheStats();
     res.set({

@@ -5,6 +5,7 @@ import {
   enhancedTerms,
   enhancedUserSettings,
   interactiveElements,
+  sections,
   termRelationships,
   termSections,
   users,
@@ -94,11 +95,7 @@ class EnhancedStorage {
     if (!term) {return null;}
 
     // Get all sections for this term
-    const sections = await db
-      .select()
-      .from(termSections)
-      .where(eq(termSections.termId, term.id))
-      .orderBy(desc(termSections.priority), asc(termSections.sectionName));
+    const termSectionsList = await this.getTermSections(term.id);
 
     // Get interactive elements
     const interactive = await db
@@ -118,7 +115,7 @@ class EnhancedStorage {
 
     return {
       ...term,
-      sections: sections,
+      sections: termSectionsList,
       interactiveElements: interactive,
       displayConfig: displayConfig || null,
       relationships: relationships,
@@ -851,11 +848,36 @@ class EnhancedStorage {
   }
 
   async getTermSections(termId: string) {
-    return await db
+    // First check termSections table (has actual content)
+    const contentSections = await db
       .select()
       .from(termSections)
       .where(eq(termSections.termId, termId))
       .orderBy(desc(termSections.priority), asc(termSections.sectionName));
+    
+    if (contentSections.length > 0) {
+      return contentSections;
+    }
+    
+    // Fallback to sections table (basic structure)
+    const basicSections = await db
+      .select()
+      .from(sections)
+      .where(eq(sections.termId, termId))
+      .orderBy(asc(sections.displayOrder));
+    
+    // Convert basic sections to termSections format
+    return basicSections.map(section => ({
+      id: `${section.id}`,
+      termId: section.termId,
+      sectionName: section.name,
+      sectionData: {},
+      displayType: 'text' as const,
+      priority: section.displayOrder || 5,
+      isInteractive: false,
+      createdAt: section.createdAt,
+      updatedAt: section.updatedAt,
+    }));
   }
 
   async updateTermSection(termId: string, sectionId: string, data: any) {

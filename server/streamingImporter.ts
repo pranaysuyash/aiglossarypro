@@ -156,9 +156,9 @@ export async function streamingImportProcessedData(
     const categoryIdMap = new Map<string, string>();
 
     // Batch storage
-    let categoriesBatch: any[] = [];
-    let subcategoriesBatch: any[] = [];
-    let termsBatch: any[] = [];
+    let categoriesBatch: unknown[] = [];
+    let subcategoriesBatch: unknown[] = [];
+    let termsBatch: unknown[] = [];
 
     // Data handler for streaming parser
     const handleData = async (type: string, data: any) => {
@@ -259,7 +259,7 @@ export async function streamingImportProcessedData(
  * Process a batch of categories
  */
 async function processCategoriesBatch(
-  batch: any[],
+  batch: unknown[],
   skipExisting: boolean,
   categoryIdMap: Map<string, string>
 ): Promise<{ count: number; errors: string[] }> {
@@ -307,7 +307,7 @@ async function processCategoriesBatch(
  * Process a batch of subcategories
  */
 async function processSubcategoriesBatch(
-  batch: any[],
+  batch: unknown[],
   skipExisting: boolean,
   categoryIdMap: Map<string, string>
 ): Promise<{ count: number; errors: string[] }> {
@@ -363,7 +363,7 @@ async function processSubcategoriesBatch(
  * Process a batch of terms
  */
 async function processTermsBatch(
-  batch: any[],
+  batch: unknown[],
   skipExisting: boolean
 ): Promise<{ count: number; errors: string[] }> {
   let count = 0;

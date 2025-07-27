@@ -2,7 +2,7 @@
 // Complete implementation of the 295-column content generation system
 
 import OpenAI from 'openai';
-import { enhancedStorage } from './enhancedStorage';
+import { enhancedStorage } from '../enhancedStorage';
 import { HIERARCHICAL_295_STRUCTURE, type ColumnDefinition } from '../../shared/295ColumnStructure';
 import { 
   COLUMN_PROMPT_TRIPLETS, 
@@ -104,8 +104,8 @@ class Enhanced295ContentService {
   ): Promise<GenerationResult> {
     try {
       // Get term data
-      const termResult = await enhancedStorage.getEnhancedTermWithSections(termId);
-      if (!termResult.success || !termResult.data) {
+      const term = await enhancedStorage.getEnhancedTermWithSections(termId);
+      if (!term) {
         return {
           success: false,
           error: 'Term not found',
@@ -127,7 +127,6 @@ class Enhanced295ContentService {
         };
       }
 
-      const term = termResult.data;
       const templateVars = {
         termName: term.name,
         termId: term.id,
@@ -146,7 +145,7 @@ class Enhanced295ContentService {
         return generateResult;
       }
 
-      let finalResult: GenerationResult = {
+      const finalResult: GenerationResult = {
         success: true,
         content: generateResult.content,
         cost: generateResult.cost,
@@ -313,7 +312,7 @@ class Enhanced295ContentService {
    */
   private async processColumnInBackground(
     columnDef: ColumnDefinition,
-    terms: any[],
+    terms: unknown[],
     options: ContentGenerationOptions
   ): Promise<void> {
     try {
@@ -361,7 +360,7 @@ class Enhanced295ContentService {
    * Process a batch of terms
    */
   private async processBatch(
-    batch: any[],
+    batch: unknown[],
     columnId: string,
     options: ContentGenerationOptions
   ): Promise<void> {
@@ -610,11 +609,11 @@ class Enhanced295ContentService {
   ): Promise<void> {
     try {
       const columnDef = HIERARCHICAL_295_STRUCTURE.find(col => col.id === columnId);
-      if (!columnDef) return;
+      if (!columnDef) {return;}
 
       // Use the final content (improved if available, otherwise original)
       const finalContent = result.improvedContent || result.content;
-      if (!finalContent) return;
+      if (!finalContent) {return;}
 
       // Save to section_items table using the existing enhanced storage
       await enhancedStorage.createOrUpdateSectionContent({
@@ -644,7 +643,7 @@ class Enhanced295ContentService {
   /**
    * Filter terms that don't have content for the specified column
    */
-  private async filterTermsWithoutColumn(terms: any[], columnId: string): Promise<any[]> {
+  private async filterTermsWithoutColumn(terms: unknown[], columnId: string): Promise<any[]> {
     // This would query the database to check which terms already have content for this column
     // For now, return all terms
     return terms;

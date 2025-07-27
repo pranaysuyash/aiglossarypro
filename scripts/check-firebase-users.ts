@@ -44,7 +44,7 @@ async function checkFirebaseUsers() {
       try {
         const user = await getAuth().getUserByEmail(email);
         console.log(chalk.green(`✅ ${email} exists - UID: ${user.uid}`));
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         if (error.code === 'auth/user-not-found') {
           console.log(chalk.red(`❌ ${email} - NOT FOUND`));
         } else {

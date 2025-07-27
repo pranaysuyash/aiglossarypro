@@ -22,7 +22,7 @@ async function testSystemIntegration() {
   for (const file of criticalFiles) {
     const exists = fs.existsSync(path.join(__dirname, file));
     console.log(`${exists ? '✅' : '❌'} ${file}`);
-    if (!exists) allFilesExist = false;
+    if (!exists) {allFilesExist = false;}
   }
   
   // Test 2: Check 42-section configuration

@@ -1,4 +1,5 @@
-import type { Express } from 'express';
+import type { Express } from 'express'
+import type { Request, Response } from 'express';
 import { aiService } from './aiService';
 import { multiAuthMiddleware } from './middleware/multiAuth';
 import { optimizedStorage as storage } from './optimizedStorage';
@@ -7,7 +8,7 @@ import { isUserAdmin } from './utils/authUtils';
 import logger from './utils/logger';
 export function registerAIRoutes(app: Express): void {
   // Generate definition for a new term
-  app.post('/api/ai/generate-definition', multiAuthMiddleware, async (req: any, res) => {
+  app.post('/api/ai/generate-definition', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const { term, category, context } = req.body;
       const userId = req.user.claims.sub;
@@ -41,7 +42,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get term suggestions
-  app.get('/api/ai/term-suggestions', multiAuthMiddleware, async (req: any, res) => {
+  app.get('/api/ai/term-suggestions', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const focusCategory = req.query.category as string;
       const _limit = parseInt(req.query.limit as string) || 8;
@@ -70,7 +71,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Categorize a term
-  app.post('/api/ai/categorize-term', multiAuthMiddleware, async (req: any, res) => {
+  app.post('/api/ai/categorize-term', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const { term, definition } = req.body;
 
@@ -98,7 +99,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Enhanced semantic search with cost optimization
-  app.post('/api/ai/semantic-search', async (req: any, res) => {
+  app.post('/api/ai/semantic-search', async (req: Request, res) => {
     try {
       const { query, limit = 10 } = req.body;
       const userId = req.user?.claims?.sub || null;
@@ -142,7 +143,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Improve existing term definition
-  app.post('/api/ai/improve-definition/:id', multiAuthMiddleware, async (req: any, res) => {
+  app.post('/api/ai/improve-definition/:id', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const termId = req.params.id;
 
@@ -178,7 +179,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Apply AI-generated improvements to a term
-  app.put('/api/ai/apply-improvements/:id', multiAuthMiddleware, async (req: any, res) => {
+  app.put('/api/ai/apply-improvements/:id', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const termId = req.params.id;
       const { improvements } = req.body;
@@ -229,7 +230,7 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Submit feedback for AI-generated content
-  app.post('/api/ai/feedback', multiAuthMiddleware, async (req: any, res) => {
+  app.post('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const { termId, sectionName, feedbackType, rating, comment } = req.body;
@@ -273,7 +274,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get feedback list (admin only)
-  app.get('/api/ai/feedback', multiAuthMiddleware, async (req: any, res) => {
+  app.get('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -336,7 +337,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update feedback status (admin only)
-  app.put('/api/ai/feedback/:id', multiAuthMiddleware, async (req: any, res) => {
+  app.put('/api/ai/feedback/:id', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -400,7 +401,7 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Get content verification status (admin only)
-  app.get('/api/ai/verification', multiAuthMiddleware, async (req: any, res) => {
+  app.get('/api/ai/verification', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -460,7 +461,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update content verification (admin only)
-  app.put('/api/ai/verification/:id', multiAuthMiddleware, async (req: any, res) => {
+  app.put('/api/ai/verification/:id', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -520,7 +521,7 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Get AI usage analytics (admin only)
-  app.get('/api/ai/analytics', multiAuthMiddleware, async (req: any, res) => {
+  app.get('/api/ai/analytics', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -620,7 +621,7 @@ export function registerAIRoutes(app: Express): void {
               };
               return acc;
             },
-            {} as Record<string, any>
+            {} as Record<string, unknown>
           ),
           byModel: byModel.reduce(
             (acc, item) => {
@@ -631,7 +632,7 @@ export function registerAIRoutes(app: Express): void {
               };
               return acc;
             },
-            {} as Record<string, any>
+            {} as Record<string, unknown>
           ),
           timeline: timeline.map(item => ({
             date: item.date,
@@ -651,7 +652,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get AI service health and status
-  app.get('/api/ai/status', multiAuthMiddleware, async (req: any, res) => {
+  app.get('/api/ai/status', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);

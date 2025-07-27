@@ -3,7 +3,8 @@
  * Handles login, logout, and token exchange
  */
 
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { ApiResponse, IUser } from '../../shared/types';
 import { generateToken } from '../auth/simpleAuth';
@@ -235,7 +236,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
           email: user.email,
         },
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       logger.error('Registration error:', error);
       res.status(500).json({
         success: false,

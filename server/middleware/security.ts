@@ -1,5 +1,6 @@
 import cors from 'cors';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { z } from 'zod';
@@ -35,12 +36,12 @@ export const createRateLimit = (options: {
       options.keyGenerator ||
       (req => {
         // Use user ID if authenticated, otherwise IP
-        const user = req.user as any;
+        const user = req.user as unknown;
         return user?.id || user?.claims?.sub || req.ip;
       }),
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     handler: (req, res) => {
-      const user = req.user as any;
+      const user = req.user as unknown;
       const identifier = user?.id || user?.claims?.sub || req.ip;
 
       log.warn('Rate limit exceeded', {
@@ -261,7 +262,7 @@ export const securityHeaders = helmet({
 });
 
 // Input sanitization
-export function sanitizeInput(input: any): any {
+export function sanitizeInput(input: any) {
   if (typeof input === 'string') {
     // Remove potential script tags and dangerous characters
     return input
@@ -322,7 +323,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = schema.parse(req.query);
-      req.query = result as any;
+      req.query = result as unknown;
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {

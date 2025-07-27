@@ -40,13 +40,13 @@ describe('ErrorTracker', () => {
     vi.stubEnv('PROD', false);
 
     // Mock window.Sentry
-    (window as any).Sentry = true;
+    (window as unknown).Sentry = true;
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
-    delete (window as any).Sentry;
+    delete (window as unknown).Sentry;
   });
 
   describe('trackError', () => {
@@ -83,7 +83,7 @@ describe('ErrorTracker', () => {
       };
       
       // Call the withScope callback to test scope configuration
-      const callback = (withScope as any).mock.calls[0][0];
+      const callback = (withScope as unknown).mock.calls[0][0];
       callback(scopeMock);
 
       expect(scopeMock.setLevel).toHaveBeenCalledWith('fatal');
@@ -120,7 +120,7 @@ describe('ErrorTracker', () => {
     });
 
     it('should not send to Sentry if Sentry is not available', () => {
-      delete (window as any).Sentry;
+      delete (window as unknown).Sentry;
       
       const error = new Error('No Sentry error');
       errorTracker.trackError(error);
@@ -189,7 +189,7 @@ describe('ErrorTracker', () => {
       vi.stubEnv('PROD', true);
       vi.stubEnv('DEV', false);
       
-      (global.fetch as any).mockResolvedValueOnce({ ok: true });
+      (global.fetch as unknown).mockResolvedValueOnce({ ok: true });
 
       const error = new Error('Production error');
       errorTracker.trackError(error);
@@ -222,7 +222,7 @@ describe('ErrorTracker', () => {
       vi.stubEnv('PROD', true);
       vi.stubEnv('DEV', false);
       
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
       const error = new Error('Test error');
       errorTracker.trackError(error);
@@ -323,7 +323,7 @@ describe('Error handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    (window as any).Sentry = true;
+    (window as unknown).Sentry = true;
   });
 
   afterEach(() => {

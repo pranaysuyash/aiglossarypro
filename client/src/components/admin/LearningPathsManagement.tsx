@@ -165,7 +165,7 @@ export function LearningPathsManagement({ onPathSelect }: LearningPathsManagemen
     ) {
       try {
         await deleteMutation.mutateAsync(pathId);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         // Handle delete error silently
       }
     }
@@ -177,7 +177,7 @@ export function LearningPathsManagement({ onPathSelect }: LearningPathsManagemen
         pathId: path.id,
         isPublished: path.is_published,
       });
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       // Handle toggle error silently
     }
   };

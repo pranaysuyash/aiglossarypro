@@ -1,10 +1,26 @@
 import type { Express, Request, Response } from 'express';
 import type { ApiResponse, ITerm, PaginatedResponse } from '../../shared/types';
 import { DEFAULT_LIMITS, SORT_ORDERS } from '../constants';
+
+// Types
+interface AuthenticatedRequest extends Request {
+  user?: {
+    claims?: {
+      sub: string;
+    };
+    id?: string;
+  };
+  previewMode?: boolean;
+  limitInfo?: {
+    currentViews: number;
+    maxViews: number;
+    resetsAt: Date;
+  };
+}
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { initializeRateLimiting, rateLimitMiddleware } from '../middleware/rateLimiting';
 import { termIdSchema } from '../middleware/security';
-import { optimizedStorage as storage } from '../optimizedStorage';
+import { enhancedStorage as storage } from '../enhancedStorage';
 import { canViewTerm } from '../utils/accessControl';
 import { log as logger } from '../utils/logger';
 import {
@@ -179,7 +195,7 @@ export function registerTermRoutes(app: Express): void {
         Vary: 'Accept-Encoding',
       });
 
-      const response: any = {
+      const response: PaginatedResponse<ITerm> & { success: boolean; message?: string } = {
         success: true,
         data: result.terms,
         total: result.total,
@@ -452,7 +468,7 @@ export function registerTermRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get('/api/terms/recently-viewed', authMiddleware, async (req: any, res: Response) => {
+  app.get('/api/terms/recently-viewed', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
@@ -886,7 +902,7 @@ export function registerTermRoutes(app: Express): void {
         }
 
         // Check authentication status
-        const isAuthenticated = !!(req as any).user?.claims?.sub;
+        const isAuthenticated = !!(req as AuthenticatedRequest).user?.claims?.sub;
 
         // If not authenticated, return preview version
         if (!isAuthenticated) {
@@ -900,7 +916,7 @@ export function registerTermRoutes(app: Express): void {
               'Sign in to view the complete definition, examples, and all 42 content sections',
           };
 
-          const response: ApiResponse<any> = {
+          const response: ApiResponse<ITerm & { isPreview: boolean; requiresAuth: boolean; previewMessage: string }> = {
             success: true,
             data: previewTerm,
             message: 'Preview mode - Sign in for full access',
@@ -910,7 +926,7 @@ export function registerTermRoutes(app: Express): void {
         }
 
         // For authenticated users, fetch user data and check access permissions
-        const userId = (req as any).user.claims.sub;
+        const userId = (req as AuthenticatedRequest).user!.claims!.sub;
         const user = await storage.getUser(userId);
 
         if (!user) {
@@ -921,8 +937,8 @@ export function registerTermRoutes(app: Express): void {
         }
 
         // Check if preview mode is enabled (from rate limiting middleware)
-        const previewMode = (req as any).previewMode;
-        const limitInfo = (req as any).limitInfo;
+        const previewMode = (req as AuthenticatedRequest).previewMode;
+        const limitInfo = (req as AuthenticatedRequest).limitInfo;
 
         if (previewMode) {
           // Return preview version with upgrade prompt
@@ -937,7 +953,7 @@ export function registerTermRoutes(app: Express): void {
             limitInfo: limitInfo,
           };
 
-          const response: ApiResponse<any> = {
+          const response: ApiResponse<ITerm & { isPreview: boolean; requiresUpgrade: boolean; limitInfo: typeof limitInfo }> = {
             success: true,
             data: previewTerm,
             message:
@@ -964,7 +980,7 @@ export function registerTermRoutes(app: Express): void {
               limitInfo: accessCheck.metadata,
             };
 
-            const response: ApiResponse<any> = {
+            const response: ApiResponse<ITerm & { isPreview: boolean; requiresUpgrade: boolean; limitInfo: typeof accessCheck.metadata }> = {
               success: true,
               data: previewTerm,
               message:
@@ -996,7 +1012,7 @@ export function registerTermRoutes(app: Express): void {
         }
 
         // Return full term data with access metadata
-        const response: ApiResponse<any> = {
+        const response: ApiResponse<ITerm & { isPreview: boolean; accessType: string; userLimits: typeof accessCheck.metadata }> = {
           success: true,
           data: {
             ...term,
@@ -1091,7 +1107,7 @@ export function registerTermRoutes(app: Express): void {
         
         // Get recommendations for this specific term
         // If user is authenticated, pass userId for personalized recommendations
-        const userId = (req as any).user?.claims?.sub || null;
+        const userId = (req as AuthenticatedRequest).user?.claims?.sub || null;
         const recommendations = await storage.getRecommendedTermsForTerm(id, userId);
 
         const response: ApiResponse<ITerm[]> = {
@@ -1166,7 +1182,7 @@ export function registerTermRoutes(app: Express): void {
   app.post('/api/terms/:id/view', authMiddleware, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const userId = (req as AuthenticatedRequest).user?.id;
 
       if (!userId) {
         return res.status(401).json({

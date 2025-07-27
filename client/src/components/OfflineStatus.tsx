@@ -92,7 +92,7 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
       if (cached) {
         setCachedTerms(JSON.parse(cached));
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to load cached terms:', error);
     }
   };
@@ -103,7 +103,7 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
       if (queue) {
         setSyncQueue(JSON.parse(queue));
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to load sync queue:', error);
     }
   };
@@ -147,7 +147,7 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
       });
 
       onSync?.();
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Sync failed:', error);
       toast({
         title: 'Sync Failed',
@@ -338,7 +338,7 @@ export function useOfflineData() {
       if (cached) {
         setCachedTerms(JSON.parse(cached));
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to load cached terms:', error);
     }
   };
@@ -349,7 +349,7 @@ export function useOfflineData() {
       const recentTerms = terms.slice(0, 30);
       localStorage.setItem('cached_terms', JSON.stringify(recentTerms));
       setCachedTerms(recentTerms);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to cache terms:', error);
     }
   };
@@ -365,7 +365,7 @@ export function useOfflineData() {
 
       queue.push(newItem);
       localStorage.setItem('sync_queue', JSON.stringify(queue));
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to add to sync queue:', error);
     }
   };

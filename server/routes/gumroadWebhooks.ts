@@ -55,7 +55,7 @@ const gumroadRefundSchema = z.object({
 });
 
 // Middleware to validate webhook signature
-const validateGumroadWebhook = (req: any, res: any, next: any) => {
+const validateGumroadWebhook = (req: Request, res: Request, next: Request) => {
   try {
     const signature = req.headers['x-gumroad-signature'];
     const rawBody = req.rawBody || JSON.stringify(req.body);

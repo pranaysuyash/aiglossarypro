@@ -40,7 +40,7 @@ describe('AISemanticSearch Core Logic', () => {
       isGeneric: false,
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown).mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -65,7 +65,7 @@ describe('AISemanticSearch Core Logic', () => {
   });
 
   it('should handle search errors gracefully', async () => {
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    (global.fetch as unknown).mockRejectedValueOnce(new Error('Network error'));
 
     try {
       await fetch('/api/adaptive-search?query=test');
@@ -84,8 +84,8 @@ describe('AISemanticSearch Core Logic', () => {
     expect(isValidQuery('neural network')).toBe(true);
     expect(isValidQuery('')).toBe(false);
     expect(isValidQuery('   ')).toBe(false);
-    expect(isValidQuery(null as any)).toBe(false);
-    expect(isValidQuery(undefined as any)).toBe(false);
+    expect(isValidQuery(null as unknown)).toBe(false);
+    expect(isValidQuery(undefined as unknown)).toBe(false);
   });
 
   it('should calculate semantic similarity correctly', () => {

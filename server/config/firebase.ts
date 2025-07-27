@@ -4,8 +4,8 @@
  */
 
 import { cert, initializeApp, type ServiceAccount } from 'firebase-admin/app';
-import type { DecodedIdToken } from 'firebase-admin/auth';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
+import type { DecodedIdToken } from 'firebase-admin/auth';
 
 import logger from '../utils/logger';
 // Firebase Admin SDK initialization
@@ -88,7 +88,7 @@ export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdTok
       email: decodedToken.email 
     });
     return decodedToken;
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     if (error.message?.includes('timed out')) {
       logger.error('⏱️ Firebase token verification timed out', {
         message: error.message

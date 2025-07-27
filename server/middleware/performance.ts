@@ -1,6 +1,7 @@
 import compression from 'compression';
 import { createHash } from 'crypto';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { NodeCache } from 'node-cache';
 
 import logger from '../utils/logger';
@@ -69,7 +70,7 @@ export function etagMiddleware(req: Request, res: Response, next: NextFunction) 
   // Store original send function
   const originalSend = res.send;
 
-  res.send = function (data: any) {
+  res.send = function (data: Response) {
     // Generate ETag from response data
     const hash = createHash('md5').update(JSON.stringify(data)).digest('hex');
     const etag = `"${hash}"`;
@@ -125,7 +126,7 @@ export function responseCacheMiddleware(options: CacheOptions = {}) {
     // Store original json function
     const originalJson = res.json;
 
-    res.json = function (data: any) {
+    res.json = function (data: Response) {
       // Cache the response
       responseCache.set(cacheKey, data, ttl);
       res.setHeader('X-Cache', 'MISS');
@@ -139,7 +140,7 @@ export function responseCacheMiddleware(options: CacheOptions = {}) {
 }
 
 // Request deduplication middleware
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 export function deduplicationMiddleware(req: Request, res: Response, next: NextFunction) {
   // Only for GET requests
@@ -158,8 +159,8 @@ export function deduplicationMiddleware(req: Request, res: Response, next: NextF
   }
 
   // Create a promise for this request
-  let resolvePromise: (value: any) => void;
-  let rejectPromise: (error: any) => void;
+  let resolvePromise: (value: Response) => void;
+  let rejectPromise: (error: Error | unknown) => void;
 
   const promise = new Promise((resolve, reject) => {
     resolvePromise = resolve;
@@ -170,7 +171,7 @@ export function deduplicationMiddleware(req: Request, res: Response, next: NextF
 
   // Override json to resolve the promise
   const originalJson = res.json;
-  res.json = function (data: any) {
+  res.json = function (data: Response) {
     pendingRequests.delete(requestKey);
     resolvePromise(data);
     return originalJson.call(this, data);
@@ -178,7 +179,7 @@ export function deduplicationMiddleware(req: Request, res: Response, next: NextF
 
   // Handle errors
   const originalNext = next;
-  next = ((error?: any) => {
+  next = ((error?: Error | unknown) => {
     if (error) {
       pendingRequests.delete(requestKey);
       rejectPromise(error);

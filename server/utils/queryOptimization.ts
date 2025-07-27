@@ -19,7 +19,7 @@ interface IndexRecommendation {
 }
 
 interface QueryCacheEntry {
-    result: any;
+    result: Response;
     timestamp: number;
     ttl: number;
     queryHash: string;
@@ -303,7 +303,7 @@ class QueryOptimizer {
     /**
      * Set result in cache
      */
-    private setCache(queryHash: string, result: any, ttl: number): void {
+    private setCache(queryHash: string, result: Response, ttl: number): void {
         // Prevent cache from growing too large
         if (this.queryCache.size >= this.maxCacheSize) {
             this.evictOldestCacheEntries();
@@ -336,7 +336,7 @@ class QueryOptimizer {
      */
     private calculateCacheHitRate(): number {
         const recentMetrics = this.queryMetrics.slice(-1000); // Last 1000 queries
-        if (recentMetrics.length === 0) return 0;
+        if (recentMetrics.length === 0) {return 0;}
 
         const hits = recentMetrics.filter(m => m.cached).length;
         return (hits / recentMetrics.length) * 100;

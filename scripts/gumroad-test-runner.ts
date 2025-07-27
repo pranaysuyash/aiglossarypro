@@ -154,7 +154,7 @@ class GumroadTestRunner {
     });
   }
 
-  private async runTestsSequentially(suites: TestSuite[], options: any): Promise<void> {
+  private async runTestsSequentially(suites: TestSuite[], options: Record<string, unknown>): Promise<void> {
     console.log(chalk.green.bold('🏃 Running tests sequentially...\n'));
 
     for (const [index, suite] of suites.entries()) {
@@ -175,7 +175,7 @@ class GumroadTestRunner {
     }
   }
 
-  private async runTestsInParallel(suites: TestSuite[], options: any): Promise<void> {
+  private async runTestsInParallel(suites: TestSuite[], options: Record<string, unknown>): Promise<void> {
     console.log(chalk.green.bold('🚀 Running tests in parallel...\n'));
 
     const promises = suites.map(suite => this.runSingleTest(suite, options));
@@ -192,7 +192,7 @@ class GumroadTestRunner {
     });
   }
 
-  private async runSingleTest(suite: TestSuite, options: any): Promise<TestResult> {
+  private async runSingleTest(suite: TestSuite, options: Record<string, unknown>): Promise<TestResult> {
     const start = Date.now();
 
     try {
@@ -345,7 +345,7 @@ class GumroadTestRunner {
             <h2>Test Results</h2>
             ${report.results
               .map(
-                (result: any) => `
+                (result: Response) => `
                 <div class="test-result ${result.passed ? 'passed' : 'failed'}">
                     <div class="test-name">${result.passed ? '✅' : '❌'} ${result.suite}</div>
                     <div class="test-details">

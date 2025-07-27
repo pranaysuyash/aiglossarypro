@@ -16,7 +16,7 @@ export interface ConversionEvent {
   timestamp: number;
   userAgent: string;
   referrer: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface ConversionFunnelStep {
@@ -29,7 +29,7 @@ export interface ConversionFunnelStep {
     | 'premium_purchase';
   timestamp: number;
   duration?: number; // Time spent in this step
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ConversionSession {

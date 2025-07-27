@@ -82,7 +82,7 @@ export function MobileCheckout({
               onSuccess?.();
               onClose();
             }, 2000);
-          } catch (error: any) {
+          } catch (error: Error | unknown) {
             console.error('Failed to refresh auth after purchase:', error);
           }
           break;

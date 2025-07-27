@@ -409,7 +409,7 @@ export async function measureElementTiming(
 /**
  * Generate performance report summary
  */
-export function generatePerformanceSummary(metrics: any[]): string {
+export function generatePerformanceSummary(metrics: unknown[]): string {
   const avgFCP = metrics.reduce((sum, m) => sum + m.fcp, 0) / metrics.length;
   const avgLCP = metrics.reduce((sum, m) => sum + m.lcp, 0) / metrics.length;
   const avgTTI = metrics.reduce((sum, m) => sum + m.tti, 0) / metrics.length;

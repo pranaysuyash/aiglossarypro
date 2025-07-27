@@ -40,7 +40,7 @@ global.fetch = vi.fn(() =>
     ok: true,
     json: () => Promise.resolve({}),
   })
-) as any;
+) as unknown;
 
 // Mock analytics functions
 const mockGtag = vi.fn();
@@ -357,9 +357,9 @@ describe('Conversion Tracking Edge Cases', () => {
   });
 
   it('handles missing analytics objects gracefully', () => {
-    (window as any).gtag = undefined;
-    (window as any).fbq = undefined;
-    (window as any).mixpanel = undefined;
+    (window as unknown).gtag = undefined;
+    (window as unknown).fbq = undefined;
+    (window as unknown).mixpanel = undefined;
 
     expect(() => {
       trackConversionEvent({

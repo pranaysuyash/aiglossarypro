@@ -4,12 +4,61 @@
  */
 
 import { eq, sql } from 'drizzle-orm';
-import { type Request, type Response, Router } from 'express';
+import { type Express, type Request, type Response, Router } from 'express';
 import { sampleTermsSeoUtils } from '../../client/src/utils/sampleTermsSitemap';
 import { categories, terms } from '../../shared/schema';
 import type { ApiResponse } from '../../shared/types';
 import { db } from '../db';
 import { log as logger } from '../utils/logger';
+
+// SEO-specific type definitions
+interface SeoMetadata {
+  title: string;
+  description: string;
+  keywords: string;
+  url: string;
+  type: string;
+  image: string;
+  siteName: string;
+  locale: string;
+  article: {
+    publishedTime?: string;
+    modifiedTime?: string;
+    section: string;
+    tags: string[];
+  };
+  twitter: {
+    card: string;
+    site: string;
+    creator: string;
+  };
+}
+
+interface StructuredDataResponse {
+  structuredData: Array<Record<string, unknown>>;
+  jsonLd: string;
+}
+
+interface SeoAnalytics {
+  totalTerms: number;
+  seoIssues: {
+    missingShortDescriptions: number;
+    missingImages: number;
+    shortDefinitions: number;
+    missingReferences: number;
+  };
+  seoScore: {
+    descriptions: number;
+    images: number;
+    content: number;
+    references: number;
+  };
+  overallScore?: number;
+}
+
+interface DatabaseCountResult {
+  count: number;
+}
 
 const seoRouter = Router();
 
@@ -182,7 +231,7 @@ Crawl-delay: 1`;
 });
 
 // Get SEO metadata for specific term
-seoRouter.get('/meta/term/:id', async (req: Request, res: Response<ApiResponse<any>>) => {
+seoRouter.get('/meta/term/:id', async (req: Request, res: Response<ApiResponse<SeoMetadata>>) => {
   try {
     const { id } = req.params;
 
@@ -272,7 +321,7 @@ seoRouter.get('/meta/term/:id', async (req: Request, res: Response<ApiResponse<a
 // Get structured data (JSON-LD) for term
 seoRouter.get(
   '/structured-data/term/:id',
-  async (req: Request, res: Response<ApiResponse<any>>) => {
+  async (req: Request, res: Response<ApiResponse<StructuredDataResponse>>) => {
     try {
       const { id } = req.params;
 
@@ -403,7 +452,7 @@ seoRouter.get(
 );
 
 // Get SEO analytics and suggestions
-seoRouter.get('/analytics', async (_req: Request, res: Response<ApiResponse<any>>) => {
+seoRouter.get('/analytics', async (_req: Request, res: Response<ApiResponse<SeoAnalytics>>) => {
   try {
     // Get terms without descriptions (SEO issue)
     const termsWithoutShortDesc = await db.execute(sql`
@@ -430,44 +479,38 @@ seoRouter.get('/analytics', async (_req: Request, res: Response<ApiResponse<any>
       SELECT COUNT(*) as count FROM terms
     `);
 
-    const analytics: any = {
-      totalTerms: Number((totalTerms.rows[0] as any)?.count || 0),
+    const totalTermsCount = Number((totalTerms.rows[0] as unknown as DatabaseCountResult)?.count || 0);
+    const missingShortDescCount = Number((termsWithoutShortDesc.rows[0] as unknown as DatabaseCountResult)?.count || 0);
+    const missingImagesCount = Number((termsWithoutImages.rows[0] as unknown as DatabaseCountResult)?.count || 0);
+    const shortDefsCount = Number((termsWithShortDefs.rows[0] as unknown as DatabaseCountResult)?.count || 0);
+    const missingRefsCount = Number((termsWithoutRefs.rows[0] as unknown as DatabaseCountResult)?.count || 0);
+
+    const analytics: SeoAnalytics = {
+      totalTerms: totalTermsCount,
       seoIssues: {
-        missingShortDescriptions: Number((termsWithoutShortDesc.rows[0] as any)?.count || 0),
-        missingImages: Number((termsWithoutImages.rows[0] as any)?.count || 0),
-        shortDefinitions: Number((termsWithShortDefs.rows[0] as any)?.count || 0),
-        missingReferences: Number((termsWithoutRefs.rows[0] as any)?.count || 0),
+        missingShortDescriptions: missingShortDescCount,
+        missingImages: missingImagesCount,
+        shortDefinitions: shortDefsCount,
+        missingReferences: missingRefsCount,
       },
       seoScore: {
         descriptions: Math.round(
-          (1 -
-            Number((termsWithoutShortDesc.rows[0] as any)?.count || 0) /
-              Number((totalTerms.rows[0] as any)?.count || 1)) *
-            100
+          (1 - missingShortDescCount / Math.max(totalTermsCount, 1)) * 100
         ),
         images: Math.round(
-          (1 -
-            Number((termsWithoutImages.rows[0] as any)?.count || 0) /
-              Number((totalTerms.rows[0] as any)?.count || 1)) *
-            100
+          (1 - missingImagesCount / Math.max(totalTermsCount, 1)) * 100
         ),
         content: Math.round(
-          (1 -
-            Number((termsWithShortDefs.rows[0] as any)?.count || 0) /
-              Number((totalTerms.rows[0] as any)?.count || 1)) *
-            100
+          (1 - shortDefsCount / Math.max(totalTermsCount, 1)) * 100
         ),
         references: Math.round(
-          (1 -
-            Number((termsWithoutRefs.rows[0] as any)?.count || 0) /
-              Number((totalTerms.rows[0] as any)?.count || 1)) *
-            100
+          (1 - missingRefsCount / Math.max(totalTermsCount, 1)) * 100
         ),
       },
     };
 
     // Calculate overall SEO score
-    const scores = Object.values(analytics.seoScore);
+    const scores = Object.values(analytics.seoScore) as number[];
     analytics.overallScore = Math.round(
       scores.reduce((sum, score) => sum + score, 0) / scores.length
     );
@@ -488,7 +531,7 @@ seoRouter.get('/analytics', async (_req: Request, res: Response<ApiResponse<any>
 });
 
 // Register SEO routes
-export function registerSeoRoutes(app: any): void {
+export function registerSeoRoutes(app: Express): void {
   app.use('/api/seo', seoRouter);
 
   // Mount sitemap and robots at root level for direct access

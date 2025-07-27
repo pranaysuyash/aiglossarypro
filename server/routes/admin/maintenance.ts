@@ -1,4 +1,5 @@
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import type { ApiResponse } from '../../../shared/types';
 import { enhancedStorage as storage } from '../../enhancedStorage';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
@@ -29,7 +30,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
         const { operation } = req.body;
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -92,7 +93,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     async (req: Request, res: Response) => {
       try {
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -147,7 +148,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
         }
 
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -196,7 +197,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     async (req: Request, res: Response) => {
       try {
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
@@ -239,7 +240,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     async (req: Request, res: Response) => {
       try {
         // Set user context for enhanced storage
-        const authReq = req as any;
+        const authReq = req as unknown;
         storage.setContext({
           user: {
             id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',

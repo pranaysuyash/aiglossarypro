@@ -108,7 +108,7 @@ async function loadCSV(filename) {
 // ── Database SQL Generation ───────────────────────────────────────────────────
 
 function sanitizeForSQL(value) {
-  if (value === null || value === undefined) return '';
+  if (value === null || value === undefined) {return '';}
   return String(value).replace(/'/g, "''");
 }
 
@@ -194,7 +194,7 @@ async function generateSQL(headers, data, isJSON = false) {
     const record = data[i];
     const term = isJSON ? record[headers[0]] : record[0];
 
-    if (!term || !term.trim()) continue;
+    if (!term || !term.trim()) {continue;}
 
     const termSQL = generateTermSQL(term, headers, record, !isJSON);
     sqlStatements.push(...termSQL);

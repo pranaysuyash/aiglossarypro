@@ -176,7 +176,7 @@ router.get('/performance/:endpoint', (req, res) => {
 
 // Helper functions
 
-function calculateTrends(metrics: any[]) {
+function calculateTrends(metrics: unknown[]) {
   if (metrics.length < 2) {
     return {
       memory: 'stable',
@@ -207,8 +207,8 @@ function calculateTrends(metrics: any[]) {
   };
 }
 
-function calculateAPITrends(metrics: any[]) {
-  if (metrics.length < 2) return [];
+function calculateAPITrends(metrics: unknown[]) {
+  if (metrics.length < 2) {return [];}
 
   return metrics.map((metric, index) => ({
     timestamp: metric.timestamp,
@@ -221,7 +221,7 @@ function calculateAPITrends(metrics: any[]) {
 function getTrend(current: number, previous: number): 'improving' | 'stable' | 'degrading' {
   const change = ((current - previous) / previous) * 100;
 
-  if (Math.abs(change) < 5) return 'stable';
+  if (Math.abs(change) < 5) {return 'stable';}
   return change > 0 ? 'degrading' : 'improving';
 }
 
@@ -411,7 +411,7 @@ function calculatePerformanceScore(metrics: {
 function generateOptimizationRecommendations(data: {
   apiStats: any;
   queryStats: any;
-  indexRecommendations: any[];
+  indexRecommendations: unknown[];
 }): string[] {
   const recommendations: string[] = [];
 

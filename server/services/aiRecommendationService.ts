@@ -171,7 +171,7 @@ export class AIRecommendationService {
   /**
    * Calculate user skill level (0-100) based on their learning history
    */
-  private calculateSkillLevel(completedPaths: any[], currentPaths: any[]): number {
+  private calculateSkillLevel(completedPaths: unknown[], currentPaths: unknown[]): number {
     let score = 0;
 
     // Base score from completed paths
@@ -192,7 +192,7 @@ export class AIRecommendationService {
    */
   private determineDifficultyPreference(
     skillLevel: number,
-    _completedPaths: any[]
+    _completedPaths: unknown[]
   ): 'beginner' | 'intermediate' | 'advanced' {
     if (skillLevel < 30) {return 'beginner';}
     if (skillLevel < 70) {return 'intermediate';}

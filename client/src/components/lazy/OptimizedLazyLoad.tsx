@@ -15,7 +15,7 @@ interface OptimizedLazyLoadProps {
   // Custom error fallback
   errorFallback?: React.ReactNode;
   // Component props
-  componentProps?: Record<string, any>;
+  componentProps?: Record<string, unknown>;
   // Retry attempts on error
   retryAttempts?: number;
   // Retry delay in ms
@@ -24,7 +24,7 @@ interface OptimizedLazyLoadProps {
 
 // Cache for preloaded components
 const componentCache = new Map<string, ComponentType<any>>();
-const preloadPromises = new Map<string, Promise<any>>();
+const preloadPromises = new Map<string, Promise<unknown>>();
 
 export function OptimizedLazyLoad({
   importFn,
@@ -202,7 +202,7 @@ export function usePreloadOnInteraction(
         const module = await importFn();
         componentCache.set(key, module.default);
         setIsPreloaded(true);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Failed to preload component:', error);
       }
     }

@@ -37,8 +37,8 @@ COPY --from=builder /app/package.json ./package.json
 # Copy only production dependencies
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy drizzle directory (needed for migrations)
-COPY --from=builder /app/drizzle ./drizzle
+# Copy migrations directory (needed for Drizzle ORM)
+COPY --from=builder /app/migrations ./migrations
 
 # Create necessary directories
 RUN mkdir -p logs uploads

@@ -47,12 +47,12 @@ interface TestConfig {
   }>;
   userFlows?: Array<{
     name: string;
-    steps: Array<any>;
+    steps: Array<unknown>;
   }>;
   components?: Array<{
     name: string;
     selector: string;
-    interactions?: Array<any>;
+    interactions?: Array<unknown>;
   }>;
   accessibility?: {
     focusTest?: boolean;
@@ -71,7 +71,7 @@ class ComprehensiveVisualAuditor {
   private screenshotDir: string;
   private videoDir: string;
   private reportDir: string;
-  private issues: any[] = [];
+  private issues: unknown[] = [];
 
   constructor() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -849,7 +849,7 @@ class ComprehensiveVisualAuditor {
     console.log(chalk.green('✅ All comprehensive tests completed'));
   }
 
-  private async performAction(page: Page, action: any, config: TestConfig) {
+  private async performAction(page: Page, action: Record<string, unknown>, config: TestConfig) {
     try {
       switch (action.type) {
         case 'click':

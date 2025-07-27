@@ -13,7 +13,7 @@ interface DashboardMetrics {
   totalSearches: number;
   totalFavorites: number;
   systemHealth: 'healthy' | 'warning' | 'error';
-  recentActivity: any[];
+  recentActivity: unknown[];
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {

@@ -83,13 +83,13 @@ describe('MemoryMonitor', () => {
         });
 
         it('should return null when performance.memory is not available', () => {
-            const originalMemory = (performance as any).memory;
-            delete (performance as any).memory;
+            const originalMemory = (performance as unknown).memory;
+            delete (performance as unknown).memory;
 
             const metrics = MemoryMonitor.getCurrentMemoryMetrics();
             expect(metrics).toBeNull();
 
-            (performance as any).memory = originalMemory;
+            (performance as unknown).memory = originalMemory;
         });
 
         it('should calculate memory usage percentage', () => {
@@ -198,12 +198,12 @@ describe('MemoryMonitor', () => {
 
         it('should use fallback when window.gc is not available', () => {
             const originalGc = window.gc;
-            delete (window as any).gc;
+            delete (window as unknown).gc;
 
             const result = MemoryMonitor.triggerGarbageCollection();
             expect(result).toBe(true);
 
-            (window as any).gc = originalGc;
+            (window as unknown).gc = originalGc;
         });
     });
 
@@ -275,7 +275,7 @@ describe('IndexedDBManager', () => {
 
         it('should handle databases() not supported', async () => {
             const originalDatabases = mockIndexedDB.databases;
-            delete (mockIndexedDB as any).databases;
+            delete (mockIndexedDB as unknown).databases;
 
             const databases = await IndexedDBManager.getDatabases();
             expect(databases).toEqual([]);
@@ -292,9 +292,9 @@ describe('IndexedDBManager', () => {
 
         it('should delete database', async () => {
             const deleteRequest = {
-                onsuccess: null as any,
-                onerror: null as any,
-                onblocked: null as any,
+                onsuccess: null as unknown,
+                onerror: null as unknown,
+                onblocked: null as unknown,
             };
 
             mockIndexedDB.deleteDatabase.mockReturnValue(deleteRequest);
@@ -372,7 +372,7 @@ describe('IndexedDBManager', () => {
             const mockDb = {
                 close: vi.fn(),
                 addEventListener: vi.fn(),
-            } as any;
+            } as unknown;
 
             IndexedDBManager.trackConnection('test_db', mockDb);
             expect(IndexedDBManager['openConnections'].has('test_db')).toBe(true);

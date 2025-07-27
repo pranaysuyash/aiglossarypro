@@ -191,7 +191,7 @@ export const LazyMathRenderer = () => (
 class ComponentPreloader {
     private preloadedComponents = new Set<string>();
 
-    preload(componentName: string, loader: () => Promise<any>) {
+    preload(componentName: string, loader: () => Promise<unknown>) {
         if (this.preloadedComponents.has(componentName)) {
             return;
         }
@@ -235,7 +235,7 @@ export const componentPreloader = new ComponentPreloader();
 
 // Hook for component preloading
 export function useComponentPreloader() {
-    const preload = (componentName: string, loader: () => Promise<any>) => {
+    const preload = (componentName: string, loader: () => Promise<unknown>) => {
         componentPreloader.preload(componentName, loader);
     };
 

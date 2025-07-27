@@ -205,7 +205,7 @@ describe('Production Readiness Testing', () => {
 
   describe('Monitoring and Observability', () => {
     test('should log critical events with proper structure', () => {
-      const logEntries: any[] = [];
+      const logEntries: unknown[] = [];
 
       // Mock logger to capture log entries
       vi.doMock('../../server/utils/logger', () => ({
@@ -237,7 +237,7 @@ describe('Production Readiness Testing', () => {
     });
 
     test('should capture errors with Sentry integration', () => {
-      const sentryEvents: any[] = [];
+      const sentryEvents: unknown[] = [];
 
       // Mock Sentry
       vi.doMock('../../server/utils/sentry', () => ({
@@ -469,7 +469,7 @@ describe('Production Readiness Testing', () => {
 
   describe('Compliance and Audit', () => {
     test('should log all financial transactions', () => {
-      const auditLog: any[] = [];
+      const auditLog: unknown[] = [];
 
       const transaction = {
         timestamp: new Date().toISOString(),

@@ -221,7 +221,7 @@ export const validatePromptCompleteness = (columnIds: string[]): { missing: stri
 // Cost estimation based on prompts and models
 export const estimatePromptCost = (columnId: string, termCount: number = 1): number => {
   const promptDef = COLUMN_PROMPT_TRIPLETS[columnId];
-  if (!promptDef) return 0;
+  if (!promptDef) {return 0;}
 
   const modelCosts = {
     'gpt-4.1-nano': { input: 0.05, output: 0.20 }, // per 1M tokens (batch)

@@ -124,7 +124,7 @@ export async function batchedImportProcessedData(
  * Import categories in batches
  */
 async function importCategoriesInBatches(
-  categoriesData: any[],
+  categoriesData: unknown[],
   batchSize: number,
   skipExisting: boolean,
   categoryIdMap: Map<string, string>
@@ -183,7 +183,7 @@ async function importCategoriesInBatches(
  * Import subcategories in batches
  */
 async function importSubcategoriesInBatches(
-  subcategoriesData: any[],
+  subcategoriesData: unknown[],
   batchSize: number,
   skipExisting: boolean,
   categoryIdMap: Map<string, string>
@@ -248,7 +248,7 @@ async function importSubcategoriesInBatches(
  * Import terms in batches
  */
 async function importTermsInBatches(
-  termsData: any[],
+  termsData: unknown[],
   batchSize: number,
   skipExisting: boolean
 ): Promise<{ imported: number; errors: string[] }> {

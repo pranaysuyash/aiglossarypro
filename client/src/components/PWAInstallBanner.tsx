@@ -154,7 +154,7 @@ export function PWAInstallBanner({
 
         setDeferredPrompt(null);
         setIsVisible(false);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         console.error('Error during PWA installation:', error);
         toast({
           title: 'Installation Failed',

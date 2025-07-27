@@ -180,7 +180,7 @@ export default function TermDetail() {
     const trackView = async () => {
       try {
         await apiRequest('POST', `/api/terms/${id}/view`, null);
-      } catch (error: any) {
+      } catch (error: Error | unknown) {
         // Silent fail - not critical for UX
         console.error('Failed to log term view', error);
       }

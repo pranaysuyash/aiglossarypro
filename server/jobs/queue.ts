@@ -392,7 +392,7 @@ export class JobQueueManager extends EventEmitter {
   /**
    * Get job status
    */
-  async getJobStatus(type: JobType, jobId: string): Promise<any> {
+  async getJobStatus(type: JobType, jobId: string): Promise<unknown> {
     const queue = this.queues.get(type);
     if (!queue) {
       throw new Error(`Queue not found for job type: ${type}`);
@@ -468,7 +468,7 @@ export class JobQueueManager extends EventEmitter {
   /**
    * Get queue statistics
    */
-  async getQueueStats(type: JobType): Promise<any> {
+  async getQueueStats(type: JobType): Promise<unknown> {
     const queue = this.queues.get(type);
     if (!queue) {
       throw new Error(`Queue not found for job type: ${type}`);
@@ -498,8 +498,8 @@ export class JobQueueManager extends EventEmitter {
   /**
    * Get all queue statistics
    */
-  async getAllQueueStats(): Promise<Record<string, any>> {
-    const stats: Record<string, any> = {};
+  async getAllQueueStats(): Promise<Record<string, unknown>> {
+    const stats: Record<string, unknown> = {};
 
     for (const [type, _queue] of this.queues) {
       stats[type] = await this.getQueueStats(type);
@@ -614,8 +614,8 @@ export class JobQueueManager extends EventEmitter {
   /**
    * Get worker rate limiter for a job type
    */
-  private getWorkerLimiter(type: JobType): any {
-    const limiterMap: Record<JobType, any> = {
+  private getWorkerLimiter(type: JobType) {
+    const limiterMap: Record<JobType, unknown> = {
       [JobType.AI_CONTENT_GENERATION]: {
         max: 50,
         duration: 60000, // 50 requests per minute

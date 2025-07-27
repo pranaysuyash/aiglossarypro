@@ -11,8 +11,8 @@ import {
   UserMinus,
   Users,
 } from 'lucide-react';
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -181,7 +181,7 @@ const AdminNewsletterDashboard: React.FC = () => {
 
       await refetchSubscriptions();
       setSelectedSubscriptions([]);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Bulk action error:', error);
     } finally {
       setBulkActionLoading(false);
@@ -210,7 +210,7 @@ const AdminNewsletterDashboard: React.FC = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Export error:', error);
     }
   };

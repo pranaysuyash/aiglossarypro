@@ -14,8 +14,8 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
-import type React from 'react';
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { Link, useParams } from 'wouter';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Badge } from '../components/ui/badge';

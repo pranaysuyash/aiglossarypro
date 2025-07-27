@@ -31,7 +31,7 @@ describe('Firebase Authentication Integration', () => {
         auth = getAuth(app);
 
         // Connect to emulator in test environment
-        if (process.env.NODE_ENV === 'test' && !(auth as any).config?.emulator) {
+        if (process.env.NODE_ENV === 'test' && !(auth as unknown).config?.emulator) {
             try {
                 connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
             } catch (error) {

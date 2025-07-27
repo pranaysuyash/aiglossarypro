@@ -216,7 +216,7 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
           break;
       }
       onBulkAction?.(action, selectedTerms);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       // Handle bulk action error silently
       // You might want to show a toast notification here
     }

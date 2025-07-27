@@ -15,8 +15,8 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react';
-import type React from 'react';
 import { useState } from 'react';
+import type React from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -136,7 +136,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
       });
 
       setFeedbackGiven(prev => new Set(prev).add(recommendationId));
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error submitting feedback:', error);
     }
   };

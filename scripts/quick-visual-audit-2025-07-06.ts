@@ -65,7 +65,7 @@ class QuickVisualAuditor {
   private browser: Browser | null = null;
   private timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   private resultsDir = path.join(process.cwd(), 'visual-audit-results', this.timestamp);
-  private results: any[] = [];
+  private results: Response[] = [];
 
   async initialize() {
     // Create results directory
@@ -557,7 +557,7 @@ class QuickVisualAuditor {
     `;
   }
 
-  generateResultsHTML(results: any[]) {
+  generateResultsHTML(results: Response[]) {
     const groupedResults = results.reduce((acc, result) => {
       if (result.page) {
         if (!acc[result.page]) acc[result.page] = [];

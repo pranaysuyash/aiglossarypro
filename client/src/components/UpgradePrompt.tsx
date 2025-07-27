@@ -91,7 +91,7 @@ export function UpgradePrompt({
         const data = await response.json();
         setStats(data);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Failed to fetch progress stats:', error);
     } finally {
       setLoading(false);

@@ -155,7 +155,7 @@ export default function UserManagementDashboard() {
       if (!response.ok) {throw new Error('Failed to fetch user activity');}
       const data = await response.json();
       return data.data;
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching user activity:', error);
       return null;
     }

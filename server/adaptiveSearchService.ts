@@ -58,7 +58,7 @@ async function analyzeQuery(query: string): Promise<{
 /**
  * High-performance adaptive search with intelligent strategy selection
  */
-export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<any> {
+export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<unknown> {
   const startTime = Date.now();
 
   const {
@@ -225,7 +225,7 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<an
         }
 
         // Transform results
-        const searchResults = results.map((result: any) => ({
+        const searchResults = results.map((result: Response) => ({
           id: result.id,
           name: result.name,
           definition: result.definition || undefined,

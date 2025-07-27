@@ -33,7 +33,7 @@ async function testClientSDK() {
     console.log('Testing signInWithEmailAndPassword...');
     const result = await signInWithEmailAndPassword(auth, 'test@example.com', 'wrongpassword');
     console.log('Unexpected success:', result);
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
       console.log('✅ Firebase Auth is working (got expected auth error)');
     } else if (error.code === 'auth/network-request-failed') {
@@ -79,7 +79,7 @@ async function testAdminSDK() {
     // Try to verify a fake token to test connection
     console.log('Testing token verification...');
     await admin.auth().verifyIdToken('fake-token');
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     if (error.code === 'auth/argument-error' || error.message.includes('Decoding Firebase ID token failed')) {
       console.log('✅ Firebase Admin Auth is working (got expected token error)');
     } else if (error.code === 'app/network-timeout' || error.message.includes('timeout')) {
@@ -110,7 +110,7 @@ async function testDirectConnection() {
     } else {
       console.log('⚠️ Unexpected response:', response.status);
     }
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error('❌ Failed to reach Firebase API:', error.message);
   }
 }

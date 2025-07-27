@@ -1,4 +1,5 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express'
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 
 /**
@@ -44,7 +45,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
       const validatedData = schema.parse(req.query);
 
       // Attach validated data to request
-      req.query = validatedData as any;
+      req.query = validatedData as unknown;
 
       next();
     } catch (error) {
@@ -77,7 +78,7 @@ export function validateParams<T>(schema: z.ZodSchema<T>) {
       const validatedData = schema.parse(req.params);
 
       // Attach validated data to request
-      req.params = validatedData as any;
+      req.params = validatedData as unknown;
 
       next();
     } catch (error) {
@@ -119,13 +120,13 @@ export function validateInput(options: {
       // Validate query if schema provided
       if (options.query) {
         const validatedQuery = options.query.parse(req.query);
-        req.query = validatedQuery as any;
+        req.query = validatedQuery as unknown;
       }
 
       // Validate params if schema provided
       if (options.params) {
         const validatedParams = options.params.parse(req.params);
-        req.params = validatedParams as any;
+        req.params = validatedParams as unknown;
       }
 
       next();

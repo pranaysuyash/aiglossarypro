@@ -13,7 +13,7 @@ import { promisify } from 'node:util';
 const execAsync = promisify(exec);
 
 class ActualFeatureTester {
-  private results: any[] = [];
+  private results: Response[] = [];
 
   async testDatabaseConnection() {
     console.log('\n🗄️ Testing Database Connection...');

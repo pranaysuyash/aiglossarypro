@@ -61,7 +61,7 @@ export interface JobStatus {
   status: 'waiting' | 'active' | 'completed' | 'failed' | 'delayed' | 'paused';
   progress: number;
   data: any;
-  result?: any;
+  result?: Response;
   error?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -74,7 +74,7 @@ export interface JobStatus {
 export interface BaseJobData {
   userId?: string;
   requestId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // AI Processing Job Types
@@ -89,7 +89,7 @@ export interface AIContentGenerationJobData extends BaseJobData {
 
 export interface AIContentGenerationJobResult {
   termId: string;
-  generatedSections: Record<string, any>;
+  generatedSections: Record<string, unknown>;
   tokensUsed: number;
   cost: number;
   duration: number;
@@ -109,7 +109,7 @@ export interface AIBatchProcessingJobData extends BaseJobData {
 // Database Job Types
 export interface DBBatchInsertJobData extends BaseJobData {
   table: string;
-  records: any[];
+  records: unknown[];
   conflictResolution?: 'ignore' | 'update' | 'error';
   batchSize?: number;
 }
@@ -118,7 +118,7 @@ export interface DBBatchInsertJobResult {
   inserted: number;
   updated: number;
   failed: number;
-  errors: Array<{ record: any; error: string }>;
+  errors: Array<{ record: Error | unknown; error: string }>;
   duration: number;
   [key: string]: unknown;
 }
@@ -128,7 +128,7 @@ export interface EmailSendJobData extends BaseJobData {
   to: string | string[];
   subject: string;
   template: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   attachments?: Array<{
     filename: string;
     content: Buffer | string;
@@ -138,7 +138,7 @@ export interface EmailSendJobData extends BaseJobData {
 export interface EmailBatchSendJobData extends BaseJobData {
   recipients: Array<{
     email: string;
-    data: Record<string, any>;
+    data: Record<string, unknown>;
   }>;
   subject: string;
   template: string;
@@ -155,7 +155,7 @@ export interface CacheWarmJobData extends BaseJobData {
 
 export interface CachePrecomputeJobData extends BaseJobData {
   computationType: 'search_results' | 'term_relationships' | 'user_recommendations' | 'analytics';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   ttl?: number;
 }
 
@@ -167,7 +167,7 @@ export interface AnalyticsAggregateJobData extends BaseJobData {
     end: Date;
   };
   dimensions?: string[];
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
 
 // Job Options Interface
@@ -189,7 +189,7 @@ export interface JobProgressUpdate {
   progress: number;
   message?: string;
   stage?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 // Queue Events Interface
@@ -197,7 +197,7 @@ export interface QueueEvents {
   onJobAdded?: (jobId: string, jobData: any) => void;
   onJobStarted?: (jobId: string) => void;
   onJobProgress?: (jobId: string, progress: JobProgressUpdate) => void;
-  onJobCompleted?: (jobId: string, result: any) => void;
+  onJobCompleted?: (jobId: string, result: Response) => void;
   onJobFailed?: (jobId: string, error: Error) => void;
   onJobStalled?: (jobId: string) => void;
   onJobRemoved?: (jobId: string) => void;
@@ -217,7 +217,7 @@ export interface JobResult<T = any> {
   success: boolean;
   data?: T;
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Phase 2: Column Batch Processing Job Types

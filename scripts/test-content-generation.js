@@ -12,9 +12,11 @@ async function testContentGeneration() {
   try {
     // Test data
     const testTerm = {
-      term: 'transformer',
-      category: 'machine-learning',
-      subcategory: 'neural-networks'
+      termId: 'transformer',
+      term: 'Transformer',
+      category: 'Deep Learning',
+      subcategory: 'neural-networks',
+      sectionName: 'definition'
     };
 
     console.log('📝 Input:', testTerm);

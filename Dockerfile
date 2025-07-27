@@ -40,6 +40,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy migrations directory (needed for Drizzle ORM)
 COPY --from=builder /app/migrations ./migrations
 
+# Copy shared directory (needed for module resolution)
+COPY --from=builder /app/shared ./shared
+
 # Create necessary directories
 RUN mkdir -p logs uploads
 RUN chown -R appuser:nodejs /app

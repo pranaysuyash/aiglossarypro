@@ -42,12 +42,12 @@ export class JobQueueManager extends EventEmitter {
   private queues: Map<JobType, Queue> = new Map();
   private workers: Map<JobType, Worker> = new Map();
   private queueEvents: Map<JobType, QueueEvents> = new Map();
-  private redisConnection: Redis;
+  private redisConnection: Redis | null = null;
   private isInitialized = false;
 
   constructor() {
     super();
-    this.redisConnection = createRedisConnection();
+    // Delay Redis connection until initialize() is called
   }
 
   /**
@@ -60,6 +60,9 @@ export class JobQueueManager extends EventEmitter {
     }
 
     try {
+      // Create Redis connection
+      this.redisConnection = createRedisConnection();
+      
       // Test Redis connection
       await this.redisConnection.ping();
       logger.info('Redis connection established for job queues');
@@ -578,7 +581,9 @@ export class JobQueueManager extends EventEmitter {
     }
 
     // Close Redis connection
-    this.redisConnection.disconnect();
+    if (this.redisConnection) {
+      this.redisConnection.disconnect();
+    }
 
     this.isInitialized = false;
     logger.info('Job queue manager shutdown complete');

@@ -1,5 +1,5 @@
 # AI/ML Glossary Pro - Production Dockerfile
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -52,12 +52,12 @@ RUN chown -R appuser:nodejs /app
 
 USER appuser
 
-# Expose port
-EXPOSE 3001
+# Expose port (App Runner will override with its own PORT)
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/api/health || exit 1
+  CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
 # Start the server
 CMD ["node", "dist/index.js"]

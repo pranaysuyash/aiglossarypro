@@ -184,8 +184,8 @@ const createRedisClient = (): RedisClient => {
     return new MockRedisClient();
   }
 
-  // Use actual Redis client in production or when REDIS_URL is provided
-  if (process.env.REDIS_URL || process.env.NODE_ENV === 'production') {
+  // Use actual Redis client only when explicitly enabled and URL is provided
+  if (process.env.REDIS_ENABLED === 'true' && process.env.REDIS_URL) {
     try {
       // Use dynamic import instead of require for ESM compatibility
       import('ioredis')

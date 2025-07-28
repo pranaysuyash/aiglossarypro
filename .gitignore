@@ -237,3 +237,9 @@ landing-page-*.png
 debug-login-page.png
 debug-terms-page.png
 auth-flow-final.png
+
+# AWS App Runner configuration files (contain secrets)
+app-runner-*.json
+source-config.json
+app-runner-config.json
+app-runner-deploy.json

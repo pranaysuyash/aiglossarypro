@@ -1,0 +1,25 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only express
+RUN npm install express
+
+# Copy simple server
+COPY simple-server.js ./
+
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3001
+
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
+
+# Start server
+CMD ["node", "simple-server.js"]

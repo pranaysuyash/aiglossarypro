@@ -70,7 +70,7 @@ function validateEnvironment(): EnvironmentConfig {
   // Validate optional variables with defaults
   config.AWS_REGION = process.env.AWS_REGION || 'us-east-1';
   config.NODE_ENV = process.env.NODE_ENV || 'development';
-  config.PORT = process.env.PORT || '3000';
+  config.PORT = process.env.PORT || '8080';
 
   // Optional variables
   const optionalVars = [
@@ -284,7 +284,7 @@ export function sanitizeLogData(data: any) {
 
 export const appConfig = {
   // Server Configuration
-  port: process.env.PORT || 3001,
+  port: process.env.PORT || '8080',
   nodeEnv: process.env.NODE_ENV || 'development',
 
   // Database Configuration

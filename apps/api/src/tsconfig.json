@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist",
+    "rootDir": "./",
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@server/*": ["./*"],
+      "@aiglossarypro/*": ["../../../packages/*/src"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.d.ts"],
+  "exclude": ["node_modules", "dist", "client"]
+}

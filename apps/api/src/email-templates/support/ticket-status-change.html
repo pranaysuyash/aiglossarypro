@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Ticket Status Update</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: #8b5cf6;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .header.resolved {
+      background: #10b981;
+    }
+    .header.closed {
+      background: #6b7280;
+    }
+    .content {
+      padding: 30px;
+    }
+    .status-box {
+      text-align: center;
+      padding: 30px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .status-box.resolved {
+      background: #d1fae5;
+      border: 2px solid #10b981;
+    }
+    .status-box.closed {
+      background: #f3f4f6;
+      border: 2px solid #6b7280;
+    }
+    .status-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    .status-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1e293b;
+      margin: 10px 0;
+    }
+    .ticket-info {
+      background: #f8fafc;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .button {
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 20px;
+    }
+    .satisfaction-box {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .footer {
+      background: #f8fafc;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header {{status}}">
+      <h1>Support Ticket {{#if (eq status 'resolved')}}Resolved{{else}}Closed{{/if}}</h1>
+    </div>
+    <div class="content">
+      <p>Hi {{userName}},</p>
+      
+      <div class="status-box {{status}}">
+        <div class="status-icon">
+          {{#if (eq status 'resolved')}}
+            ✅
+          {{else}}
+            🔒
+          {{/if}}
+        </div>
+        <div class="status-text">
+          Your ticket has been {{status}}
+        </div>
+      </div>
+      
+      <div class="ticket-info">
+        <p><strong>Ticket #:</strong> {{ticketNumber}}</p>
+        <p><strong>Subject:</strong> {{subject}}</p>
+        <p style="margin: 0;"><strong>Status:</strong> {{status}}</p>
+      </div>
+      
+      {{#if (eq status 'resolved')}}
+        <div class="satisfaction-box">
+          <h3 style="margin-top: 0;">How did we do?</h3>
+          <p>We'd love to hear about your support experience. Your feedback helps us improve!</p>
+          <a href="{{appUrl}}/support" class="button" style="background: #f59e0b;">Rate Your Experience</a>
+        </div>
+        
+        <p>If you need any further assistance, you can always create a new support ticket.</p>
+      {{else}}
+        <p>This ticket has been closed. If you need further assistance, please create a new support ticket.</p>
+      {{/if}}
+      
+      <center>
+        <a href="{{appUrl}}/support" class="button">View All Tickets</a>
+      </center>
+    </div>
+    <div class="footer">
+      <p>Thank you for using AI Glossary Pro!</p>
+    </div>
+  </div>
+</body>
+</html>

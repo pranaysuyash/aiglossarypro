@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@aiglossarypro/shared": ["../../packages/shared/src/index.ts"],
+      "@aiglossarypro/shared/*": ["../../packages/shared/src/*"],
+      "@aiglossarypro/database": ["../../packages/database/src/index.ts"],
+      "@aiglossarypro/database/*": ["../../packages/database/src/*"],
+      "@aiglossarypro/auth": ["../../packages/auth/src/index.ts"],
+      "@aiglossarypro/auth/*": ["../../packages/auth/src/*"],
+      "@aiglossarypro/config": ["../../packages/config/src/index.ts"],
+      "@aiglossarypro/config/*": ["../../packages/config/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"],
+  "references": [
+    { "path": "../../packages/shared" },
+    { "path": "../../packages/database" },
+    { "path": "../../packages/auth" },
+    { "path": "../../packages/config" }
+  ]
+}

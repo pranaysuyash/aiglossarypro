@@ -1,0 +1,22 @@
+{
+  "name": "@aiglossarypro/api",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --project tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@aiglossarypro/shared": "workspace:*",
+    "@aiglossarypro/database": "workspace:*",
+    "@aiglossarypro/auth": "workspace:*",
+    "@aiglossarypro/config": "workspace:*",
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "tsx": "^4.20.3"
+  }
+}

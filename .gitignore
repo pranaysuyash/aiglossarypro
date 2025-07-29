@@ -27,11 +27,13 @@ __pycache__/
 
 # Environment files
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.production
+.env.backup.*
 
 # AWS credentials and sensitive files
 *aws*.csv
@@ -199,6 +201,8 @@ storybook-static
 checkpoint.json
 *.log
 server/config/secrets/
+packages/config/src/config/secrets/
+*firebase-adminsdk*.json
 
 # Added by Gemini
 test-outputs/

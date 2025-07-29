@@ -28,6 +28,7 @@ import { registerDailyTermsRoutes } from './dailyTerms';
 import { registerEarlyBirdRoutes } from './earlyBird';
 import { registerEngagementRoutes } from './engagement';
 import { registerFeedbackRoutes } from './feedback';
+import { registerHealthCheckRoutes } from './healthCheck';
 import { registerGuestPreviewRoutes } from './guestPreview';
 import { registerGumroadRoutes } from './gumroad';
 import gumroadWebhookRoutes from './gumroadWebhooks';
@@ -237,7 +238,11 @@ export async function registerRoutes(app: Express): Promise<void> {
     app.use('/api/predictive-analytics', predictiveAnalyticsRoutes);
     logger.info('✅ Predictive Analytics routes registered');
 
-    // Health check endpoint
+    // Register comprehensive health check routes
+    registerHealthCheckRoutes(app);
+    logger.info('✅ Comprehensive health check routes registered');
+
+    // Basic health check endpoint for backward compatibility
     app.get('/api/health', (_, res) => {
       res.json({
         success: true,

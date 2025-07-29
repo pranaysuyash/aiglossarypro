@@ -1,0 +1,59 @@
+{
+  "name": "@aiglossarypro/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schema": {
+      "import": "./dist/schema.js",
+      "types": "./dist/schema.d.ts"
+    },
+    "./enhancedSchema": {
+      "import": "./dist/enhancedSchema.js",
+      "types": "./dist/enhancedSchema.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    },
+    "./types/*": {
+      "import": "./dist/types/*.js",
+      "types": "./dist/types/*.d.ts"
+    },
+    "./abTestingSchema": {
+      "import": "./dist/abTestingSchema.js",
+      "types": "./dist/abTestingSchema.d.ts"
+    },
+    "./featureFlags": {
+      "import": "./dist/featureFlags.js",
+      "types": "./dist/featureFlags.d.ts"
+    },
+    "./errorManager": {
+      "import": "./dist/errorManager.js",
+      "types": "./dist/errorManager.d.ts"
+    },
+    "./295ColumnStructure": {
+      "import": "./dist/295ColumnStructure.js",
+      "types": "./dist/295ColumnStructure.d.ts"
+    },
+    "./completeColumnStructure": {
+      "import": "./dist/completeColumnStructure.js",
+      "types": "./dist/completeColumnStructure.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "zod": "^3.24.2",
+    "drizzle-orm": "^0.44.2"
+  }
+}

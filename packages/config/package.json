@@ -1,0 +1,19 @@
+{
+  "name": "@aiglossarypro/config",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@aiglossarypro/shared": "workspace:*",
+    "dotenv": "^16.5.0",
+    "zod": "^3.24.2",
+    "pg": "^8.11.3"
+  }
+}

@@ -90,15 +90,15 @@ class AnalyticsService {
           ...properties,
           $lib: 'ai-glossary-pro-server',
           environment: process.env.NODE_ENV,
-          timestamp: options.timestamp,
+          // timestamp: options.timestamp, // Not supported
         },
-        timestamp: options.timestamp,
+        // timestamp: options.timestamp, // Not supported
         sendFeatureFlags: options.sendFeatureFlags,
       });
 
       logger.debug('Event tracked:', { distinctId, event, properties });
     } catch (error) {
-      logger.error('Error tracking event:', error, { distinctId, event });
+      logger.error('Error tracking event:', { error: error, ...{ distinctId, event } });
     }
   }
 
@@ -108,7 +108,7 @@ class AnalyticsService {
   identify(
     distinctId: string,
     properties: Record<string, any> = {},
-    options: {
+    _options: {
       timestamp?: Date;
     } = {}
   ): void {
@@ -125,12 +125,12 @@ class AnalyticsService {
           $lib: 'ai-glossary-pro-server',
           environment: process.env.NODE_ENV,
         },
-        timestamp: options.timestamp,
+        // timestamp: options.timestamp, // Not supported
       });
 
       logger.debug('User identified:', { distinctId, properties });
     } catch (error) {
-      logger.error('Error identifying user:', error, { distinctId });
+      logger.error('Error identifying user:', { error: error, ...{ distinctId } });
     }
   }
 
@@ -248,7 +248,7 @@ class AnalyticsService {
 
       logger.debug('User properties set:', { distinctId, properties });
     } catch (error) {
-      logger.error('Error setting user properties:', error, { distinctId });
+      logger.error('Error setting user properties:', { error: error, ...{ distinctId } });
     }
   }
 
@@ -269,7 +269,7 @@ class AnalyticsService {
 
       logger.debug('User alias created:', { distinctId, alias });
     } catch (error) {
-      logger.error('Error creating alias:', error, { distinctId, alias });
+      logger.error('Error creating alias:', { error: error, ...{ distinctId, alias } });
     }
   }
 
@@ -290,7 +290,7 @@ class AnalyticsService {
       const flag = await this.posthog.getFeatureFlag(key, distinctId);
       return flag === true || flag === 'true';
     } catch (error) {
-      logger.error('Error getting feature flag:', error, { key, distinctId });
+      logger.error('Error getting feature flag:', { error: error, ...{ key, distinctId } });
       return defaultValue;
     }
   }
@@ -298,7 +298,7 @@ class AnalyticsService {
   /**
    * Flush analytics data (useful for serverless or before shutdown)
    */
-  async flush(timeout = 3000): Promise<void> {
+  async flush(_timeout = 3000): Promise<void> {
     if (!this.posthog) {
       return;
     }

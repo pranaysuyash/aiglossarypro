@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc --project tsconfig.json",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc --project tsconfig.build.json",
     "start": "node dist/index.js",
     "test": "vitest",
     "lint": "eslint src/**/*.ts"
@@ -17,6 +17,7 @@
     "@aiglossarypro/config": "workspace:*",
     "express": "^4.21.2",
     "cors": "^2.8.5",
-    "tsx": "^4.20.3"
+    "tsx": "^4.20.3",
+    "nanoid": "^5.0.7"
   }
 }

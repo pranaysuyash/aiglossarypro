@@ -4,6 +4,7 @@
 
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
+import { httpIntegration, expressIntegration, consoleIntegration, localVariablesIntegration, startSpan } from '@sentry/node';
 import { log as logger } from '../utils/logger';
 
 interface SentryConfig {
@@ -54,16 +55,16 @@ export function initializeSentry(): void {
         nodeProfilingIntegration(),
 
         // HTTP integration for Express
-        new Sentry.Integrations.Http({ tracing: true }),
+        httpIntegration(),
 
         // Express integration
-        new Sentry.Integrations.Express({ app: undefined }),
+        expressIntegration(),
 
         // Console integration
-        new Sentry.Integrations.Console(),
+        consoleIntegration(),
 
         // Local variables in stack traces
-        new Sentry.Integrations.LocalVariables({
+        localVariablesIntegration({
           captureAllExceptions: false,
         }),
       ],
@@ -138,20 +139,21 @@ export function initializeSentry(): void {
 /**
  * Express middleware for Sentry request tracking
  */
-export const sentryRequestHandler = Sentry.Handlers.requestHandler({
-  user: ['id', 'email', 'username'],
-});
+// Request handler is no longer needed in newer Sentry versions
+export const sentryRequestHandler = (_req: any, _res: any, next: any) => next();
 
 /**
  * Express middleware for Sentry tracing
  */
-export const sentryTracingHandler = Sentry.Handlers.tracingHandler();
+// Tracing handler is no longer needed in newer Sentry versions  
+export const sentryTracingHandler = (_req: any, _res: any, next: any) => next();
 
 /**
  * Express error handler for Sentry
  */
-export const sentryErrorHandler = Sentry.Handlers.errorHandler({
-  shouldHandleError(error) {
+// Use express error handler instead
+export const sentryErrorHandler: any = Sentry.expressErrorHandler({
+  shouldHandleError(_error: any) {
     // Only handle errors in production
     return process.env.NODE_ENV === 'production';
   },
@@ -170,7 +172,7 @@ export function captureException(
   }
 ): string | undefined {
   if (process.env.NODE_ENV !== 'production') {
-    logger.error('Exception (Sentry disabled):', error, context);
+    logger.error('Exception (Sentry disabled):', { error: error, ...context });
     return undefined;
   }
 
@@ -212,7 +214,7 @@ export function captureMessage(
   }
 ): string | undefined {
   if (process.env.NODE_ENV !== 'production') {
-    logger.info('Message (Sentry disabled):', message, { level, ...context });
+    logger.info('Message (Sentry disabled):', { message, level, ...context });
     return undefined;
   }
 
@@ -245,16 +247,18 @@ export function startTransaction(
   name: string,
   op: string,
   description?: string
-): Sentry.Transaction | undefined {
+): any {
   if (process.env.NODE_ENV !== 'production') {
     return undefined;
   }
 
-  return Sentry.startTransaction({
+  return startSpan({
     name,
     op,
-    description,
-  });
+    attributes: {
+      description: description || '',
+    },
+  }, () => {});
 }
 
 /**

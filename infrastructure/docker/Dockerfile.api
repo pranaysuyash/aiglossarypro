@@ -43,6 +43,7 @@ COPY --from=deps /app/packages/config/node_modules ./packages/config/node_module
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 
 # Build shared packages and API only
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm --filter shared build && \
     pnpm --filter database build && \
     pnpm --filter auth build && \

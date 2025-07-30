@@ -200,7 +200,7 @@ const createRedisClient = (): RedisClient => {
                 ...configToUse,
                 lazyConnect: true,
                 maxRetriesPerRequest: configToUse.maxRetriesPerRequest,
-                retryDelayOnFailover: configToUse.retryDelayOnFailover,
+                // retryDelayOnFailover: configToUse.retryDelayOnFailover, // Not supported in newer versions
                 connectTimeout: configToUse.connectTimeout,
                 commandTimeout: configToUse.commandTimeout,
                 enableOfflineQueue: configToUse.enableOfflineQueue,

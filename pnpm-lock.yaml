@@ -238,10 +238,10 @@ importers:
         version: 16.6.1
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
+        version: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.1(drizzle-orm@0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3))(zod@3.25.76)
+        version: 0.7.1(drizzle-orm@0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3))(zod@3.25.76)
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@18.3.1)
@@ -718,6 +718,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      nanoid:
+        specifier: ^5.0.7
+        version: 5.1.5
       tsx:
         specifier: ^4.20.3
         version: 4.20.3
@@ -761,24 +764,36 @@ importers:
       '@aiglossarypro/shared':
         specifier: workspace:*
         version: link:../shared
-      firebase-admin:
-        specifier: ^13.4.0
-        version: 13.4.0
-      jsonwebtoken:
-        specifier: ^9.0.2
-        version: 9.0.2
-      passport:
-        specifier: ^0.7.0
-        version: 0.7.0
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.21
+      express:
+        specifier: ^4.21.2
+        version: 4.21.2
 
   packages/config:
     dependencies:
       '@aiglossarypro/shared':
         specifier: workspace:*
         version: link:../shared
+      '@sentry/node':
+        specifier: ^9.42.1
+        version: 9.42.1
+      '@types/pg':
+        specifier: ^8.11.10
+        version: 8.15.5
       dotenv:
         specifier: ^16.5.0
         version: 16.6.1
+      firebase-admin:
+        specifier: ^13.4.0
+        version: 13.4.0
+      ioredis:
+        specifier: ^5.4.2
+        version: 5.6.1
+      mixpanel:
+        specifier: ^0.18.0
+        version: 0.18.1
       pg:
         specifier: ^8.11.3
         version: 8.16.3
@@ -796,7 +811,7 @@ importers:
         version: 0.10.4
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
+        version: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
       pg:
         specifier: ^8.11.3
         version: 8.16.3
@@ -805,7 +820,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
+        version: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
       zod:
         specifier: ^3.24.2
         version: 3.25.76
@@ -4881,6 +4896,9 @@ packages:
   '@types/pg@8.11.6':
     resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
 
+  '@types/pg@8.15.5':
+    resolution: {integrity: sha512-LF7lF6zWEKxuT3/OR8wAZGzkg4ENGXFNyiV/JeOt9z5B+0ZVwbql9McqX5c/WStFq1GaGso7H1AzP/qSzmlCKQ==}
+
   '@types/pg@8.6.1':
     resolution: {integrity: sha512-1Kc4oAGzAl7uqUStZCDvaLFqZrW9qWSjXOmBfdgyBP5La7Us6Mg4GBvRlSoaZMhQF/zSj1C8CtKMBkoiT8eL8w==}
 
@@ -7298,6 +7316,10 @@ packages:
     resolution: {integrity: sha512-G5akfn7eKbpDN+8nPS/cb57YeA1jLTVxjpCj7tmm3QKPdyDy7T+qSC40e9ptydSWvkwjSXw1VbkpyEm39ukeAg==}
     engines: {node: '>=0.10'}
 
+  https-proxy-agent@5.0.0:
+    resolution: {integrity: sha512-EkYm5BcKUGiduxzSt3Eppko+PiNWNEpa4ySk9vTC6wDsQJW9rHSa+UhGNJoRYp7bz6Ht1eaRIa6QaJqO5rCFbA==}
+    engines: {node: '>= 6'}
+
   https-proxy-agent@5.0.1:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
     engines: {node: '>= 6'}
@@ -8433,6 +8455,10 @@ packages:
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
+  mixpanel@0.18.1:
+    resolution: {integrity: sha512-YD1xfn6WP6ZLQ6Pmgh0KgdXhueJEsrodThMTsHzHMH0VbWa9ck8s+ynDtM83OSgt+yQ61W/SQNrH8Y4wIwocGg==}
+    engines: {node: '>=10.0'}
+
   mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
@@ -8493,6 +8519,11 @@ packages:
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  nanoid@5.1.5:
+    resolution: {integrity: sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw==}
+    engines: {node: ^18 || >=20}
     hasBin: true
 
   natural-compare@1.4.0:
@@ -9747,6 +9778,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   sourcemap-codec@1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
@@ -15798,13 +15830,19 @@ snapshots:
 
   '@types/pg-pool@2.0.6':
     dependencies:
-      '@types/pg': 8.6.1
+      '@types/pg': 8.15.5
 
   '@types/pg@8.11.6':
     dependencies:
       '@types/node': 20.19.9
       pg-protocol: 1.10.3
       pg-types: 4.0.2
+
+  '@types/pg@8.15.5':
+    dependencies:
+      '@types/node': 20.19.9
+      pg-protocol: 1.10.3
+      pg-types: 2.2.0
 
   '@types/pg@8.6.1':
     dependencies:
@@ -16207,7 +16245,6 @@ snapshots:
       debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   agent-base@7.1.4: {}
 
@@ -17466,18 +17503,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3):
+  drizzle-orm@0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3):
     optionalDependencies:
       '@neondatabase/serverless': 0.10.4
       '@opentelemetry/api': 1.9.0
-      '@types/pg': 8.11.6
+      '@types/pg': 8.15.5
       '@upstash/redis': 1.35.1
       gel: 2.1.1
       pg: 8.16.3
 
-  drizzle-zod@0.7.1(drizzle-orm@0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3))(zod@3.25.76):
+  drizzle-zod@0.7.1(drizzle-orm@0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3))(zod@3.25.76):
     dependencies:
-      drizzle-orm: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
+      drizzle-orm: 0.44.3(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.1)(gel@2.1.1)(pg@8.16.3)
       zod: 3.25.76
 
   dunder-proto@1.0.1:
@@ -18703,6 +18740,13 @@ snapshots:
       assert-plus: 1.0.0
       jsprim: 2.0.2
       sshpk: 1.18.0
+
+  https-proxy-agent@5.0.0:
+    dependencies:
+      agent-base: 6.0.2
+      debug: 4.4.1
+    transitivePeerDependencies:
+      - supports-color
 
   https-proxy-agent@5.0.1:
     dependencies:
@@ -20123,6 +20167,12 @@ snapshots:
 
   mitt@3.0.1: {}
 
+  mixpanel@0.18.1:
+    dependencies:
+      https-proxy-agent: 5.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   mkdirp@0.5.6:
     dependencies:
       minimist: 1.2.8
@@ -20189,6 +20239,8 @@ snapshots:
       thenify-all: 1.6.0
 
   nanoid@3.3.11: {}
+
+  nanoid@5.1.5: {}
 
   natural-compare@1.4.0: {}
 

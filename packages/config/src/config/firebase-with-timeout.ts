@@ -88,17 +88,18 @@ export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdTok
       email: decodedToken.email 
     });
     return decodedToken;
-  } catch (error: Error | unknown) {
-    if (error.message?.includes('timed out')) {
+  } catch (error) {
+    const err = error as any;
+    if (err.message?.includes('timed out')) {
       logger.error('⏱️ Firebase token verification timed out', {
-        message: error.message
+        message: err.message
       });
     } else {
       logger.error('❌ Error verifying Firebase token:', error);
       logger.error('❌ Error details:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack?.split('\n').slice(0, 3)
+        message: err.message,
+        code: err.code,
+        stack: err.stack?.split('\n').slice(0, 3)
       });
     }
     return null;

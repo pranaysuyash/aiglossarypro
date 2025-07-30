@@ -58,10 +58,10 @@ function validateEnvironment(): EnvironmentConfig {
   const requiredVars = ['DATABASE_URL', 'SESSION_SECRET', 'NODE_ENV', 'PORT'];
 
   // Conditionally required variables based on features
-  const _conditionallyRequired: Record<string, string[]> = {
-    s3_enabled: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'S3_BUCKET_NAME'],
-    openai_enabled: ['OPENAI_API_KEY'],
-  };
+  // const conditionallyRequired: Record<string, string[]> = {
+  //   s3_enabled: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'S3_BUCKET_NAME'],
+  //   openai_enabled: ['OPENAI_API_KEY'],
+  // };
 
   // Validate required variables
   for (const varName of requiredVars) {

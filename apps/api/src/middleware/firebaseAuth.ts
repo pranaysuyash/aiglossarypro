@@ -3,8 +3,7 @@
  * Verifies Firebase ID tokens and manages user sessions
  */
 
-import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
 import { setCustomUserClaims, verifyFirebaseToken } from '@aiglossarypro/config';
 import { optimizedStorage as storage } from '../optimizedStorage';

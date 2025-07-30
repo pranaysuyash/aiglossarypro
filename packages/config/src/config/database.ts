@@ -99,7 +99,7 @@ export function createProductionDatabasePool(): Pool {
   // Pool event handlers for monitoring
   pool.on('connect', client => {
     logger.debug('Database client connected', {
-      processID: client.processID,
+      processID: (client as any).processID,
       totalCount: pool.totalCount,
       idleCount: pool.idleCount,
       waitingCount: pool.waitingCount,
@@ -108,7 +108,7 @@ export function createProductionDatabasePool(): Pool {
 
   pool.on('acquire', client => {
     logger.debug('Database client acquired', {
-      processID: client.processID,
+      processID: (client as any).processID,
       totalCount: pool.totalCount,
       idleCount: pool.idleCount,
       waitingCount: pool.waitingCount,
@@ -117,7 +117,7 @@ export function createProductionDatabasePool(): Pool {
 
   pool.on('remove', client => {
     logger.debug('Database client removed', {
-      processID: client.processID,
+      processID: (client as any).processID,
       totalCount: pool.totalCount,
       idleCount: pool.idleCount,
       waitingCount: pool.waitingCount,
@@ -127,7 +127,7 @@ export function createProductionDatabasePool(): Pool {
   pool.on('error', (err, client) => {
     logger.error('Database pool error:', {
       error: err.message,
-      processID: client?.processID,
+      processID: (client as any)?.processID,
       totalCount: pool.totalCount,
       idleCount: pool.idleCount,
       waitingCount: pool.waitingCount,

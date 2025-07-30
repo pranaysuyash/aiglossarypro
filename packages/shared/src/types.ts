@@ -181,13 +181,8 @@ export interface FileUploadMetadata {
 
 // Authentication types
 export interface AuthenticatedRequest extends Request {
-  user: {
-    claims: {
-      sub: string;
-      email?: string;
-      [key: string]: any;
-    };
-  };
+  user: IUser;
+  firebaseUser?: any; // Firebase decoded token
 }
 
 export interface AdminRequest extends AuthenticatedRequest {

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { Pool, PoolConfig } from '@neondatabase/serverless';
+import { Pool, PoolConfig, PoolClient } from '@neondatabase/serverless';
 
 // Simple logger for now
 const logger = {
@@ -8,7 +8,7 @@ const logger = {
   error: (...args: any[]) => console.error('[pool-monitor]', ...args),
 };
 
-interface PoolStats {
+export interface PoolStats {
   totalConnections: number;
   idleConnections: number;
   waitingRequests: number;
@@ -188,7 +188,7 @@ export class MonitoredPool extends Pool {
     this.metricsEmitter.on('metrics', callback);
   }
 
-  public async connect(): Promise<unknown> {
+  public async connect(): Promise<PoolClient> {
     const metrics: ConnectionMetrics = {
       acquireStartTime: Date.now(),
       queryCount: 0,
@@ -205,13 +205,14 @@ export class MonitoredPool extends Pool {
       this.connectionMetrics.set(client, metrics);
       
       // Wrap query method to track metrics
-      const originalQuery = client.query.bind(client);
-      client.query = async (...args: unknown[]) => {
+      const originalQuery = (client as any).query;
+      const connectionMetrics = this.connectionMetrics;
+      (client as any).query = async (...args: any[]) => {
         const queryStart = Date.now();
-        const clientMetrics = this.connectionMetrics.get(client);
+        const clientMetrics = connectionMetrics.get(client);
         
         try {
-          const result = await originalQuery(...args);
+          const result = await originalQuery.call(client, ...args);
           
           if (clientMetrics) {
             clientMetrics.queryCount++;

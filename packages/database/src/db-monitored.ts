@@ -6,7 +6,7 @@ import { neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from 'ws';
 import * as schema from '@aiglossarypro/shared/enhancedSchema';
-import { createMonitoredPool, MonitoredPool } from './db/pool-monitor';
+import { createMonitoredPool, MonitoredPool, PoolStats } from './db/pool-monitor';
 
 // Simple logger for now
 const logger = {
@@ -89,10 +89,10 @@ process.on('SIGINT', async () => {
 });
 
 // Export monitoring utilities
-export { MonitoredPool } from './db/pool-monitor';
+export { MonitoredPool, PoolStats } from './db/pool-monitor';
 
 // Helper to get connection pool metrics endpoint data
-export function getPoolMetrics() {
+export function getPoolMetrics(): PoolStats {
   return pool.getStats();
 }
 

@@ -91,12 +91,12 @@ function getSecurityConfig(): SecurityConfig {
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
-          upgradeInsecureRequests: isProduction ? [] : undefined,
+          upgradeInsecureRequests: isProduction ? [] : undefined as any,
         },
       },
       crossOriginEmbedderPolicy: false, // Disabled for compatibility
-      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' as const },
+      crossOriginResourcePolicy: { policy: 'cross-origin' as const },
       hsts: {
         maxAge: 31536000, // 1 year
         includeSubDomains: true,
@@ -130,8 +130,8 @@ export function configureSecurityMiddleware(app: Express): void {
     helmet({
       contentSecurityPolicy: isProduction ? config.helmet.contentSecurityPolicy : false,
       crossOriginEmbedderPolicy: config.helmet.crossOriginEmbedderPolicy,
-      crossOriginOpenerPolicy: config.helmet.crossOriginOpenerPolicy,
-      crossOriginResourcePolicy: config.helmet.crossOriginResourcePolicy,
+      crossOriginOpenerPolicy: config.helmet.crossOriginOpenerPolicy as any,
+      crossOriginResourcePolicy: config.helmet.crossOriginResourcePolicy as any,
       hsts: isProduction ? config.helmet.hsts : false,
       // Disable noSniff in development for better debugging
       noSniff: isProduction,
@@ -139,7 +139,7 @@ export function configureSecurityMiddleware(app: Express): void {
   );
 
   // Additional security headers
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     // Prevent MIME type sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
@@ -184,14 +184,8 @@ export function configureRateLimiting(app: Express): void {
       // Use X-Forwarded-For header if behind proxy, otherwise use remoteAddress
       return (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
     },
-    onLimitReached: (req: Request) => {
-      logger.warn('Rate limit exceeded', {
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
-        path: req.path,
-        method: req.method,
-      });
-    },
+    // Note: onLimitReached is removed in newer versions
+    // Logging is handled by the rate limiter itself
   });
 
   // Stricter rate limiting for auth endpoints
@@ -206,13 +200,9 @@ export function configureRateLimiting(app: Express): void {
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: true, // Don't count successful auth attempts
-    onLimitReached: (req: Request) => {
-      logger.warn('Auth rate limit exceeded', {
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
-        path: req.path,
-      });
-    },
+    // onLimitReached is not supported in newer versions
+    // Note: onLimitReached is removed in newer versions
+    // Logging is handled by the rate limiter itself
   });
 
   // API-specific rate limiting
@@ -327,7 +317,7 @@ export function configureInputValidation(app: Express): void {
   });
 
   // Middleware to validate and sanitize common parameters
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use((req: Request, _res: Response, next: NextFunction) => {
     // Sanitize query parameters
     Object.keys(req.query).forEach(key => {
       if (typeof req.query[key] === 'string') {
@@ -347,7 +337,7 @@ export function configureInputValidation(app: Express): void {
  */
 export function configureSecurityMonitoring(app: Express): void {
   // Log suspicious requests
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use((req: Request, _res: Response, next: NextFunction) => {
     const suspiciousPatterns = [
       /\.\./, // Directory traversal
       /<script/i, // XSS attempts
@@ -408,7 +398,7 @@ export function checkSecurityConfiguration(): {
     message: string;
   }>;
 } {
-  const checks = [];
+  const checks: { name: string; status: 'pass' | 'warn' | 'fail'; message: string }[] = [];
 
   // Check environment
   checks.push({

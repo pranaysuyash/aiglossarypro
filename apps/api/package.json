@@ -13,6 +13,7 @@
     "@aiglossarypro/config": "workspace:*",
     "express": "^4.21.2",
     "cors": "^2.8.5",
-    "nanoid": "^5.0.7"
+    "nanoid": "^5.0.7",
+    "tsx": "^4.19.2"
   }
 }

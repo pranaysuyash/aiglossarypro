@@ -15,14 +15,12 @@ build:
       - pnpm --filter @aiglossarypro/database run build || echo "database build completed"  
       - pnpm --filter @aiglossarypro/auth run build || echo "auth build completed"
       - pnpm --filter @aiglossarypro/config run build || echo "config build completed"
-      # Install tsx for running TypeScript directly
-      - pnpm add tsx
       - echo "Build completed successfully"
     post-build:
       - echo "Production dependencies ready"
 
 run:
-  command: ./node_modules/.bin/tsx src/index.ts
+  command: npx tsx src/index.ts
   network:
     port: 8080
     env: PORT

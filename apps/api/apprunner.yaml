@@ -10,19 +10,25 @@ build:
       - echo "pnpm version:" && pnpm --version
     build:
       - pnpm install --frozen-lockfile
-      # Build workspace packages (they're already configured for ESM)
+      # CRITICAL: Switch to CommonJS configuration
+      - cp package.deploy.json package.json
+      - echo "Switched to CommonJS package.json"
+      # Build workspace packages first (they output JS)
       - pnpm --filter @aiglossarypro/shared run build || echo "shared build completed"
       - pnpm --filter @aiglossarypro/database run build || echo "database build completed"  
       - pnpm --filter @aiglossarypro/auth run build || echo "auth build completed"
       - pnpm --filter @aiglossarypro/config run build || echo "config build completed"
-      - echo "Build completed successfully"
+      # CRITICAL: Build API to CommonJS JavaScript
+      - pnpm run build
+      - echo "API CommonJS build completed"
+      - ls -la dist/ || echo "No dist directory yet"
     post-build:
-      - echo "Production dependencies ready"
-      - which tsx || echo "tsx not found in PATH"
-      - ls -la node_modules/.bin/ | grep tsx || echo "tsx not in node_modules"
+      - pnpm prune --prod
+      - echo "Production dependencies optimized"
 
 run:
-  command: /app/apps/api/node_modules/.bin/tsx src/index.ts
+  # CRITICAL: Run compiled JavaScript, not TypeScript
+  command: node dist/index.js
   network:
     port: 8080
     env: PORT
@@ -37,4 +43,4 @@ run:
       value: "firebase-adminsdk-syzds@aiglossary-a7199.iam.gserviceaccount.com"
     # This will be configured in AWS Console after deployment
     # - name: FIREBASE_PRIVATE_KEY_BASE64
-    #   value: "Set via AWS Console using Secrets Manager">
+    #   value: "Set via AWS Console using Secrets Manager"

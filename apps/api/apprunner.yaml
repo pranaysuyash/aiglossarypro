@@ -38,4 +38,4 @@ run:
       value: "firebase-adminsdk-syzds@aiglossary-a7199.iam.gserviceaccount.com"
     # Map from AWS Secrets Manager in console
     - name: FIREBASE_PRIVATE_KEY_BASE64
-      value: "{{ arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-private-key }}">
+      value: "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-private-key-guP8N3">

@@ -18,9 +18,11 @@ build:
       - echo "Build completed successfully"
     post-build:
       - echo "Production dependencies ready"
+      - which tsx || echo "tsx not found in PATH"
+      - ls -la node_modules/.bin/ | grep tsx || echo "tsx not in node_modules"
 
 run:
-  command: npx tsx src/index.ts
+  command: /app/apps/api/node_modules/.bin/tsx src/index.ts
   network:
     port: 8080
     env: PORT

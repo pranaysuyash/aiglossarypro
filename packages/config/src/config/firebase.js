@@ -184,4 +184,3 @@ const firebaseAuth = () => {
     return (0, auth_1.getAuth)();
 };
 exports.firebaseAuth = firebaseAuth;
-//# sourceMappingURL=firebase.js.map

@@ -39,4 +39,3 @@ if (!process.env.DATABASE_URL) {
 }
 exports.pool = new serverless_1.Pool({ connectionString: process.env.DATABASE_URL });
 exports.db = (0, neon_serverless_1.drizzle)({ client: exports.pool, schema });
-//# sourceMappingURL=db.js.map

@@ -371,4 +371,3 @@ function checkSecurityConfiguration() {
     const status = hasFailures ? 'insecure' : hasWarnings ? 'warnings' : 'secure';
     return { status, checks };
 }
-//# sourceMappingURL=security.js.map

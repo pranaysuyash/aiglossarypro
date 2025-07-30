@@ -10,24 +10,43 @@ build:
       - echo "pnpm version:" && pnpm --version
     build:
       - pnpm install --frozen-lockfile
+      # Debug: Check files before package swap
+      - echo "=== BEFORE PACKAGE SWAP ==="
+      - ls -la package*.json
+      - cat package.json | grep -E "(type|main|scripts)" || echo "No match"
+      
       # CRITICAL: Switch to CommonJS configuration
       - cp package.deploy.json package.json
-      - echo "Switched to CommonJS package.json"
-      # Build workspace packages first (they output JS)
+      - echo "=== AFTER PACKAGE SWAP ==="
+      - ls -la package*.json
+      - cat package.json | grep -E "(type|main|scripts)" || echo "No match"
+      
+      # Build workspace packages first
       - pnpm --filter @aiglossarypro/shared run build || echo "shared build completed"
       - pnpm --filter @aiglossarypro/database run build || echo "database build completed"  
       - pnpm --filter @aiglossarypro/auth run build || echo "auth build completed"
       - pnpm --filter @aiglossarypro/config run build || echo "config build completed"
-      # CRITICAL: Build API to CommonJS JavaScript
-      - pnpm run build
-      - echo "API CommonJS build completed"
-      - ls -la dist/ || echo "No dist directory yet"
+      
+      # Debug: Check TypeScript config
+      - echo "=== TYPESCRIPT CONFIG CHECK ==="
+      - ls -la tsconfig*.json
+      - cat tsconfig.deploy.json || echo "tsconfig.deploy.json not found"
+      
+      # CRITICAL: Build API to CommonJS (with debugging)
+      - echo "=== STARTING API BUILD ==="
+      - pnpm run build || (echo "BUILD FAILED" && exit 1)
+      - echo "=== API BUILD COMPLETED ==="
+      
+      # Verify build output
+      - echo "=== VERIFYING BUILD OUTPUT ==="
+      - ls -la dist/ || echo "No dist directory found"
+      - ls -la dist/*.js || echo "No JS files in dist"
+      - head -20 dist/index.js || echo "Cannot read dist/index.js"
+      
     post-build:
-      - pnpm prune --prod
-      - echo "Production dependencies optimized"
+      - echo "Production dependencies ready"
 
 run:
-  # CRITICAL: Run compiled JavaScript, not TypeScript
   command: node dist/index.js
   network:
     port: 8080
@@ -41,6 +60,3 @@ run:
       value: "aiglossary-a7199"
     - name: FIREBASE_CLIENT_EMAIL
       value: "firebase-adminsdk-syzds@aiglossary-a7199.iam.gserviceaccount.com"
-    # This will be configured in AWS Console after deployment
-    # - name: FIREBASE_PRIVATE_KEY_BASE64
-    #   value: "Set via AWS Console using Secrets Manager"

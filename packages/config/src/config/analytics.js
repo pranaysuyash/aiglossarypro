@@ -289,4 +289,3 @@ class AnalyticsService {
 }
 // Export singleton instance
 exports.analyticsService = new AnalyticsService();
-//# sourceMappingURL=analytics.js.map

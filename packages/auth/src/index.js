@@ -59,4 +59,3 @@ function extractBearerToken(req) {
 function hasAuthToken(req) {
     return extractBearerToken(req) !== null;
 }
-//# sourceMappingURL=index.js.map

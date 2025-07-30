@@ -250,4 +250,3 @@ const createReactError = (error, errorInfo, context) => {
 exports.createReactError = createReactError;
 // Export singleton instance
 exports.errorManager = ErrorManager.getInstance();
-//# sourceMappingURL=errorManager.js.map

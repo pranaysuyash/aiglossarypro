@@ -286,4 +286,3 @@ async function flushSentry(timeout = 2000) {
         return false;
     }
 }
-//# sourceMappingURL=sentry.js.map

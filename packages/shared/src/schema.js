@@ -1033,4 +1033,3 @@ exports.insertReferralClickSchema = (0, drizzle_zod_1.createInsertSchema)(export
     id: true,
     createdAt: true,
 });
-//# sourceMappingURL=schema.js.map

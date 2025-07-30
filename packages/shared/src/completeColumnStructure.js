@@ -1108,4 +1108,3 @@ const getSubsections = (section) => {
     return Array.from(subsections);
 };
 exports.getSubsections = getSubsections;
-//# sourceMappingURL=completeColumnStructure.js.map

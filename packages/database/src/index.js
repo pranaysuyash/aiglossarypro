@@ -29,4 +29,3 @@ Object.defineProperty(exports, "getPoolMetrics", { enumerable: true, get: functi
 // Export db directory modules
 __exportStar(require("./db/pool-monitor.js"), exports);
 __exportStar(require("./db/support-schema.js"), exports);
-//# sourceMappingURL=index.js.map

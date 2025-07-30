@@ -95,4 +95,3 @@ exports.supportCannedResponses = (0, sqlite_core_1.sqliteTable)('support_canned_
     createdAt: (0, sqlite_core_1.text)('created_at').default((0, drizzle_orm_1.sql) `CURRENT_TIMESTAMP`),
     updatedAt: (0, sqlite_core_1.text)('updated_at').default((0, drizzle_orm_1.sql) `CURRENT_TIMESTAMP`),
 });
-//# sourceMappingURL=support-schema.js.map

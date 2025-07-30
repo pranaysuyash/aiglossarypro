@@ -750,4 +750,3 @@ const getStructureStats = () => {
     };
 };
 exports.getStructureStats = getStructureStats;
-//# sourceMappingURL=295ColumnStructure.js.map

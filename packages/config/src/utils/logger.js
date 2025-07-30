@@ -9,4 +9,3 @@ exports.log = {
     debug: (message, data) => console.log(`[DEBUG] ${message}`, data || '')
 };
 exports.default = exports.log;
-//# sourceMappingURL=logger.js.map

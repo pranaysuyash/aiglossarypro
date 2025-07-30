@@ -1,5 +1,5 @@
 version: 1.0
-runtime: nodejs-18
+runtime: nodejs18
 
 build:
   commands:
@@ -22,7 +22,6 @@ build:
       - echo "Production dependencies ready"
 
 run:
-  runtime-version: latest
   command: ./node_modules/.bin/tsx src/index.ts
   network:
     port: 8080

@@ -44,13 +44,15 @@ build:
       - head -20 dist/index.js || echo "Cannot read dist/index.js"
       
     post-build:
-      - echo "Production dependencies ready - v2 with critical fixes"
-      # CRITICAL: Ensure runtime has node_modules
-      - echo "Checking node_modules in API directory..."
-      - ls -la node_modules | head -10 || echo "No node_modules found"
-      # Install production dependencies for runtime
-      - pnpm install --prod --frozen-lockfile
-      - echo "Production dependencies installed for runtime"
+      - echo "Production dependencies ready - v3 with fixed install"
+      # CRITICAL: Remove existing node_modules and reinstall for production
+      - echo "Setting up production dependencies..."
+      - rm -rf node_modules
+      # Use full pnpm install (not --prod) to ensure all deps are available
+      - pnpm install --frozen-lockfile --prefer-offline
+      - echo "Node modules count: $(ls node_modules | wc -l)"
+      - ls -la node_modules | head -10
+      - echo "Production dependencies installed successfully"
 
 run:
   # Debug: Check working directory and files

@@ -1,12 +1,12 @@
 // Config package exports
-export * from './config.js';
+export * from './config';
 
 // Export config directory modules if they exist
-export * from './config/analytics.js';
-export * from './config/database.js';
-export * from './config/firebase.js';
+export * from './config/analytics';
+export * from './config/database';
+export * from './config/firebase';
 // Skip firebase-with-timeout to avoid conflicts
-// export * from './config/firebase-with-timeout.js';
-export * from './config/redis.js';
-export * from './config/security.js';
-export * from './config/sentry.js';
+// export * from './config/firebase-with-timeout';
+export * from './config/redis';
+export * from './config/security';
+export * from './config/sentry';

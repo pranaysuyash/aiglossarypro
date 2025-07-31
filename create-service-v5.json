@@ -1,0 +1,32 @@
+{
+  "ServiceName": "aiglossarypro-api-production",
+  "SourceConfiguration": {
+    "CodeRepository": {
+      "RepositoryUrl": "https://github.com/pranaysuyash/aiglossarypro",
+      "SourceCodeVersion": {
+        "Type": "BRANCH",
+        "Value": "monorepo-migration"
+      },
+      "SourceDirectory": "apps/api",
+      "CodeConfiguration": {
+        "ConfigurationSource": "REPOSITORY"
+      }
+    },
+    "AutoDeploymentsEnabled": true,
+    "AuthenticationConfiguration": {
+      "ConnectionArn": "arn:aws:apprunner:us-east-1:927289246324:connection/github-aiglossarypro/09891cbae37b41b4b0c51a6539f41ab1"
+    }
+  },
+  "InstanceConfiguration": {
+    "Cpu": "0.25 vCPU",
+    "Memory": "0.5 GB"
+  },
+  "HealthCheckConfiguration": {
+    "Protocol": "HTTP",
+    "Path": "/health",
+    "Interval": 10,
+    "Timeout": 5,
+    "HealthyThreshold": 1,
+    "UnhealthyThreshold": 3
+  }
+}

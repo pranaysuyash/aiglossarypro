@@ -9,7 +9,6 @@ build:
       - pnpm install --no-frozen-lockfile
       - cd apps/api && SKIP_TYPE_CHECK=true NODE_ENV=production pnpm run build
 run:
-  runtime-version: 18
   command: cd apps/api && NODE_ENV=production node dist/index.js
   network:
     port: 8080

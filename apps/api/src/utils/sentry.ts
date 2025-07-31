@@ -216,8 +216,8 @@ export const monitorAPIPerformance = (
         const result = await operation();
 
         const duration = Date.now() - startTime;
-        span?.setData('duration', duration);
-        span?.setData('success', true);
+        span?.setAttribute('duration', duration);
+        span?.setAttribute('success', true);
 
         // Track slow operations
         if (duration > 5000) {
@@ -230,8 +230,8 @@ export const monitorAPIPerformance = (
 
         return result;
       } catch (error) {
-        span?.setData('success', false);
-        span?.setData('error', error instanceof Error ? error.message : 'Unknown error');
+        span?.setAttribute('success', false);
+        span?.setAttribute('error', error instanceof Error ? error.message : 'Unknown error');
         throw error;
       }
     }
@@ -251,7 +251,7 @@ export const monitorDatabaseQuery = async (
     {
       name: `db.${queryName}`,
       op: 'db.query',
-      tags: {
+      attributes: {
         table: context?.table,
         operation: context?.operation,
       },
@@ -263,8 +263,8 @@ export const monitorDatabaseQuery = async (
         const result = await query();
         const duration = Date.now() - startTime;
 
-        span?.setData('duration', duration);
-        span?.setData('success', true);
+        span?.setAttribute('duration', duration);
+        span?.setAttribute('success', true);
 
         // Alert on slow queries
         if (duration > 2000) {
@@ -277,8 +277,8 @@ export const monitorDatabaseQuery = async (
 
         return result;
       } catch (error) {
-        span?.setData('success', false);
-        span?.setData('error', error instanceof Error ? error.message : 'Unknown error');
+        span?.setAttribute('success', false);
+        span?.setAttribute('error', error instanceof Error ? error.message : 'Unknown error');
         throw error;
       }
     }

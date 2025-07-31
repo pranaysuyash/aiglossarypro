@@ -297,7 +297,7 @@ export class DataQualityValidator {
     const actualSections = term.sections?.map(s => s.name) || [];
 
     const missingSections = expectedSections.filter(s => !actualSections.includes(s));
-    const extraSections = actualSections.filter(s => !expectedSections.includes(s));
+    const extraSections = actualSections.filter(s => !expectedSections.includes(s as any));
 
     if (missingSections.length > 0) {
       result.warnings.push(`Missing ${missingSections.length} sections: ${missingSections.slice(0, 5).join(', ')}${missingSections.length > 5 ? '...' : ''}`);

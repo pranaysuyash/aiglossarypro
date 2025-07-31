@@ -11,6 +11,22 @@ import { db } from '@aiglossarypro/database';
 import { cached } from './middleware/queryCache';
 
 import logger from './utils/logger';
+
+interface SearchResult {
+  id: string;
+  name: string;
+  definition?: string;
+  shortDefinition?: string;
+  characteristics?: any;
+  references?: any;
+  categoryId?: string;
+  categoryName?: string;
+  viewCount?: number;
+  relevanceScore?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 interface SearchStrategy {
   name: string;
   condition: any;
@@ -225,7 +241,7 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<un
         }
 
         // Transform results
-        const searchResults = results.map((result: Response) => ({
+        const searchResults = results.map((result: SearchResult) => ({
           id: result.id,
           name: result.name,
           definition: result.definition || undefined,

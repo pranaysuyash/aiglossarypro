@@ -4,10 +4,11 @@
     "module": "CommonJS",
     "target": "ES2020",
     "outDir": "dist",
-    "rootDir": "src",
     "skipLibCheck": true,
     "strict": false,
     "noEmitOnError": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,7 +16,8 @@
     "composite": false,
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]

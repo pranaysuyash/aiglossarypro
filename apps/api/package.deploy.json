@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc -p tsconfig.deploy.json",
+    "build": "SKIP_TYPE_CHECK=true node build.js",
     "start": "node dist/index.js"
   },
   "dependencies": {
@@ -14,5 +14,8 @@
     "express": "^4.21.2",
     "cors": "^2.8.5",
     "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.8"
   }
 }

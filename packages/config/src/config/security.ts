@@ -3,7 +3,7 @@
  * Implements security headers, rate limiting, and security best practices
  */
 
-import type { Express, NextFunction, Request, Response } from 'express';
+import type { Application, Request, RequestHandler } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { log as logger } from '../utils/logger';
@@ -114,7 +114,7 @@ function getSecurityConfig(): SecurityConfig {
 /**
  * Configure security middleware
  */
-export function configureSecurityMiddleware(app: Express): void {
+export function configureSecurityMiddleware(app: Application): void {
   const config = getSecurityConfig();
   const isProduction = process.env.NODE_ENV === 'production';
 
@@ -139,7 +139,7 @@ export function configureSecurityMiddleware(app: Express): void {
   );
 
   // Additional security headers
-  app.use((_req: Request, res: Response, next: NextFunction) => {
+  const securityHeadersMiddleware: RequestHandler = (_req, res, next) => {
     // Prevent MIME type sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
@@ -156,13 +156,14 @@ export function configureSecurityMiddleware(app: Express): void {
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
 
     next();
-  });
+  };
+  app.use(securityHeadersMiddleware);
 }
 
 /**
  * Configure rate limiting
  */
-export function configureRateLimiting(app: Express): void {
+export function configureRateLimiting(app: Application): void {
   const config = getSecurityConfig();
 
   // General rate limiting
@@ -256,10 +257,10 @@ export function configureRateLimiting(app: Express): void {
 /**
  * Configure CORS
  */
-export function configureCORS(app: Express): void {
+export function configureCORS(app: Application): void {
   const config = getSecurityConfig();
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  const corsMiddleware: RequestHandler = (req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = Array.isArray(config.cors.origin)
       ? config.cors.origin
@@ -290,7 +291,8 @@ export function configureCORS(app: Express): void {
     }
 
     next();
-  });
+  };
+  app.use(corsMiddleware);
 
   logger.info('CORS configured', {
     origin: config.cors.origin,
@@ -301,9 +303,9 @@ export function configureCORS(app: Express): void {
 /**
  * Input validation and sanitization middleware
  */
-export function configureInputValidation(app: Express): void {
+export function configureInputValidation(app: Application): void {
   // Middleware to limit request body size
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  const bodySizeMiddleware: RequestHandler = (req, res, next) => {
     const maxSize = parseInt(process.env.MAX_REQUEST_SIZE || '1048576'); // 1MB default
 
     if (req.headers['content-length'] && parseInt(req.headers['content-length']) > maxSize) {
@@ -314,20 +316,24 @@ export function configureInputValidation(app: Express): void {
     }
 
     next();
-  });
+  };
+  app.use(bodySizeMiddleware);
 
   // Middleware to validate and sanitize common parameters
-  app.use((req: Request, _res: Response, next: NextFunction) => {
+  const sanitizeMiddleware: RequestHandler = (req, _res, next) => {
     // Sanitize query parameters
-    Object.keys(req.query).forEach(key => {
-      if (typeof req.query[key] === 'string') {
-        // Remove potentially dangerous characters
-        req.query[key] = (req.query[key] as string).replace(/[<>'"]/g, '').trim();
-      }
-    });
+    if (req.query) {
+      Object.keys(req.query).forEach(key => {
+        if (typeof req.query[key] === 'string') {
+          // Remove potentially dangerous characters
+          req.query[key] = (req.query[key] as string).replace(/[<>'"]/g, '').trim();
+        }
+      });
+    }
 
     next();
-  });
+  };
+  app.use(sanitizeMiddleware);
 
   logger.info('Input validation configured');
 }
@@ -335,9 +341,9 @@ export function configureInputValidation(app: Express): void {
 /**
  * Security monitoring middleware
  */
-export function configureSecurityMonitoring(app: Express): void {
+export function configureSecurityMonitoring(app: Application): void {
   // Log suspicious requests
-  app.use((req: Request, _res: Response, next: NextFunction) => {
+  const monitoringMiddleware: RequestHandler = (req, _res, next) => {
     const suspiciousPatterns = [
       /\.\./, // Directory traversal
       /<script/i, // XSS attempts
@@ -347,26 +353,27 @@ export function configureSecurityMonitoring(app: Express): void {
     ];
 
     const requestData = JSON.stringify({
-      url: req.url,
-      query: req.query,
-      body: req.body,
-      headers: req.headers,
+      url: req.url || req.originalUrl,
+      query: req.query || {},
+      body: (req as any).body || {},
+      headers: req.headers || {},
     });
 
     const isSuspicious = suspiciousPatterns.some(pattern => pattern.test(requestData));
 
     if (isSuspicious) {
       logger.warn('Suspicious request detected', {
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
-        url: req.url,
+        ip: req.ip || req.socket?.remoteAddress,
+        userAgent: req.get('User-Agent') || req.headers['user-agent'],
+        url: req.url || req.originalUrl,
         method: req.method,
         timestamp: new Date().toISOString(),
       });
     }
 
     next();
-  });
+  };
+  app.use(monitoringMiddleware);
 
   logger.info('Security monitoring configured');
 }
@@ -374,7 +381,7 @@ export function configureSecurityMonitoring(app: Express): void {
 /**
  * Complete security setup for production
  */
-export function setupProductionSecurity(app: Express): void {
+export function setupProductionSecurity(app: Application): void {
   logger.info('Setting up production security...');
 
   // Configure all security middleware

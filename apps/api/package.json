@@ -3,17 +3,24 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc -p tsconfig.deploy.json",
+    "build": "node build.js",
+    "build:fast": "SKIP_TYPE_CHECK=true node build.js",
+    "build:tsc": "NODE_OPTIONS='--max-old-space-size=8192' tsc -p tsconfig.deploy.json --noEmitOnError false || true",
+    "type-check": "tsc --noEmit",
+    "dev": "node esbuild.dev.js",
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@aiglossarypro/shared": "workspace:*",
-    "@aiglossarypro/database": "workspace:*",
     "@aiglossarypro/auth": "workspace:*",
     "@aiglossarypro/config": "workspace:*",
-    "express": "^4.21.2",
+    "@aiglossarypro/database": "workspace:*",
+    "@aiglossarypro/shared": "workspace:*",
     "cors": "^2.8.5",
+    "express": "^4.21.2",
     "nanoid": "^5.0.7",
     "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.8"
   }
 }

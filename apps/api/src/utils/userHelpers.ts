@@ -1,5 +1,4 @@
-import type { Request } from 'express'
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import type { IUser } from '@aiglossarypro/shared/types';
 import { TIME_CONSTANTS } from './constants';
 
@@ -65,8 +64,8 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
       user.lastLoginAt ||
       (user.last_login_at &&
       (typeof user.last_login_at === 'string' || user.last_login_at instanceof Date)
-        ? (user.last_login_at as Date | string)
-        : undefined),
+        ? user.last_login_at
+        : undefined) as string | Date | undefined,
     termsViewed:
       (user.termsViewed as number | undefined) || (user.terms_viewed as number | undefined) || 0,
     favoriteTerms:

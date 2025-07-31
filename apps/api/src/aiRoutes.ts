@@ -1,5 +1,4 @@
-import type { Express } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import { aiService } from './aiService';
 import { multiAuthMiddleware } from './middleware/multiAuth';
 import { optimizedStorage as storage } from './optimizedStorage';

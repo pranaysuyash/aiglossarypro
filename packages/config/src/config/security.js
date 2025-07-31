@@ -265,12 +265,14 @@ function configureInputValidation(app) {
     // Middleware to validate and sanitize common parameters
     app.use((req, _res, next) => {
         // Sanitize query parameters
-        Object.keys(req.query).forEach(key => {
-            if (typeof req.query[key] === 'string') {
-                // Remove potentially dangerous characters
-                req.query[key] = req.query[key].replace(/[<>'"]/g, '').trim();
-            }
-        });
+        if (req.query) {
+            Object.keys(req.query).forEach(key => {
+                if (typeof req.query[key] === 'string') {
+                    // Remove potentially dangerous characters
+                    req.query[key] = req.query[key].replace(/[<>'"]/g, '').trim();
+                }
+            });
+        }
         next();
     });
     logger_1.log.info('Input validation configured');
@@ -289,17 +291,17 @@ function configureSecurityMonitoring(app) {
             /eval\(/i, // Code execution
         ];
         const requestData = JSON.stringify({
-            url: req.url,
-            query: req.query,
-            body: req.body,
-            headers: req.headers,
+            url: req.url || req.originalUrl,
+            query: req.query || {},
+            body: req.body || {},
+            headers: req.headers || {},
         });
         const isSuspicious = suspiciousPatterns.some(pattern => pattern.test(requestData));
         if (isSuspicious) {
             logger_1.log.warn('Suspicious request detected', {
-                ip: req.ip,
-                userAgent: req.get('User-Agent'),
-                url: req.url,
+                ip: req.ip || req.socket?.remoteAddress,
+                userAgent: req.get('User-Agent') || req.headers['user-agent'],
+                url: req.url || req.originalUrl,
                 method: req.method,
                 timestamp: new Date().toISOString(),
             });

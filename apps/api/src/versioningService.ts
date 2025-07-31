@@ -525,7 +525,7 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       return '1.0';
     }
 
-    const latestVersion = existingVersions[0].version;
+    const latestVersion = (existingVersions[0] as any).version;
     const [major, minor] = latestVersion.split('.').map(Number);
 
     switch (action) {

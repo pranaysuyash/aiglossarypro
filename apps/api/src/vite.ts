@@ -4,13 +4,12 @@ import { nanoid } from 'nanoid';
 import * as fs from 'node:fs';
 import type { Server } from 'node:http';
 import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import * as vite from 'vite';
 import { log as logger } from './utils/logger';
 
-// Get current directory in a way that works with both CommonJS and ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __dirname is not available in ES modules but since we're compiling to CommonJS,
+// we can use a workaround
+declare const __dirname: string;
 
 // Logger is now handled internally by Vite
 

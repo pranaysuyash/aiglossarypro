@@ -161,6 +161,18 @@ console.log('🚀 [DEBUG] About to enter async IIFE');
     log.info('✅ S3 client initialized');
   }
 
+  // Add health check endpoint
+  app.get('/health', (_req, res) => {
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      version: process.env.npm_package_version || '1.0.0',
+      uptime: process.uptime()
+    });
+  });
+  log.info('✅ Health check endpoint registered at /health');
+
   // Register location routes (needed for country pricing)
   registerLocationRoutes(app);
   log.info('✅ Location routes registered');

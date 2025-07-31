@@ -47,7 +47,8 @@ build:
       - echo "Production dependencies ready - v2 with critical fixes"
 
 run:
-  command: node dist/index.js
+  # Temporarily use minimal test to isolate startup issues
+  command: cd /app/apps/api && ls -la dist/ && node dist/test-minimal.js
   network:
     port: 8080
     env: PORT

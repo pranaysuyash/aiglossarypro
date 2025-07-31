@@ -55,8 +55,8 @@ build:
       - echo "Production dependencies installed successfully"
 
 run:
-  # Debug: Check working directory and files
-  command: pwd && ls -la && ls -la dist/ && node --version && node dist/test-minimal.js
+  # Direct node execution - App Runner doesn't support complex shell commands
+  command: node dist/test-minimal.js
   network:
     port: 8080
     env: PORT

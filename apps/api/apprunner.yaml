@@ -56,7 +56,8 @@ run:
       value: production
     - name: PORT
       value: "8080"
-    - name: FIREBASE_PROJECT_ID
-      value: "aiglossary-a7199"
-    - name: FIREBASE_CLIENT_EMAIL
-      value: "firebase-adminsdk-syzds@aiglossary-a7199.iam.gserviceaccount.com"
+    # Firebase auth disabled - missing private key
+    # - name: FIREBASE_PROJECT_ID
+    #   value: "aiglossary-a7199"
+    # - name: FIREBASE_CLIENT_EMAIL
+    #   value: "firebase-adminsdk-syzds@aiglossary-a7199.iam.gserviceaccount.com"

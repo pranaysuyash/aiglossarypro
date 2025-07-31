@@ -44,7 +44,7 @@ build:
       - head -20 dist/index.js || echo "Cannot read dist/index.js"
       
     post-build:
-      - echo "Production dependencies ready"
+      - echo "Production dependencies ready - v2 with critical fixes"
 
 run:
   command: node dist/index.js

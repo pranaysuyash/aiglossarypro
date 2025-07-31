@@ -45,6 +45,12 @@ build:
       
     post-build:
       - echo "Production dependencies ready - v2 with critical fixes"
+      # CRITICAL: Ensure runtime has node_modules
+      - echo "Checking node_modules in API directory..."
+      - ls -la node_modules | head -10 || echo "No node_modules found"
+      # Install production dependencies for runtime
+      - pnpm install --prod --frozen-lockfile
+      - echo "Production dependencies installed for runtime"
 
 run:
   # Debug: Check working directory and files

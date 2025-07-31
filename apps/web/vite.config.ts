@@ -222,9 +222,9 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'https://hkntj2murq.us-east-1.awsapprunner.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
     // Enhanced development server configuration

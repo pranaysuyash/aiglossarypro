@@ -50,7 +50,7 @@ build:
       - rm -rf node_modules
       # Use full pnpm install (not --prod) to ensure all deps are available
       - pnpm install --frozen-lockfile --prefer-offline
-      - echo "Node modules count: $(ls node_modules | wc -l)"
+      - echo "Checking node_modules installation..."
       - ls -la node_modules | head -10
       - echo "Production dependencies installed successfully"
 

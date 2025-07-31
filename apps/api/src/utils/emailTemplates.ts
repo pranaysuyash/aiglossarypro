@@ -365,8 +365,6 @@ export function getSystemNotificationTemplate(
   actionUrl?: string,
   actionText?: string
 ): EmailTemplate {
-  const _frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-
   return {
     subject: `AI Glossary Pro: ${title}`,
     html: `

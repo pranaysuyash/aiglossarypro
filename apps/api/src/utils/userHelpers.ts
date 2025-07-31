@@ -65,7 +65,7 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
       (user.last_login_at &&
       (typeof user.last_login_at === 'string' || user.last_login_at instanceof Date)
         ? user.last_login_at
-        : undefined) as string | Date | undefined,
+        : undefined),
     termsViewed:
       (user.termsViewed as number | undefined) || (user.terms_viewed as number | undefined) || 0,
     favoriteTerms:

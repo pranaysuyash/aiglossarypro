@@ -180,13 +180,13 @@ export const captureDatabaseError = (
 
 // Performance monitoring with enhanced metrics
 export const startTransaction = (name: string, operation: string) => {
-  return Sentry.startTransaction({
+  return Sentry.startSpan({
     name,
     op: operation,
-    tags: {
-      environment: process.env.NODE_ENV || 'development',
-      service: 'ai-glossary-pro',
-    },
+  }, (span) => {
+    span.setTag('environment', process.env.NODE_ENV || 'development');
+    span.setTag('service', 'ai-glossary-pro');
+    return span;
   });
 };
 
@@ -204,12 +204,10 @@ export const monitorAPIPerformance = (
     {
       name,
       op: 'api.request',
-      tags: {
-        endpoint: context?.endpoint,
-        method: context?.method,
-      },
     },
     async (span) => {
+      if (context?.endpoint) span.setTag('endpoint', context.endpoint);
+      if (context?.method) span.setTag('method', context.method);
       const startTime = Date.now();
 
       try {

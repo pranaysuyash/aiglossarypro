@@ -19,7 +19,7 @@ interface IndexRecommendation {
 }
 
 interface QueryCacheEntry {
-    result: Response;
+    result: any;
     timestamp: number;
     ttl: number;
     queryHash: string;
@@ -221,7 +221,7 @@ class QueryOptimizer {
 
         if (pattern) {
             // Invalidate by query pattern
-            for (const [key, entry] of this.queryCache.entries()) {
+            for (const [key] of this.queryCache.entries()) {
                 if (key.includes(pattern)) {
                     this.queryCache.delete(key);
                     invalidated++;
@@ -303,7 +303,7 @@ class QueryOptimizer {
     /**
      * Set result in cache
      */
-    private setCache(queryHash: string, result: Response, ttl: number): void {
+    private setCache(queryHash: string, result: any, ttl: number): void {
         // Prevent cache from growing too large
         if (this.queryCache.size >= this.maxCacheSize) {
             this.evictOldestCacheEntries();
@@ -403,7 +403,7 @@ class QueryOptimizer {
                 const [table, column] = key.split('.');
                 return { table, column, frequency };
             }),
-            joinColumns: Array.from(joinColumns.entries()).map(([key, frequency]) => {
+            joinColumns: Array.from(joinColumns.entries()).map(([, frequency]) => {
                 // Simplified parsing - in real implementation, use proper SQL parser
                 return { table: 'unknown', columns: ['unknown'], frequency };
             }),

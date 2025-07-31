@@ -10,14 +10,7 @@ if (!existsSync(logsDir)) {
   mkdirSync(logsDir, { recursive: true });
 }
 
-// Log levels with priorities
-const logLevels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
-};
+// Log levels with priorities are handled by winston defaults
 
 // Colors for console output
 const logColors = {

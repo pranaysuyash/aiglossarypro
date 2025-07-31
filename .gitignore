@@ -247,3 +247,7 @@ app-runner-*.json
 source-config.json
 app-runner-config.json
 app-runner-deploy.json
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

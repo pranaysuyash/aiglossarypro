@@ -4,8 +4,7 @@
  */
 
 import { createHash } from 'crypto';
-import { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 interface CacheOptions {
     ttl?: number; // Time to live in seconds
@@ -318,7 +317,6 @@ class APIOptimizer {
         newestEntry: number;
     } {
         const entries = Array.from(this.cacheStore.values());
-        const now = Date.now();
 
         if (entries.length === 0) {
             return {
@@ -363,7 +361,7 @@ class APIOptimizer {
         // Remove oldest 25% of entries
         const toRemove = Math.floor(entries.length * 0.25);
         for (let i = 0; i < toRemove; i++) {
-            this.cache.delete(entries[i][0]);
+            this.cacheStore.delete(entries[i][0]);
         }
 
         console.log(`🗑️ Evicted ${toRemove} oldest cache entries`);

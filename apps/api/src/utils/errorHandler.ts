@@ -134,7 +134,8 @@ export function handleDatabaseError(error: Error | unknown): {
   details?: string;
 } {
   // PostgreSQL error codes
-  if (error.code === '23505') {
+  const dbError = error as any;
+  if (dbError.code === '23505') {
     // unique_violation
     return {
       code: ErrorCode.DUPLICATE_ENTRY,
@@ -143,7 +144,7 @@ export function handleDatabaseError(error: Error | unknown): {
     };
   }
 
-  if (error.code === '23503') {
+  if (dbError.code === '23503') {
     // foreign_key_violation
     return {
       code: ErrorCode.CONSTRAINT_VIOLATION,
@@ -152,7 +153,7 @@ export function handleDatabaseError(error: Error | unknown): {
     };
   }
 
-  if (error.code === '23514') {
+  if (dbError.code === '23514') {
     // check_violation
     return {
       code: ErrorCode.CONSTRAINT_VIOLATION,
@@ -161,7 +162,7 @@ export function handleDatabaseError(error: Error | unknown): {
     };
   }
 
-  if (error.code === '42P01') {
+  if (dbError.code === '42P01') {
     // undefined_table
     return {
       code: ErrorCode.DATABASE_ERROR,
@@ -174,7 +175,7 @@ export function handleDatabaseError(error: Error | unknown): {
   return {
     code: ErrorCode.DATABASE_ERROR,
     message: 'Database operation failed',
-    details: error.message || 'Unknown database error',
+    details: (error instanceof Error ? error.message : undefined) || 'Unknown database error',
   };
 }
 
@@ -226,7 +227,11 @@ export function createDetailedErrorResponse(
   const baseResponse = createErrorResponse(ErrorCode.INTERNAL_ERROR, message);
 
   if (isDevelopment) {
-    baseResponse.details = error.stack || error.message || String(error);
+    if (error instanceof Error) {
+      baseResponse.details = error.stack || error.message;
+    } else {
+      baseResponse.details = String(error);
+    }
   }
 
   return baseResponse;

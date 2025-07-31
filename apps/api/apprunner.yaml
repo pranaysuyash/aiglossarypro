@@ -49,7 +49,7 @@ build:
       - echo "Setting up production dependencies..."
       - rm -rf node_modules
       # Use full pnpm install (not --prod) to ensure all deps are available
-      - pnpm install --frozen-lockfile --prefer-offline
+      - pnpm install --no-frozen-lockfile
       - echo "Checking node_modules installation..."
       - ls -la node_modules | head -10
       - echo "Production dependencies installed successfully"

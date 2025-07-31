@@ -1,0 +1,64 @@
+version: 1.0
+runtime: nodejs18
+
+build:
+  commands:
+    pre-build:
+      # Install pnpm globally
+      - npm install -g pnpm@latest
+      - corepack enable
+      - corepack prepare pnpm@latest --activate
+      
+      # Debug environment
+      - echo "Node version:" && node --version
+      - echo "npm version:" && npm --version
+      - echo "pnpm version:" && pnpm --version
+      - echo "Current directory:" && pwd
+      - echo "Directory contents:" && ls -la
+      
+    build:
+      # Navigate to API directory
+      - cd apps/api
+      
+      # Install dependencies with pnpm workspaces
+      - echo "Installing dependencies..."
+      - pnpm install --frozen-lockfile
+      
+      # Use CommonJS configuration for deployment
+      - echo "Switching to CommonJS configuration..."
+      - cp package.deploy.json package.json
+      
+      # Build workspace packages in correct order
+      - echo "Building workspace packages..."
+      - cd ../.. 
+      - pnpm --filter @aiglossarypro/shared run build
+      - pnpm --filter @aiglossarypro/database run build
+      - pnpm --filter @aiglossarypro/auth run build
+      - pnpm --filter @aiglossarypro/config run build
+      
+      # Build API with esbuild
+      - echo "Building API..."
+      - cd apps/api
+      - pnpm run build
+      
+      # Verify build output
+      - echo "Verifying build..."
+      - ls -la dist/
+      - test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
+      
+    post-build:
+      - echo "Build completed successfully!"
+      - echo "Node modules size:" && du -sh node_modules || echo "No node_modules"
+      - echo "Dist size:" && du -sh dist || echo "No dist"
+
+run:
+  runtime-version: 18.20.5
+  command: cd apps/api && node dist/index.js
+  network:
+    port: 8080
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: production
+    - name: PORT
+      value: "8080"

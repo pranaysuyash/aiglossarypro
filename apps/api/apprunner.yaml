@@ -56,7 +56,7 @@ build:
 
 run:
   # Direct node execution - App Runner doesn't support complex shell commands
-  command: node dist/test-minimal.js
+  command: node dist/index.js
   network:
     port: 8080
     env: PORT
@@ -65,13 +65,13 @@ run:
       value: production
     - name: PORT
       value: "8080"
-    # Critical environment variables to prevent crash
+    # Production environment variables
     - name: DATABASE_URL
-      value: "postgresql://localhost:5432/aiglossary"
+      value: "postgresql://neondb_owner:npg_9dlJKInqoT1w@ep-wandering-morning-a5u0szvw.us-east-2.aws.neon.tech/neondb?sslmode=require"
     - name: SESSION_SECRET
-      value: "temporary-secret-replace-in-production"
+      value: "JCmY1YTJ2lXuEKhHgKZURZfub9S7WNQgy5Om2NFDdWu3dg0CtqB7wQGyXHzQG2sqDVAkGE9H9ual6uc1cVn8LA=="
     - name: JWT_SECRET
-      value: "temporary-jwt-secret-replace-in-production"
+      value: "JCmY1YTJ2lXuEKhHgKZURZfub9S7WNQgy5Om2NFDdWu3dg0CtqB7wQGyXHzQG2sqDVAkGE9H9ual6uc1cVn8LA=="
     # Enable simple auth as fallback
     - name: SIMPLE_AUTH_ENABLED
       value: "true"

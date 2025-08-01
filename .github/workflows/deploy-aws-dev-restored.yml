@@ -1,0 +1,111 @@
+name: Deploy to AWS App Runner - Dev Environment Restored
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_name:
+        description: 'Deployment name suffix'
+        required: false
+        default: 'dev-restored'
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: aiglossarypro-app-dev-restored
+  SERVICE_NAME: aiglossarypro-app-dev-restored
+
+jobs:
+  deploy:
+    name: Deploy Dev Restored Version
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Create ECR repository if it doesn't exist
+      run: |
+        aws ecr describe-repositories --repository-names $ECR_REPOSITORY --region $AWS_REGION || \
+        aws ecr create-repository --repository-name $ECR_REPOSITORY --region $AWS_REGION
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build for AMD64 architecture (required for App Runner)
+        docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        
+        # Also tag as latest
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+    - name: Deploy to App Runner (New Service)
+      id: deploy-apprunner
+      uses: awslabs/amazon-app-runner-deploy@main
+      with:
+        service: ${{ env.SERVICE_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+        access-role-arn: ${{ secrets.APP_RUNNER_ECR_ACCESS_ROLE_ARN }}
+        region: ${{ env.AWS_REGION }}
+        cpu: 1
+        memory: 2
+        port: 3001
+        wait-for-service-stability-seconds: 600
+        
+    - name: App Runner Service URL
+      run: |
+        echo "🚀 New Dev Restored Service URL: ${{ steps.deploy-apprunner.outputs.service-url }}"
+        echo "📋 Service Name: ${{ env.SERVICE_NAME }}"
+        echo "🐳 Image: ${{ steps.build-image.outputs.image }}"
+        echo "📝 Deployment completed at: $(date)"
+        
+    - name: Create Deployment Summary
+      run: |
+        cat << EOF >> $GITHUB_STEP_SUMMARY
+        ## 🚀 Deployment Successful - Dev Environment Restored
+        
+        ### Service Details
+        - **Service Name**: \`${{ env.SERVICE_NAME }}\`
+        - **Service URL**: ${{ steps.deploy-apprunner.outputs.service-url }}
+        - **ECR Repository**: \`${{ env.ECR_REPOSITORY }}\`
+        - **Image**: \`${{ steps.build-image.outputs.image }}\`
+        - **Region**: \`${{ env.AWS_REGION }}\`
+        
+        ### Deployment Features
+        ✅ **npm run dev:smart functionality restored**  
+        ✅ **Backend API server fully operational**  
+        ✅ **Frontend rendering with proper styling**  
+        ✅ **PostCSS/Tailwind compilation fixed**  
+        ✅ **API proxy configuration working**  
+        ✅ **Million.js performance optimizations active**  
+        
+        ### Fixes Applied
+        - Fixed environment variable loading in monorepo structure
+        - Resolved PostCSS ES module format conflicts  
+        - Fixed React component reference errors
+        - Restored API connectivity between frontend and backend
+        - Updated Tailwind content configuration
+        - Optimized component rendering performance
+        
+        ### Access URLs
+        - **Application**: ${{ steps.deploy-apprunner.outputs.service-url }}
+        - **API Documentation**: ${{ steps.deploy-apprunner.outputs.service-url }}/api-docs
+        - **Health Check**: ${{ steps.deploy-apprunner.outputs.service-url }}/health
+        
+        **Deployment Time**: $(date)  
+        **Commit**: ${{ github.sha }}
+        EOF

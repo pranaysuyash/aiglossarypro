@@ -65,6 +65,27 @@ jobs:
         memory: 2
         port: 3001
         wait-for-service-stability-seconds: 600
+        environment-variables: |
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          NODE_ENV=production
+          PORT=3001
+          BASE_URL=https://ezbi7c5ji4.us-east-1.awsapprunner.com
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY_BASE64=${{ secrets.FIREBASE_PRIVATE_KEY_BASE64 }}
+          GUMROAD_APPLICATION_ID=${{ secrets.GUMROAD_APPLICATION_ID }}
+          GUMROAD_APPLICATION_SECRET=${{ secrets.GUMROAD_APPLICATION_SECRET }}
+          GUMROAD_ACCESS_TOKEN=${{ secrets.GUMROAD_ACCESS_TOKEN }}
+          EMAIL_ENABLED=true
+          EMAIL_SERVICE=resend
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_HOST=https://app.posthog.com
+          UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
         
     - name: App Runner Service URL
       run: |

@@ -64,13 +64,31 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(__dirname, '..', 'dist', 'public');
+  // Look for frontend build in the monorepo structure
+  const possiblePaths = [
+    path.resolve(__dirname, '..', '..', 'dist', 'public'), // Monorepo: ../../dist/public
+    path.resolve(__dirname, '..', 'dist', 'public'),       // Standalone: ../dist/public
+    path.resolve(process.cwd(), 'dist', 'public'),         // From working directory
+  ];
 
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
+  let distPath: string | null = null;
+  for (const possiblePath of possiblePaths) {
+    if (fs.existsSync(possiblePath)) {
+      distPath = possiblePath;
+      break;
+    }
   }
+
+  if (!distPath) {
+    logger.warn('⚠️ No frontend build found, serving API only', { 
+      searchedPaths: possiblePaths,
+      workingDirectory: process.cwd(),
+      dirname: __dirname
+    });
+    return; // Don't throw error, just serve API only
+  }
+
+  logger.info('✅ Serving static files from:', { path: distPath });
 
   app.use(express.static(distPath));
 

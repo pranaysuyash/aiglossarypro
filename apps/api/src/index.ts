@@ -1,29 +1,29 @@
 import { log } from './utils/logger';
 
-log.info('FIREBASE_PROJECT_ID:', { value: process.env.FIREBASE_PROJECT_ID });
-log.info('FIREBASE_CLIENT_EMAIL:', { value: process.env.FIREBASE_CLIENT_EMAIL });
-log.info(
-  'FIREBASE_PRIVATE_KEY_BASE64:',
-  { value: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set' }
-);
+// Only log Firebase config in development
+if (process.env.NODE_ENV !== 'production') {
+  log.info('🔍 Development - Firebase Environment Check:');
+  log.info('- FIREBASE_PROJECT_ID:', { status: process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing' });
+  log.info(
+    '- FIREBASE_CLIENT_EMAIL:',
+    { status: process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing' }
+  );
+  log.info(
+    '- FIREBASE_PRIVATE_KEY_BASE64:',
+    { status: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing' }
+  );
+}
 
-// Debug: Check Firebase environment variables at server startup
-log.info('🔍 Server Startup - Firebase Environment Check:');
-log.info('- FIREBASE_PROJECT_ID:', { status: process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing' });
-log.info(
-  '- FIREBASE_CLIENT_EMAIL:',
-  { status: process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing' }
-);
-log.info(
-  '- FIREBASE_PRIVATE_KEY_BASE64:',
-  { status: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing' }
-);
 const firebaseEnabled = !!(
   process.env.FIREBASE_PROJECT_ID &&
   process.env.FIREBASE_CLIENT_EMAIL &&
   (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64)
 );
-log.info('- Firebase Auth Enabled:', { enabled: firebaseEnabled ? '✅ TRUE' : '❌ FALSE' });
+
+// Only log status in development
+if (process.env.NODE_ENV !== 'production') {
+  log.info('- Firebase Auth Enabled:', { enabled: firebaseEnabled ? '✅ TRUE' : '❌ FALSE' });
+}
 
 // Initialize error monitoring first
 import {
@@ -244,11 +244,10 @@ app.use(cdnCacheMiddleware);
       serveStatic(app);
       log.info('✅ Static file serving setup complete');
     } catch (error) {
-      log.error('❌ Error setting up static file serving', {
+      log.warn('⚠️ Static file serving setup failed, continuing with API only', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
       });
-      process.exit(1);
+      // Don't exit - API can still work without frontend
     }
   }
 

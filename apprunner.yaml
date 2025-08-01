@@ -4,9 +4,11 @@ build:
   commands:
     pre-build:
       - npm install -g pnpm
+      - corepack enable
+      - echo "Node version:" && node --version
+      - echo "pnpm version:" && pnpm --version
     build:
-      - export PATH=$PATH:$(npm config get prefix)/bin
-      - cd ../.. && pnpm install --no-frozen-lockfile
+      - pnpm install --frozen-lockfile
       - SKIP_TYPE_CHECK=true NODE_ENV=production pnpm run build
 run:
   command: NODE_ENV=production node dist/index.js

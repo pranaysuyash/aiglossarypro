@@ -1,8 +1,8 @@
 // Re-export shared types for backward compatibility
-export * from '../../../shared/types';
+export * from '@aiglossarypro/shared/types';
 
 // Client-specific enhanced interfaces that extend the shared types
-import type { ICategory, ISubcategory, ITerm, UserPreferences } from '../../../shared/types';
+import type { ICategory, ISubcategory, ITerm, UserPreferences } from '@aiglossarypro/shared/types';
 
 // Enhanced term interface for the new data structure
 export interface IEnhancedTerm extends ITerm {

@@ -1,8 +1,4 @@
-console.log('🚀 [DEBUG] Server index.ts loaded - very first line');
-
 import { log } from './utils/logger';
-
-console.log('🚀 [DEBUG] Server index.ts started - after imports');
 
 log.info('FIREBASE_PROJECT_ID:', { value: process.env.FIREBASE_PROJECT_ID });
 log.info('FIREBASE_CLIENT_EMAIL:', { value: process.env.FIREBASE_CLIENT_EMAIL });
@@ -128,12 +124,9 @@ app.use(cdnCacheMiddleware);
 // Commented out to prevent duplicate logging - loggingMiddleware already handles this
 // app.use(responseLoggingMiddleware);
 
-console.log('🚀 [DEBUG] About to enter async IIFE');
 (async () => {
-  console.log('🚀 [DEBUG] Inside async IIFE');
   // Load and validate configuration
   logConfigStatus();
-  console.log('🚀 [DEBUG] Config logged');
 
   // Setup authentication based on configuration priority
   try {

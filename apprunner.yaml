@@ -4,8 +4,8 @@ build:
   commands:
     pre-build:
       - npm install -g pnpm
-      - export PATH=$PATH:$(npm config get prefix)/bin
     build:
+      - export PATH=$PATH:$(npm config get prefix)/bin
       - cd ../.. && pnpm install --no-frozen-lockfile
       - SKIP_TYPE_CHECK=true NODE_ENV=production pnpm run build
 run:

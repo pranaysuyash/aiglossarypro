@@ -118,7 +118,7 @@ export class GumroadService {
       };
 
       // Try to find existing user by email
-      const { users } = await import('../../shared/schema');
+      const { users } = await import('@aiglossarypro/shared/schema');
       const [existingUser] = await db
         .select()
         .from(users)
@@ -206,7 +206,7 @@ export class GumroadService {
 
       // Update user's subscription status if they have an account
       if (purchase.userId) {
-        const { users } = await import('../../shared/schema');
+        const { users } = await import('@aiglossarypro/shared/schema');
         await db
           .update(users)
           .set({

@@ -3,12 +3,14 @@ import type { Config } from 'tailwindcss';
 export default {
   darkMode: ['class'],
   content: [
-    './client/index.html',
-    './client/src/**/*.{js,jsx,ts,tsx}',
+    './apps/web/index.html',
+    './apps/web/src/**/*.{js,jsx,ts,tsx}',
+    './apps/web/src/**/*.html',
+    './packages/**/*.{js,jsx,ts,tsx}',
     // Exclude test and story files from CSS scanning
-    '!./client/src/**/*.{test,spec,stories}.{js,jsx,ts,tsx}',
-    '!./client/src/**/__tests__/**/*',
-    '!./client/src/**/*.d.ts',
+    '!./apps/web/src/**/*.{test,spec,stories}.{js,jsx,ts,tsx}',
+    '!./apps/web/src/**/__tests__/**/*',
+    '!./apps/web/src/**/*.d.ts',
   ],
   theme: {
     // Reduce breakpoints - remove rarely used ones

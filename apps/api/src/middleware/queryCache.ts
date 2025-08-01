@@ -310,7 +310,7 @@ export const CacheInvalidation = {
 export const CacheWarming = {
   async warmPopularTerms() {
     const { db } = await import('../db');
-    const { terms, categories } = await import('../../shared/schema');
+    const { terms, categories } = await import('@aiglossarypro/shared/schema');
     const { desc, eq } = await import('drizzle-orm');
 
     logger.info('🔥 Warming popular terms cache...');
@@ -338,7 +338,7 @@ export const CacheWarming = {
 
   async warmCategoryTree() {
     const { db } = await import('../db');
-    const { categories, terms } = await import('../../shared/schema');
+    const { categories, terms } = await import('@aiglossarypro/shared/schema');
     const { eq, sql } = await import('drizzle-orm');
 
     logger.info('🔥 Warming category tree cache...');
@@ -373,7 +373,7 @@ export const CacheWarming = {
 
   async warmFrequentTermQueries() {
     const { db } = await import('../db');
-    const { terms, categories } = await import('../../shared/schema');
+    const { terms, categories } = await import('@aiglossarypro/shared/schema');
     const { desc, eq, sql } = await import('drizzle-orm');
 
     logger.info('🔥 Warming frequent term queries...');

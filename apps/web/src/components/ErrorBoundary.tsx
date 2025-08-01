@@ -1,6 +1,6 @@
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { createReactError, errorManager, type EnhancedError } from '../../../shared/errorManager';
+import { createReactError, errorManager, type EnhancedError } from '@aiglossarypro/shared';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 

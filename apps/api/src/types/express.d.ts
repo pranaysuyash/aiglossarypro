@@ -9,7 +9,10 @@ declare global {
       lastName: string | null;
       profileImageUrl: string | null;
       isAdmin: boolean | null;
-      claims?: any;
+      claims: {
+        sub: string;
+        [key: string]: any;
+      };
       access_token?: string;
       expires_at?: number;
       provider?: 'google' | 'github';
@@ -19,6 +22,10 @@ declare global {
       user?: User;
       firebaseUser?: User;
       requestId: string;
+      userId?: string;
+      startTime?: number;
+      userIp?: string;
+      sessionId?: string;
       isAuthenticated?: () => boolean;
     }
   }

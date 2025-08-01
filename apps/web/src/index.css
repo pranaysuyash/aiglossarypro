@@ -7,11 +7,17 @@
 
 /* Search highlighting styles */
 .search-highlighted mark {
-  @apply bg-yellow-100 text-yellow-900 px-0.5 rounded-sm font-medium;
+  background-color: rgb(254 249 195);
+  color: rgb(113 63 18);
+  padding-left: 0.125rem;
+  padding-right: 0.125rem;
+  border-radius: 0.125rem;
+  font-weight: 500;
 }
 
 .dark .search-highlighted mark {
-  @apply bg-yellow-600 text-yellow-100;
+  background-color: rgb(202 138 4);
+  color: rgb(254 249 195);
 }
 
 :root {
@@ -63,32 +69,44 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   /* Consolidated focus styles for all interactive elements */
   *:focus-visible {
-    @apply outline-none ring-2 ring-blue-600 ring-offset-2 ring-offset-background;
+    outline: none;
+    --tw-ring-offset-shadow: 0 0 0 2px hsl(var(--background));
+    --tw-ring-shadow: 0 0 0 calc(2px + 2px) rgb(37 99 235);
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), 0 0 #0000;
   }
 
   /* Dark mode focus */
   .dark *:focus-visible {
-    @apply ring-blue-400;
+    --tw-ring-shadow: 0 0 0 calc(2px + 2px) rgb(96 165 250);
   }
 
   /* High contrast mode */
   .high-contrast *:focus-visible {
-    @apply ring-4 ring-yellow-400 ring-offset-4;
+    --tw-ring-offset-shadow: 0 0 0 4px hsl(var(--background));
+    --tw-ring-shadow: 0 0 0 calc(4px + 4px) rgb(250 204 21);
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), 0 0 #0000;
   }
 }
 
 /* Utility classes */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
 }
 
 /* Custom scrollbar */
@@ -101,11 +119,12 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-primary/30 rounded;
+  background-color: hsl(var(--primary) / 0.3);
+  border-radius: 0.25rem;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/50;
+  background-color: hsl(var(--primary) / 0.5);
 }
 
 /* Mobile-specific utilities */
@@ -129,11 +148,19 @@
 
 /* Skip link styles */
 .skip-link {
-  @apply absolute -top-10 left-1.5 bg-primary text-primary-foreground p-2 z-[1000] no-underline rounded;
+  position: absolute;
+  top: -2.5rem;
+  left: 0.375rem;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 0.5rem;
+  z-index: 1000;
+  text-decoration: none;
+  border-radius: 0.25rem;
 }
 
 .skip-link:focus {
-  @apply top-1.5;
+  top: 0.375rem;
 }
 
 /* Performance optimizations */

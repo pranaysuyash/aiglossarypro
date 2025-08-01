@@ -24,7 +24,7 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true as true,
   };
 
-  const viteServer = await (vite as any).createServer({
+  const viteServer = await vite.createServer({
     configFile: false,
     root: path.resolve(__dirname, '../client'),
     resolve: {

@@ -83,7 +83,7 @@ class APIOptimizer {
 
             // Override res.json to cache the response
             const originalJson = res.json.bind(res);
-            res.json = (data: Response) => {
+            res.json = (data: any) => {
                 // Only cache successful responses
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     this.setCache(cacheKey, data, ttl, tags, compress);
@@ -111,7 +111,7 @@ class APIOptimizer {
 
             // Override res.end to capture response time
             const originalEnd = res.end.bind(res);
-            res.end = (...args: Response[]) => {
+            res.end = (...args: any[]) => {
                 const responseTime = Date.now() - startTime;
 
                 this.trackResponseTime({
@@ -144,7 +144,7 @@ class APIOptimizer {
 
             if (acceptsGzip) {
                 const originalJson = res.json.bind(res);
-                res.json = (data: Response) => {
+                res.json = (data: any) => {
                     const jsonString = JSON.stringify(data);
 
                     // Only compress responses larger than 1KB

@@ -1,4 +1,5 @@
-import type { Express, Request, Response } from 'express';
+/// <reference path="./types/express.d.ts" />
+import type { Express, Request } from 'express';
 import { aiService } from './aiService';
 import { multiAuthMiddleware } from './middleware/multiAuth';
 import { optimizedStorage as storage } from './optimizedStorage';
@@ -10,7 +11,7 @@ export function registerAIRoutes(app: Express): void {
   app.post('/api/ai/generate-definition', multiAuthMiddleware, async (req: Request, res) => {
     try {
       const { term, category, context } = req.body;
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
 
       if (!term || typeof term !== 'string') {
         return res.status(400).json({
@@ -184,7 +185,7 @@ export function registerAIRoutes(app: Express): void {
       const { improvements } = req.body;
 
       // Only allow admin to apply improvements
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {
@@ -231,7 +232,7 @@ export function registerAIRoutes(app: Express): void {
   // Submit feedback for AI-generated content
   app.post('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const { termId, sectionName, feedbackType, rating, comment } = req.body;
 
       if (!termId || !feedbackType) {
@@ -243,7 +244,7 @@ export function registerAIRoutes(app: Express): void {
 
       // Import db and schema
       const { db } = await import('./db');
-      const { aiContentFeedback } = await import('../shared/enhancedSchema');
+      const { aiContentFeedback } = await import('@aiglossarypro/shared/enhancedSchema');
 
       // Insert feedback into database
       const [feedback] = await db
@@ -275,7 +276,7 @@ export function registerAIRoutes(app: Express): void {
   // Get feedback list (admin only)
   app.get('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {
@@ -289,12 +290,12 @@ export function registerAIRoutes(app: Express): void {
 
       // Import db and schema
       const { db } = await import('./db');
-      const { aiContentFeedback, enhancedTerms, users } = await import('../shared/enhancedSchema');
+      const { aiContentFeedback, enhancedTerms, users } = await import('@aiglossarypro/shared/enhancedSchema');
       const { eq, desc, and } = await import('drizzle-orm');
 
       // Build query conditions
       const conditions = [];
-      if (status !== 'all') {
+      if (status !== 'all' && typeof status === 'string') {
         conditions.push(eq(aiContentFeedback.status, status));
       }
 
@@ -338,7 +339,7 @@ export function registerAIRoutes(app: Express): void {
   // Update feedback status (admin only)
   app.put('/api/ai/feedback/:id', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {
@@ -360,7 +361,7 @@ export function registerAIRoutes(app: Express): void {
 
       // Import db and schema
       const { db } = await import('./db');
-      const { aiContentFeedback } = await import('../shared/enhancedSchema');
+      const { aiContentFeedback } = await import('@aiglossarypro/shared/enhancedSchema');
       const { eq } = await import('drizzle-orm');
 
       // Update feedback status
@@ -402,7 +403,7 @@ export function registerAIRoutes(app: Express): void {
   // Get content verification status (admin only)
   app.get('/api/ai/verification', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {
@@ -414,7 +415,7 @@ export function registerAIRoutes(app: Express): void {
 
       // Import db and schema
       const { db } = await import('./db');
-      const { aiContentVerification, enhancedTerms } = await import('../shared/enhancedSchema');
+      const { aiContentVerification, enhancedTerms } = await import('@aiglossarypro/shared/enhancedSchema');
       const { eq, count, sql } = await import('drizzle-orm');
 
       // Get verification statistics
@@ -462,7 +463,7 @@ export function registerAIRoutes(app: Express): void {
   // Update content verification (admin only)
   app.put('/api/ai/verification/:id', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {
@@ -477,7 +478,7 @@ export function registerAIRoutes(app: Express): void {
 
       // Import db and schema
       const { db } = await import('./db');
-      const { aiContentVerification } = await import('../shared/enhancedSchema');
+      const { aiContentVerification } = await import('@aiglossarypro/shared/enhancedSchema');
       const { eq } = await import('drizzle-orm');
 
       // Update verification status
@@ -522,7 +523,7 @@ export function registerAIRoutes(app: Express): void {
   // Get AI usage analytics (admin only)
   app.get('/api/ai/analytics', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {
@@ -539,7 +540,7 @@ export function registerAIRoutes(app: Express): void {
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
       const { db } = await import('./db');
-      const { aiUsageAnalytics } = await import('../shared/enhancedSchema');
+      const { aiUsageAnalytics } = await import('@aiglossarypro/shared/enhancedSchema');
       const { sql, gte, eq, and, desc } = await import('drizzle-orm');
 
       // Base query conditions
@@ -653,7 +654,7 @@ export function registerAIRoutes(app: Express): void {
   // Get AI service health and status
   app.get('/api/ai/status', multiAuthMiddleware, async (req: Request, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId);
 
       if (!isAdmin) {

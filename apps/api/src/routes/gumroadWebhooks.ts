@@ -268,7 +268,7 @@ router.post('/cancellation', validateGumroadWebhook, async (req: Request, res: R
 
       // Update user's subscription status
       if (purchase.userId) {
-        const { users } = await import('../../shared/schema');
+        const { users } = await import('@aiglossarypro/shared/schema');
         await db
           .update(users)
           .set({

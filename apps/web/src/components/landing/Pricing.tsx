@@ -12,6 +12,8 @@ import { FreeTierBanner, TrustBadge } from '../TrustBuilding';
 import { FreeTierMessaging } from './FreeTierMessaging';
 import { PPPBanner } from './PPPBanner';
 import { PricingCountdown } from './PricingCountdown';
+import { getCurrentPhaseConfig, getGumroadUrlWithDiscount, formatPrice } from '@/config/pricing';
+import { usePricingPhase } from '@/services/pricingPhaseService';
 
 // Separate component for the comparison table to isolate DOM structure
 // Million.js optimization disabled for this component due to dynamic content
@@ -106,6 +108,8 @@ export function Pricing() {
   const pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();
   const { trackConversion } = useABTestTracking(currentVariant);
+  const { phaseData } = usePricingPhase();
+  const phaseConfig = getCurrentPhaseConfig();
 
   // PostHog experiment for pricing display variations
   const pricingExperiment = useExperiment('pricingDisplay', 'control');
@@ -282,41 +286,34 @@ export function Pricing() {
             </Card>
           )}
 
-          {/* Premium Tier - Launch Special */}
+          {/* Premium Tier - Phase-based pricing */}
           <div className="relative">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1 z-10">
-              🎉 Launch Special
+              🎉 {phaseConfig.name}
             </Badge>
             <Card className="border-2 border-purple-500 shadow-xl">
               <CardHeader className="bg-purple-50">
                 <CardTitle className="text-center">
-                  <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
+                  <div className="text-2xl font-bold text-purple-900">Premium Access</div>
                   <div className="flex items-center justify-center gap-2 mt-2">
                     <div className="text-3xl font-bold text-purple-900">
-                      $
-                      {pricing.launchPricing.isActive
-                        ? pricing.launchPricing.launchPrice
-                        : pricing.launchPricing.originalPrice}
+                      {formatPrice(phaseConfig.price)}
                     </div>
-                    {pricing.launchPricing.isActive && (
+                    {phaseConfig.discountPercentage > 0 && (
                       <div className="text-xl text-gray-500 line-through">
-                        ${pricing.launchPricing.originalPrice}
+                        {formatPrice(phaseConfig.originalPrice)}
                       </div>
                     )}
                   </div>
                   <div className="text-sm text-purple-600">
-                    {pricing.launchPricing.isActive ? (
+                    lifetime access • {phaseConfig.message}
+                    {phaseData && phaseConfig.slots !== Infinity && (
                       <>
-                        lifetime access • Save ${pricing.launchPricing.savingsAmount} - First 500
-                        Customers Only
                         <br />
                         <span className="font-bold text-green-600">
-                          {pricing.launchPricing.claimedSlots}/{pricing.launchPricing.totalSlots}{' '}
-                          claimed
+                          {phaseData.soldCount}/{phaseConfig.slots} claimed
                         </span>
                       </>
-                    ) : (
-                      'lifetime access'
                     )}
                   </div>
                 </CardTitle>
@@ -346,50 +343,56 @@ export function Pricing() {
                   <Button
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
                     onClick={() => {
-                      const currentPrice = pricing.launchPricing.isActive
-                        ? pricing.launchPricing.launchPrice
-                        : pricing.launchPricing.originalPrice;
-
-                      // Track analytics with launch pricing
-                      trackPurchaseIntent('launch_special_lifetime', currentPrice);
+                      // Track analytics with phase pricing
+                      trackPurchaseIntent(`${phaseConfig.name.toLowerCase()}_lifetime`, phaseConfig.price);
 
                       // Track A/B test conversion
-                      trackConversion('launch_special_cta_click', {
-                        value: currentPrice,
-                        button_text: `Get Launch Special - $${currentPrice}`,
+                      trackConversion('premium_cta_click', {
+                        value: phaseConfig.price,
+                        button_text: `Get ${phaseConfig.name} - ${formatPrice(phaseConfig.price)}`,
                         position: 'pricing_table',
-                        originalPrice: pricing.launchPricing.originalPrice,
-                        discount: pricing.launchPricing.savingsAmount,
-                        slotsRemaining:
-                          pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots,
+                        phase: phaseConfig.name,
+                        originalPrice: phaseConfig.originalPrice,
+                        discount: phaseConfig.discountPercentage,
+                        slotsRemaining: phaseData ? phaseConfig.slots - phaseData.soldCount : phaseConfig.slots,
                       });
 
                       // Track pricing experiment conversion
-                      pricingExperiment.trackConversion('premium_cta_click', currentPrice, {
+                      pricingExperiment.trackConversion('premium_cta_click', phaseConfig.price, {
                         pricing_variant: pricingExperiment.variant,
-                        price: currentPrice,
-                        discount_active: pricing.launchPricing.isActive,
+                        phase: phaseConfig.name,
+                        price: phaseConfig.price,
+                        discount_active: phaseConfig.discountPercentage > 0,
                       });
 
-                      // Open Gumroad with launch special discount
-                      const discountCode = pricing.launchPricing.isActive ? 'LAUNCH500' : '';
-                      const gumroadUrl = discountCode
-                        ? `https://pranaysuyash.gumroad.com/l/ggczfy/${discountCode}`
-                        : 'https://pranaysuyash.gumroad.com/l/ggczfy';
-
+                      // Open Gumroad with phase discount
+                      const gumroadUrl = getGumroadUrlWithDiscount();
                       window.open(gumroadUrl, '_blank');
                     }}
                   >
                     <span className="flex items-center justify-center gap-2">
                       <span>
-                        Get Launch Special - $
-                        {pricing.launchPricing.isActive
-                          ? pricing.launchPricing.launchPrice
-                          : pricing.launchPricing.originalPrice}
+                        Get {phaseConfig.name} - {formatPrice(phaseConfig.price)}
                       </span>
                       <ArrowRight className="w-4 h-4 flex-shrink-0" />
                     </span>
                   </Button>
+                  
+                  {/* Phase progress bar */}
+                  {phaseData && phaseConfig.slots !== Infinity && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>{phaseData.percentage}% claimed</span>
+                        <span>{phaseConfig.slots - phaseData.soldCount} spots left</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full transition-all"
+                          style={{ width: `${phaseData.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -416,16 +419,13 @@ export function Pricing() {
               </div>
               <div>
                 <div className="text-3xl font-bold text-purple-600 mb-2">
-                  $
-                  {pricing.launchPricing.isActive
-                    ? pricing.launchPricing.launchPrice
-                    : pricing.launchPricing.originalPrice}
+                  {formatPrice(phaseConfig.price)}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400">
-                  {pricing.launchPricing.isActive ? 'Premium launch special' : 'Premium full price'}
+                  Premium {phaseConfig.name.toLowerCase()}
                 </div>
                 <div className="text-sm text-purple-600 mt-1">
-                  {pricing.launchPricing.isActive ? 'First 500 customers' : 'Regular pricing'}
+                  {phaseConfig.message}
                 </div>
               </div>
               <div>
@@ -444,13 +444,11 @@ export function Pricing() {
               less than one year of competitors.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              * Launch special pricing limited to first 500 customers • No recurring fees • Lifetime
-              updates included
-              {pricing.launchPricing.isActive && (
+              * {phaseConfig.message} • No recurring fees • Lifetime updates included
+              {phaseData && phaseConfig.slots !== Infinity && (
                 <span className="font-semibold text-green-600">
                   {' '}
-                  • Only {pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots}{' '}
-                  spots remaining
+                  • Only {phaseConfig.slots - phaseData.soldCount} spots remaining
                 </span>
               )}
             </p>

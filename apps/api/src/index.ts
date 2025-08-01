@@ -1,3 +1,29 @@
+// Load environment variables first - must be before any other imports
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Try multiple locations for .env file in monorepo structure
+const envPaths = [
+  path.resolve(__dirname, '../../../.env'),  // From dist/ to project root
+  path.resolve(process.cwd(), '.env'),        // From current working directory
+  path.resolve(__dirname, '../../.env'),      // Alternative path
+];
+
+let envLoaded = false;
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    console.log(`📁 Loading environment from: ${envPath}`);
+    dotenv.config({ path: envPath });
+    envLoaded = true;
+    break;
+  }
+}
+
+if (!envLoaded) {
+  console.warn('⚠️  No .env file found, using process environment variables');
+}
+
 console.log('🚀 [DEBUG] Server index.ts loaded - very first line');
 
 import { log } from './utils/logger';
@@ -37,7 +63,10 @@ import {
   sentryTracingHandler,
 } from './utils/sentry';
 
-initSentry();
+// Only initialize Sentry in production to avoid native module issues
+if (process.env.NODE_ENV === 'production') {
+  initSentry();
+}
 
 import express from 'express';
 import expressWs from 'express-ws';
@@ -80,9 +109,13 @@ const wsInstance = expressWs(app);
 // Export app for testing
 export { app };
 
+log.info('Express app created successfully');
+
 // Sentry request handling (must be first)
-app.use(sentryRequestHandler());
-app.use(sentryTracingHandler());
+if (process.env.NODE_ENV === 'production') {
+  app.use(sentryRequestHandler());
+  app.use(sentryTracingHandler());
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -236,17 +269,8 @@ console.log('🚀 [DEBUG] About to enter async IIFE');
 
   // Setup Vite dev server in development (only if not using separate frontend server), static files in production
   if (serverConfig.nodeEnv === 'development' && !process.env.SEPARATE_FRONTEND_SERVER) {
-    log.info('🔧 Setting up Vite dev server for development...');
-    try {
-      await setupVite(app, server);
-      log.info('✅ Vite dev server setup complete');
-    } catch (error) {
-      log.error('❌ Error setting up Vite dev server', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      process.exit(1);
-    }
+    // Skip Vite setup in monorepo - frontend runs separately
+    log.info('🔧 Development mode: Backend serves API only, frontend runs on separate Vite server');
   } else if (serverConfig.nodeEnv === 'production') {
     log.info('📦 Setting up static file serving for production...');
     try {
@@ -259,17 +283,15 @@ console.log('🚀 [DEBUG] About to enter async IIFE');
       });
       process.exit(1);
     }
-  } else {
-    log.info(
-      '🔧 Development mode: Backend serves API only, frontend runs on separate Vite server'
-    );
   }
 
   // Add logging error handler
   app.use(loggingMiddleware.errorLogging);
 
   // Add Sentry error handler
-  app.use(sentryErrorHandler());
+  if (process.env.NODE_ENV === 'production') {
+    app.use(sentryErrorHandler());
+  }
 
   // Add 404 handler for unmatched routes
   app.use(notFoundHandler);
@@ -299,10 +321,21 @@ console.log('🚀 [DEBUG] About to enter async IIFE');
   // Start listening - use 0.0.0.0 in production for external access
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';
 
+  log.info(`Attempting to start server on ${host}:${port}...`);
+  
   server.listen(port, host, () => {
     log.info(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
     log.info(`🔍 Server address: ${JSON.stringify(server.address())}`);
     log.info(`🛡️  Error handling and monitoring enabled`);
+  });
+  
+  // Add error handlers to prevent crash
+  process.on('uncaughtException', (error) => {
+    log.error('Uncaught Exception:', error);
+  });
+  
+  process.on('unhandledRejection', (reason, promise) => {
+    log.error('Unhandled Rejection at:', promise, 'reason:', reason);
   });
 
   // Setup graceful shutdown

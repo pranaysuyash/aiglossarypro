@@ -188,7 +188,7 @@ async function main() {
   console.log('\n🔍 Checking for remaining critical issues...');
   
   const remainingPatterns = [
-    ': any(?!thing)', // any type annotations (not "anything")
+    ': any\\(\\?!thing\\)', // any type annotations (not "anything")
     'as any',
     '<any>',
     'Promise<unknown>',

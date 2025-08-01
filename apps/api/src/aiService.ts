@@ -208,7 +208,7 @@ class AIService {
     try {
       // Import db and schema at the top of the file if not already imported
 
-      const { aiUsageAnalytics } = await import('../shared/enhancedSchema');
+      const { aiUsageAnalytics } = await import('@aiglossarypro/shared/enhancedSchema');
 
       // Insert into database with correct field mapping
       await db.insert(aiUsageAnalytics).values({

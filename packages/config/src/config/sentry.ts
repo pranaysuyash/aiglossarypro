@@ -3,7 +3,6 @@
  */
 
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { httpIntegration, expressIntegration, consoleIntegration, localVariablesIntegration, startSpan } from '@sentry/node';
 import { log as logger } from '../utils/logger';
 
@@ -51,9 +50,6 @@ export function initializeSentry(): void {
 
       // Integrations
       integrations: [
-        // Node.js performance profiling
-        nodeProfilingIntegration(),
-
         // HTTP integration for Express
         httpIntegration(),
 

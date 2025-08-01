@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 interface CSVColumn {
   key: string;
@@ -53,8 +53,8 @@ export function escapeCSVValue(value: any): string {
  * Send CSV response with proper headers
  */
 export function sendCSVResponse(res: Response, data: string, filename: string): void {
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.set('Content-Type', 'text/csv');
+  res.set('Content-Disposition', `attachment; filename="${filename}"`);
   res.send(data);
 }
 

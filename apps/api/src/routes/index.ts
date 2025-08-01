@@ -61,6 +61,8 @@ import { setupSupportRoutes } from './support';
 // Import enhanced 295-column routes
 import enhanced295Routes from './enhanced295Routes';
 import enhancedTermsRoutes from './enhancedTerms';
+// Import pricing phase routes
+// import pricingPhaseRoutes from './pricingPhase'; // TODO: Fix systemConfig table
 
 /**
  * Main route registration function
@@ -161,6 +163,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     // Register early bird pricing routes
     registerEarlyBirdRoutes(app);
     logger.info('✅ Early bird pricing routes registered');
+    
+    // Register pricing phase management routes
+    // app.use('/api/pricing', pricingPhaseRoutes); // TODO: Fix systemConfig table
+    // logger.info('✅ Pricing phase management routes registered');
 
     // Register newsletter and contact routes
     app.use('/api/newsletter', newsletterRoutes);

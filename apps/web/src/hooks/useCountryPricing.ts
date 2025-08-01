@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getCurrentPhaseConfig, PhaseConfig } from '@/config/pricing';
 
 interface CountryPricing {
   basePrice: number;
@@ -22,6 +23,7 @@ interface CountryPricing {
     totalSlots: number;
     showCounter: boolean;
   };
+  phaseConfig: PhaseConfig;
 }
 
 // Launch pricing configuration defaults (will be overridden by server data)
@@ -36,6 +38,7 @@ const LAUNCH_PRICING_CONFIG = {
 };
 
 export function useCountryPricing() {
+  const phaseConfig = getCurrentPhaseConfig();
   const [pricing, setPricing] = useState<CountryPricing>({
     basePrice: 249,
     localPrice: 249,
@@ -58,6 +61,7 @@ export function useCountryPricing() {
       totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
       showCounter: LAUNCH_PRICING_CONFIG.showCounter,
     },
+    phaseConfig,
   });
 
   useEffect(() => {
@@ -80,6 +84,7 @@ export function useCountryPricing() {
             claimedSlots: earlyBirdData?.data?.totalPurchased || 0,
             isActive: earlyBirdData?.data?.isActive || false,
           },
+          phaseConfig,
         });
       } catch (error) {
         console.error('Failed to fetch pricing data:', error);
@@ -97,7 +102,8 @@ function calculatePPPPricing(
   countryCode: string,
   countryName: string
 ): Omit<CountryPricing, 'loading'> {
-  const basePrice = 249;
+  const phaseConfig = getCurrentPhaseConfig();
+  const basePrice = phaseConfig.originalPrice;
 
   // Calculate launch pricing (use defaults, will be overridden by server data)
   const launchPricing = {
@@ -294,6 +300,7 @@ function calculatePPPPricing(
       localCompetitor: countryInfo.localCompetitor,
       isDiscounted: true,
       launchPricing,
+      phaseConfig,
     };
   }
 
@@ -311,6 +318,7 @@ function calculatePPPPricing(
     localCompetitor: 'DataCamp/Coursera',
     isDiscounted: false,
     launchPricing,
+    phaseConfig,
   };
 }
 

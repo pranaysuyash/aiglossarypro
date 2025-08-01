@@ -18,7 +18,7 @@
       "@aiglossarypro/config/*": ["../../packages/config/src/*"]
     }
   },
-  "include": ["src/**/*", "src/global.d.ts"],
+  "include": ["src/**/*", "src/types/**/*.d.ts", "src/global.d.ts"],
   "exclude": ["dist", "node_modules"],
   "references": [
     { "path": "../../packages/shared" },

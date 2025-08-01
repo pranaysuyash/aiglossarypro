@@ -6,12 +6,12 @@ export * from './abTestingSchema.js';
 export * from './featureFlags.js';
 export * from './errorManager.js';
 export * from './295ColumnStructure.js';
-// Commented out due to conflicting exports
-// export * from './all295ColumnDefinitions.js';
-// export * from './all295Columns.js';
-// export * from './all296ColumnDefinitions.js';
-// export * from './completeColumnDefinitions.js';
-// export * from './completeColumnStructure.js';
+// Re-export specific items from completeColumnStructure to avoid conflicts
+export { 
+  COMPLETE_295_STRUCTURE,
+  HIERARCHICAL_295_STRUCTURE as COMPLETE_HIERARCHICAL_STRUCTURE,
+  getColumnById as getCompleteColumnById
+} from './completeColumnStructure.js';
 
 // Export types directory modules if they exist
 export * from './types/analytics.js';

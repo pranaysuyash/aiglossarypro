@@ -4,6 +4,7 @@
 
 import type { NextFunction, Request, Response } from 'express';
 import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
+import jwt from 'jsonwebtoken';
 
 // Simple logger for now
 const logger = {
@@ -64,6 +65,96 @@ export function extractBearerToken(req: Request): string | null {
  */
 export function hasAuthToken(req: Request): boolean {
   return extractBearerToken(req) !== null;
+}
+
+/**
+ * Generate JWT token for user
+ */
+export function generateToken(user: any): string {
+  const secret = process.env.JWT_SECRET || 'your-secret-key';
+  return jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin || false,
+    },
+    secret,
+    { expiresIn: '30d' }
+  );
+}
+
+/**
+ * Verify JWT token
+ */
+export async function verifyToken(token: string): Promise<any> {
+  try {
+    const secret = process.env.JWT_SECRET || 'your-secret-key';
+    return jwt.verify(token, secret);
+  } catch (error) {
+    logger.error('Token verification failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Middleware to authenticate requests
+ */
+export async function authenticate(req: Request, res: Response, next: NextFunction) {
+  const authReq = req as unknown as AuthenticatedRequest;
+  const token = extractBearerToken(req);
+  
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'No authentication token provided',
+    });
+  }
+  
+  const decoded = await verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid authentication token',
+    });
+  }
+  
+  authReq.user = decoded;
+  next();
+}
+
+/**
+ * Setup simple auth routes
+ */
+export function setupSimpleAuth(app: any): void {
+  // Login endpoint
+  app.post('/api/auth/login', async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    
+    // This is a simple implementation - in production, verify against database
+    if (email && password) {
+      const user = { id: '1', email, isAdmin: false };
+      const token = generateToken(user);
+      
+      res.json({
+        success: true,
+        token,
+        user,
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+  });
+  
+  // Logout endpoint
+  app.post('/api/auth/logout', (_req: Request, res: Response) => {
+    res.json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  });
 }
 
 export { logger as authLogger };

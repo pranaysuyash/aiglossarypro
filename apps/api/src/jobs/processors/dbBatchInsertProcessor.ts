@@ -176,7 +176,7 @@ async function handleTermsBatch(
   records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  const { terms } = await import('../../../shared/enhancedSchema');
+  const { terms } = await import('@aiglossarypro/shared/enhancedSchema');
 
   if (conflictResolution === 'ignore') {
     // Insert only new records, ignore conflicts
@@ -242,7 +242,7 @@ async function handleCategoriesBatch(
   records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  const { categories } = await import('../../../shared/enhancedSchema');
+  const { categories } = await import('@aiglossarypro/shared/enhancedSchema');
 
   if (conflictResolution === 'ignore') {
     const insertedRecords = await db
@@ -267,7 +267,7 @@ async function handleTermSectionsBatch(
   records: unknown[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  const { termSections } = await import('../../../shared/enhancedSchema');
+  const { termSections } = await import('@aiglossarypro/shared/enhancedSchema');
 
   if (conflictResolution === 'ignore') {
     const insertedRecords = await db

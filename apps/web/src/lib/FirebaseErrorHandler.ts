@@ -5,7 +5,7 @@
  */
 
 import type { FirebaseError } from 'firebase/app';
-import { ErrorManager, ErrorSeverity, ErrorType, type EnhancedError } from '../../../shared/errorManager';
+import { ErrorManager, ErrorSeverity, ErrorType, type EnhancedError } from '@aiglossarypro/shared';
 
 // Firebase-specific error interface
 export interface FirebaseAuthError extends EnhancedError {

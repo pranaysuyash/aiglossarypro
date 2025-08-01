@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { exec, spawn } from 'node:child_process';
-import { promisify } from 'node:util';
+const { exec, spawn } = require('node:child_process');
+const { promisify } = require('node:util');
 
 const execAsync = promisify(exec);
 
@@ -154,15 +154,15 @@ async function startDevelopmentServers() {
   logSection('🔧 Starting Backend Server');
   logInfo('Starting server on port 3001...');
 
-  const serverProcess = spawnWithLogging('npm', ['run', 'dev:server'], {
-    prefix: 'dev:server',
+  const serverProcess = spawnWithLogging('pnpm', ['--filter', 'api', 'dev'], {
+    prefix: 'API',
     cwd: process.cwd(),
-    env: process.env,
+    env: { ...process.env, NODE_ENV: 'development' },
   });
 
   // Step 3: Wait for backend to be ready
   logInfo('Waiting for backend server to be ready...');
-  const serverReady = await waitForServer('http://localhost:3001/api/health');
+  const serverReady = await waitForServer('http://localhost:3001/health');
 
   if (serverReady) {
     logSuccess('Backend server is ready!');
@@ -174,8 +174,8 @@ async function startDevelopmentServers() {
   logSection('🎨 Starting Frontend Server');
   logInfo('Starting client on port 5173...');
 
-  const clientProcess = spawnWithLogging('npm', ['run', 'dev:client'], {
-    prefix: 'dev:client',
+  const clientProcess = spawnWithLogging('pnpm', ['--filter', 'web', 'dev'], {
+    prefix: 'WEB',
     cwd: process.cwd(),
   });
 
@@ -193,7 +193,7 @@ async function startDevelopmentServers() {
   logSection('🎉 Development Environment Ready');
   logSuccess('Frontend: http://localhost:5173');
   logSuccess('Backend:  http://localhost:3001');
-  logSuccess('API Docs: http://localhost:3001/api/docs');
+  logSuccess('API Docs: http://localhost:3001/api-docs');
   logInfo('Press Ctrl+C to stop all servers');
 
   // Step 7: Setup graceful shutdown

@@ -65,6 +65,7 @@ import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
 import { LandingPageGuard } from '@/components/LandingPageGuard';
 // Analytics initialization moved to main.tsx for better performance
 import { posthogExperiments } from '@/services/posthogExperiments';
+import { activateExperiments } from '@/services/activeExperiments';
 
 // Smart Term Detail component that chooses between enhanced and regular view with guest support
 function SmartTermDetail() {
@@ -184,6 +185,9 @@ function Router() {
     };
 
     posthogExperiments.initialize(user?.uid, userProperties);
+    
+    // Activate A/B testing experiments
+    activateExperiments();
 
     // Initialize performance monitoring
     preloadCriticalAssets();

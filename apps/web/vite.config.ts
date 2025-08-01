@@ -9,6 +9,10 @@ import { devToolsPlugin } from './vite-dev-tools-plugin';
 import { lucideTreeShakePlugin } from './vite-lucide-plugin';
 
 export default defineConfig({
+  define: {
+    global: 'globalThis',
+    'process.env': 'import.meta.env',
+  },
   plugins: [
     million.vite({
       auto: {
@@ -99,8 +103,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@shared': path.resolve(__dirname, '../../packages/shared/src'),
-      '@aiglossarypro/shared': path.resolve(__dirname, '../../packages/shared/src'),
+      '@shared': path.resolve(__dirname, '../../packages/shared/dist'),
+      '@aiglossarypro/shared': path.resolve(__dirname, '../../packages/shared/dist'),
+      '@aiglossarypro/database': path.resolve(__dirname, '../../packages/database/dist'),
+      '@aiglossarypro/auth': path.resolve(__dirname, '../../packages/auth/dist'),
+      '@aiglossarypro/config': path.resolve(__dirname, '../../packages/config/dist'),
       '@assets': path.resolve(__dirname, '../../attached_assets'),
     },
   },
@@ -222,9 +229,9 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'https://hkntj2murq.us-east-1.awsapprunner.com',
+        target: 'http://localhost:3001',
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
     // Enhanced development server configuration

@@ -2,6 +2,8 @@ import { CheckCircle, Clock, Shield, X, Zap } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { trackUserAction } from '@/lib/analytics';
 import { useExperiment } from '@/services/posthogExperiments';
+import { getExitIntentPricing, getGumroadUrlWithDiscount, formatPrice, getCurrentPhaseConfig } from '@/config/pricing';
+import { usePricingPhase } from '@/services/pricingPhaseService';
 
 interface ExitIntentVariant {
   title: string;
@@ -10,6 +12,7 @@ interface ExitIntentVariant {
   offer?: string;
   urgency?: string;
   features?: string[];
+  usePhaseAwarePricing?: boolean;
 }
 
 const EXIT_INTENT_VARIANTS: Record<string, ExitIntentVariant> = {
@@ -18,24 +21,27 @@ const EXIT_INTENT_VARIANTS: Record<string, ExitIntentVariant> = {
     description: 'Get instant access to the most comprehensive AI/ML glossary',
     cta: 'Get Access Now',
     offer: 'Special offer: 20% off for the next 24 hours',
+    usePhaseAwarePricing: true,
   },
   value_focused: {
     title: 'Your AI Knowledge Journey Starts Here',
     description: 'Join 10,000+ professionals mastering AI/ML concepts',
     cta: 'Start Learning Now',
     features: [
-      '3,500+ AI/ML terms explained',
+      '10,000+ AI/ML terms explained',
       'Interactive visualizations',
       'Daily updates with new terms',
       'Export to Anki/Notion',
     ],
+    usePhaseAwarePricing: true,
   },
   urgency: {
-    title: 'Last Chance: 30% Off Today Only',
+    title: 'Last Chance: Extra Discount Today Only',
     description: 'This exclusive discount expires when you leave',
     cta: 'Claim Your Discount',
     urgency: 'Offer expires in 05:00',
-    offer: 'Save $14 - Today Only!',
+    offer: 'Special exit discount - Today Only!',
+    usePhaseAwarePricing: true,
   },
   social_proof: {
     title: 'Join 10,000+ AI Professionals',
@@ -46,6 +52,7 @@ const EXIT_INTENT_VARIANTS: Record<string, ExitIntentVariant> = {
       'Used by engineers at FAANG companies',
       'Recommended by AI influencers',
     ],
+    usePhaseAwarePricing: true,
   },
 };
 
@@ -53,6 +60,7 @@ export function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [hasBeenShown, setHasBeenShown] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes
+  const { phaseData } = usePricingPhase();
 
   const { variant, trackConversion, trackFeatureUsage } = useExperiment(
     'exitIntentVariant',
@@ -60,6 +68,8 @@ export function ExitIntentPopup() {
   );
 
   const currentVariant = EXIT_INTENT_VARIANTS[variant] || EXIT_INTENT_VARIANTS.control;
+  const exitIntentPricing = getExitIntentPricing();
+  const phaseConfig = getCurrentPhaseConfig();
 
   // Timer for urgency variant
   useEffect(() => {
@@ -86,26 +96,118 @@ export function ExitIntentPopup() {
         setIsVisible(true);
         setHasBeenShown(true);
         trackFeatureUsage('exit_intent_triggered');
-        trackUserAction('exit_intent_popup_shown', { variant });
+        trackUserAction('exit_intent_popup_shown', { 
+          variant,
+          phase: phaseConfig.name,
+          exitPrice: exitIntentPricing.price,
+          originalPrice: exitIntentPricing.originalPrice,
+        });
+        
+        // Store in localStorage to prevent showing again for 24 hours
+        localStorage.setItem('exitIntentShown', new Date().toISOString());
       }
     },
-    [hasBeenShown, trackFeatureUsage, variant]
+    [hasBeenShown, trackFeatureUsage, variant, phaseConfig, exitIntentPricing]
   );
+  
+  // Mobile exit intent detection (scroll velocity + back button)
+  const handleMobileExitIntent = useCallback(() => {
+    let lastScrollY = window.scrollY;
+    let lastScrollTime = Date.now();
+    let scrollVelocities: number[] = [];
+    
+    const checkScrollVelocity = () => {
+      const currentScrollY = window.scrollY;
+      const currentTime = Date.now();
+      const timeDelta = currentTime - lastScrollTime;
+      const scrollDelta = currentScrollY - lastScrollY;
+      
+      if (timeDelta > 0) {
+        const velocity = scrollDelta / timeDelta;
+        scrollVelocities.push(velocity);
+        
+        // Keep only last 5 measurements
+        if (scrollVelocities.length > 5) {
+          scrollVelocities.shift();
+        }
+        
+        // Check for rapid upward scroll (exit intent signal)
+        const avgVelocity = scrollVelocities.reduce((a, b) => a + b, 0) / scrollVelocities.length;
+        
+        if (avgVelocity < -3 && currentScrollY < 200 && !hasBeenShown) {
+          setIsVisible(true);
+          setHasBeenShown(true);
+          trackFeatureUsage('exit_intent_triggered_mobile');
+          trackUserAction('exit_intent_popup_shown', { 
+            variant, 
+            device: 'mobile',
+            trigger: 'scroll_velocity',
+            phase: phaseConfig.name,
+          });
+          localStorage.setItem('exitIntentShown', new Date().toISOString());
+        }
+      }
+      
+      lastScrollY = currentScrollY;
+      lastScrollTime = currentTime;
+    };
+    
+    const scrollHandler = () => {
+      requestAnimationFrame(checkScrollVelocity);
+    };
+    
+    // Back button detection
+    const handlePopState = () => {
+      if (!hasBeenShown) {
+        setIsVisible(true);
+        setHasBeenShown(true);
+        trackFeatureUsage('exit_intent_triggered_mobile');
+        trackUserAction('exit_intent_popup_shown', { 
+          variant, 
+          device: 'mobile',
+          trigger: 'back_button',
+          phase: phaseConfig.name,
+        });
+        localStorage.setItem('exitIntentShown', new Date().toISOString());
+      }
+    };
+    
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('scroll', scrollHandler);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [hasBeenShown, trackFeatureUsage, variant, phaseConfig]);
 
   useEffect(() => {
-    // Don't show on mobile devices
-    if (window.innerWidth < 768) {return;}
-
-    // Add exit intent listener after a delay
+    // Check if already shown in last 24 hours
+    const lastShown = localStorage.getItem('exitIntentShown');
+    if (lastShown) {
+      const lastShownDate = new Date(lastShown);
+      const hoursSinceShown = (Date.now() - lastShownDate.getTime()) / (1000 * 60 * 60);
+      if (hoursSinceShown < 24) {
+        setHasBeenShown(true);
+        return;
+      }
+    }
+    
     const timer = setTimeout(() => {
-      document.addEventListener('mouseleave', handleMouseLeave);
+      if (window.innerWidth >= 768) {
+        // Desktop exit intent
+        document.addEventListener('mouseleave', handleMouseLeave);
+      } else {
+        // Mobile exit intent
+        handleMobileExitIntent();
+      }
     }, 5000); // Wait 5 seconds before activating
 
     return () => {
       clearTimeout(timer);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [handleMouseLeave]);
+  }, [handleMouseLeave, handleMobileExitIntent]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -114,9 +216,16 @@ export function ExitIntentPopup() {
 
   const handleCTA = () => {
     trackConversion('exit_intent_conversion');
-    trackUserAction('exit_intent_cta_clicked', { variant });
-    // Navigate to pricing or signup
-    window.location.href = '/pricing';
+    trackUserAction('exit_intent_cta_clicked', { 
+      variant,
+      phase: phaseConfig.name,
+      exitPrice: exitIntentPricing.price,
+      discountCode: exitIntentPricing.discountCode,
+    });
+    
+    // Open Gumroad with exit-intent discount code
+    const gumroadUrl = getGumroadUrlWithDiscount(exitIntentPricing.discountCode);
+    window.open(gumroadUrl, '_blank');
   };
 
   const formatTime = (seconds: number) => {
@@ -160,7 +269,9 @@ export function ExitIntentPopup() {
 
             {/* Title */}
             <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">
-              {currentVariant.title}
+              {currentVariant.usePhaseAwarePricing && variant === 'urgency' 
+                ? `Last Chance: Extra ${exitIntentPricing.extraDiscount}% Off ${phaseConfig.name}`
+                : currentVariant.title}
             </h2>
 
             {/* Description */}
@@ -188,9 +299,27 @@ export function ExitIntentPopup() {
             )}
 
             {/* Offer */}
-            {currentVariant.offer && (
+            {(currentVariant.offer || currentVariant.usePhaseAwarePricing) && (
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 text-center">
-                <p className="text-blue-900 font-semibold">{currentVariant.offer}</p>
+                {currentVariant.usePhaseAwarePricing ? (
+                  <div>
+                    <p className="text-blue-900 font-semibold text-lg">
+                      Special Exit Offer: {formatPrice(exitIntentPricing.price)}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      <span className="line-through">{formatPrice(exitIntentPricing.originalPrice)}</span>
+                      {' → '}
+                      <span className="line-through">{formatPrice(exitIntentPricing.phasePrice)}</span>
+                      {' → '}
+                      <span className="font-bold text-green-600">{formatPrice(exitIntentPricing.price)}</span>
+                    </p>
+                    <p className="text-xs text-purple-600 mt-2">
+                      {exitIntentPricing.totalDiscount}% total discount - Only available right now!
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-blue-900 font-semibold">{currentVariant.offer}</p>
+                )}
               </div>
             )}
 
@@ -199,8 +328,25 @@ export function ExitIntentPopup() {
               onClick={handleCTA}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
             >
-              {currentVariant.cta}
+              {currentVariant.usePhaseAwarePricing 
+                ? `${currentVariant.cta} - ${formatPrice(exitIntentPricing.price)}`
+                : currentVariant.cta}
             </button>
+            
+            {/* Phase progress indicator */}
+            {phaseData && currentVariant.usePhaseAwarePricing && phaseData.totalSlots !== Infinity && (
+              <div className="mt-4 text-center">
+                <div className="text-xs text-gray-500">
+                  {phaseData.soldCount} of {phaseData.totalSlots} {phaseConfig.name} spots claimed
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                  <div 
+                    className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all"
+                    style={{ width: `${phaseData.percentage}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Secondary action */}
             <button

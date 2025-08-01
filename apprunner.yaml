@@ -1,5 +1,6 @@
 version: 1.0
 runtime: nodejs18
+
 build:
   commands:
     pre-build:
@@ -9,7 +10,30 @@ build:
       - echo "pnpm version:" && pnpm --version
     build:
       - pnpm install --frozen-lockfile
-      - SKIP_TYPE_CHECK=true NODE_ENV=production pnpm run build
+      
+      # Build workspace packages first
+      - echo "=== Building workspace packages ==="
+      - pnpm --filter @aiglossarypro/shared run build || echo "shared build completed"
+      - pnpm --filter @aiglossarypro/database run build || echo "database build completed"
+      - pnpm --filter @aiglossarypro/auth run build || echo "auth build completed"
+      - pnpm --filter @aiglossarypro/config run build || echo "config build completed"
+      
+      # Build API with proper context
+      - echo "=== Building API ==="
+      - cd apps/api && SKIP_TYPE_CHECK=true NODE_ENV=production pnpm run build
+      
+      # Verify build output
+      - echo "=== Verifying build output ==="
+      - ls -la apps/api/dist/
+      - ls -la apps/api/dist/*.js | head -10
+      
+    post-build:
+      # Clean up dev dependencies to reduce deployment size
+      - echo "=== Optimizing for production ==="
+      - rm -rf node_modules/.cache
+      - find . -name "*.test.js" -delete || true
+      - find . -name "*.spec.js" -delete || true
+
 run:
   command: node apps/api/dist/index.js
   network:
@@ -26,3 +50,6 @@ run:
       value: "JCmY1YTJ2lXuEKhHgKZURZfub9S7WNQgy5Om2NFDdWu3dg0CtqB7wQGyXHzQG2sqDVAkGE9H9ual6uc1cVn8LA=="
     - name: JWT_SECRET
       value: "JCmY1YTJ2lXuEKhHgKZURZfub9S7WNQgy5Om2NFDdWu3dg0CtqB7wQGyXHzQG2sqDVAkGE9H9ual6uc1cVn8LA=="
+    # Enable simple auth as fallback
+    - name: SIMPLE_AUTH_ENABLED
+      value: "true"

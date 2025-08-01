@@ -1,14 +1,3 @@
-// In production, environment variables are provided by App Runner
-// Only load .env in development
-if (process.env.NODE_ENV !== 'production') {
-  import('dotenv').then(dotenv => {
-    dotenv.config();
-    console.log('📁 Loaded .env file for development');
-  }).catch(() => {
-    console.log('📁 No .env file found, using environment variables');
-  });
-}
-
 console.log('🚀 [DEBUG] Server index.ts loaded - very first line');
 
 import { log } from './utils/logger';

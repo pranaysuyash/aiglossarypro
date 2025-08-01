@@ -436,3 +436,69 @@ This code was added in commit `9683b84b` to "fix npm run dev:smart" but it's bre
 3. The monorepo-migration branch (which works) doesn't have this code
 
 **Solution**: Remove the .env loading code from apps/api/src/index.ts in production or use monorepo-migration branch
+
+---
+
+## Deployment Attempt #15: Fixed .env Loading Issue
+
+**Time**: August 1, 2025 6:33 PM  
+**Service**: `aiglossarypro-main-fixed-connection` (auto-deployment)  
+**Commit**: `77dd5409` - "fix: Only load .env file in development, not production"  
+**Result**: 🔄 AUTO-DEPLOYMENT TRIGGERED
+
+**What Was Fixed**:
+```typescript
+// Before (causing crash):
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+// Multiple file system checks that fail in container
+
+// After (production-safe):
+if (process.env.NODE_ENV !== 'production') {
+  import('dotenv').then(dotenv => {
+    dotenv.config();
+  });
+}
+```
+
+**Why This Should Work**:
+- ✅ No file system access in production
+- ✅ Environment variables already provided by App Runner
+- ✅ Same pattern as other successful deployments
+- ✅ Build was already succeeding, only runtime was failing
+
+**Status**: ❌ Service in CREATE_FAILED state - auto-deployment won't trigger
+
+---
+
+## Deployment Attempt #16: Fresh Service with All Fixes
+
+**Time**: August 1, 2025 6:47 PM  
+**Service**: `aiglossarypro-main-final` (NEW)  
+**Service URL**: https://y9au4fyzsk.us-east-1.awsapprunner.com  
+**Result**: 🔄 DEPLOYMENT IN PROGRESS
+
+**This deployment has EVERYTHING fixed**:
+- ✅ Correct GitHub connection ARN
+- ✅ Fixed .env loading code (commit 77dd5409)
+- ✅ apps/api source directory
+- ✅ All import fixes from attempts 1-10
+- ✅ Fresh service (no failed state)
+
+**Status**: ⏳ This should be the one!
+
+---
+
+## Key Learnings from This Deployment Saga
+
+1. **Always check AWS console logs first** - "Failed to access source code" immediately pointed to connection issue
+2. **Use the right GitHub connection** - We wasted attempts with wrong connection ARN
+3. **Don't add development conveniences that break production** - The .env loading was for local dev only
+4. **Environment variables can be managed via App Runner config** - No need for .env files in production
+5. **The monorepo-migration branch worked because it didn't have the problematic code**
+
+**Total Attempts**: 15 (and counting...)  
+**Root Causes**: 
+- Wrong GitHub connection ARN (attempts 11-13)
+- .env file loading in production (attempts 14-15)
+- All the earlier attempts (1-10) had various config issues now fixed

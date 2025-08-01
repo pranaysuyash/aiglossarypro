@@ -1,0 +1,20 @@
+{
+  "ServiceName": "aiglossarypro-main-final",
+  "SourceConfiguration": {
+    "CodeRepository": {
+      "RepositoryUrl": "https://github.com/pranaysuyash/aiglossarypro",
+      "SourceCodeVersion": {
+        "Type": "BRANCH",
+        "Value": "main"
+      },
+      "SourceDirectory": "apps/api",
+      "CodeConfiguration": {
+        "ConfigurationSource": "REPOSITORY"
+      }
+    },
+    "AutoDeploymentsEnabled": true,
+    "AuthenticationConfiguration": {
+      "ConnectionArn": "arn:aws:apprunner:us-east-1:927289246324:connection/github-aiglossarypro/09891cbae37b41b4b0c51a6539f41ab1"
+    }
+  }
+}

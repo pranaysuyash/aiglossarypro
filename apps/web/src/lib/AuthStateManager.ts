@@ -2,7 +2,7 @@
  * AuthStateManager with Circuit Breaker Pattern
  * Prevents infinite authentication loops and manages auth state centrally
  */
-import type { IUser } from '../../../shared/types';
+import type { IUser } from '@aiglossarypro/shared/types';
 
 // Simple debounce implementation to avoid external dependencies
 function debounce<T extends (...args: unknown[]) => any>(

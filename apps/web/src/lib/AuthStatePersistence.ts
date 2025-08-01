@@ -3,7 +3,7 @@
  * Handles secure token storage, refresh mechanisms, and state recovery
  */
 
-import type { IUser } from '../../../shared/types';
+import type { IUser } from '@aiglossarypro/shared/types';
 import { firebaseErrorHandler } from './FirebaseErrorHandler';
 import { DEFAULT_TIMEOUTS, withTimeout } from './FirebaseTimeoutWrapper';
 import { getCurrentUser, getIdToken, refreshIdToken } from './firebase';

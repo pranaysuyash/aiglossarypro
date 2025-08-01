@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useMemo } from 'react';
-import type { FeatureFlags } from '../../../shared/featureFlags';
+import type { FeatureFlags } from '@aiglossarypro/shared/featureFlags';
 
 /**
  * Client-side feature flags hook

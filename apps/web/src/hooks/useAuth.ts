@@ -8,7 +8,7 @@ import { MemoryMonitor } from '@/lib/MemoryMonitor';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { IUser } from '../../../shared/types';
+import type { IUser } from '@aiglossarypro/shared/types';
 
 import { getAuthChannel, getTabId } from '@/lib/authChannel';
 

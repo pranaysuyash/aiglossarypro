@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type React from 'react';
 import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import type { ITerm } from '../../../shared/types';
+import type { ITerm } from '@aiglossarypro/shared/types';
 import TermCard from './TermCard';
 
 interface VirtualizedTermListProps {

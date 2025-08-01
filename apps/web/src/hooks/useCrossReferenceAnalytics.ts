@@ -10,7 +10,7 @@ import type {
   CrossReferenceMetrics,
   LearningPathway,
   ReferenceFlow,
-} from '../../../shared/types/analytics';
+} from '@aiglossarypro/shared/types/analytics';
 
 // Types are now imported from shared directory
 

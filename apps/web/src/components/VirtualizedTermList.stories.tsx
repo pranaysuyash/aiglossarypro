@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ITerm } from '../../../shared/types';
+import type { ITerm } from '@aiglossarypro/shared/types';
 import VirtualizedTermList from './VirtualizedTermList';
 
 const queryClient = new QueryClient({

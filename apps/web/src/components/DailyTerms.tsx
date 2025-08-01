@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type React from 'react';
-import type { ITerm } from '../../../shared/types';
+import type { ITerm } from '@aiglossarypro/shared/types';
 
 interface DailyTermsResponse {
   date: string;

@@ -11,7 +11,7 @@ build:
       - pnpm install --frozen-lockfile
       - SKIP_TYPE_CHECK=true NODE_ENV=production pnpm run build
 run:
-  command: node dist/index.js
+  command: node apps/api/dist/index.js
   network:
     port: 8080
     env: PORT

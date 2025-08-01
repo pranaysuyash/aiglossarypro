@@ -1,27 +1,12 @@
-// Load environment variables first - must be before any other imports
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-import * as fs from 'fs';
-
-// Try multiple locations for .env file in monorepo structure
-const envPaths = [
-  path.resolve(__dirname, '../../../.env'),  // From dist/ to project root
-  path.resolve(process.cwd(), '.env'),        // From current working directory
-  path.resolve(__dirname, '../../.env'),      // Alternative path
-];
-
-let envLoaded = false;
-for (const envPath of envPaths) {
-  if (fs.existsSync(envPath)) {
-    console.log(`📁 Loading environment from: ${envPath}`);
-    dotenv.config({ path: envPath });
-    envLoaded = true;
-    break;
-  }
-}
-
-if (!envLoaded) {
-  console.warn('⚠️  No .env file found, using process environment variables');
+// In production, environment variables are provided by App Runner
+// Only load .env in development
+if (process.env.NODE_ENV !== 'production') {
+  import('dotenv').then(dotenv => {
+    dotenv.config();
+    console.log('📁 Loaded .env file for development');
+  }).catch(() => {
+    console.log('📁 No .env file found, using environment variables');
+  });
 }
 
 console.log('🚀 [DEBUG] Server index.ts loaded - very first line');

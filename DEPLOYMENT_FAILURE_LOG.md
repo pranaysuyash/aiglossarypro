@@ -335,15 +335,104 @@ Updated root `apprunner.yaml` to properly handle monorepo structure:
 
 ---
 
-## Next Deployment Attempt (#11)
+## Deployment Attempt #11: Fresh Service with Fixed Configuration
 
-**Approach**: Two options available
-1. **Option 1 (Recommended)**: Change AWS App Runner source directory to `apps/api`
-   - This uses the proven working configuration
-   - Most likely to succeed immediately
+**Time**: August 1, 2025 6:00 PM  
+**Service**: `aiglossarypro-main-branch` (NEW)  
+**Service URL**: https://a37tkzhuca.us-east-1.awsapprunner.com  
+**Approach**: Created new App Runner service from main branch with updated apprunner.yaml  
+**Result**: 🔄 DEPLOYMENT IN PROGRESS
 
-2. **Option 2**: Deploy with updated root apprunner.yaml
-   - Uses the fixed configuration that now properly handles monorepo
-   - May still have unknown issues
+**Service Details**:
+- Service ID: `7e2fc28c87de43968b604fd002899676`
+- Auto-deployment: Enabled
+- Source: GitHub main branch
+- Configuration: Using repository apprunner.yaml
 
-**Status**: ⏳ Ready to deploy with fixes applied
+**What's Different This Time**:
+- Fresh service (no failed state to recover from)
+- Updated apprunner.yaml with proper monorepo build steps
+- All previous fixes are included in the main branch
+
+**Status**: ❌ FAILED - Service creation failed after 3 minutes
+
+**Error**: Build or configuration issue prevented service creation
+
+---
+
+## Deployment Attempt #12: Using Proven apps/api Configuration
+
+**Time**: August 1, 2025 6:05 PM  
+**Service**: `aiglossarypro-main-apps-api` (NEW)  
+**Service URL**: https://5p86x4kcu5.us-east-1.awsapprunner.com  
+**Approach**: Using apps/api as source directory (matching working deployment)  
+**Result**: 🔄 DEPLOYMENT IN PROGRESS
+
+**Why This Should Work**:
+- Using the exact same source directory as the working `aiglossary-production-exact` service
+- The apps/api/apprunner.yaml has the proven package.deploy.json swapping approach
+- This configuration successfully deployed the monorepo branch yesterday
+
+**Status**: ❌ FAILED - Service creation failed immediately
+
+**Issue**: The `/apps/api` path (with leading slash) might have been the problem
+
+---
+
+## Deployment Attempt #13: Exact Configuration Match
+
+**Time**: August 1, 2025 6:12 PM  
+**Service**: `aiglossarypro-main-exact-match`  
+**Service URL**: https://bja2td2bas.us-east-1.awsapprunner.com  
+**Approach**: Exact match of working service configuration  
+**Result**: 🔄 DEPLOYMENT IN PROGRESS
+
+**Configuration Details**:
+- Source Directory: `apps/api` (no leading slash - exact match)
+- Configuration Source: REPOSITORY (using apps/api/apprunner.yaml)
+- Branch: main
+- All deployment files confirmed present in main branch
+
+**Status**: ❌ FAILED - "Failed to access source code"
+
+**ROOT CAUSE FOUND**: Wrong GitHub connection ARN was being used!
+- We were using: `...connection/github-connection/47d0187c36184de9b0c586c0c44ba86d`
+- Should use: `...connection/github-aiglossarypro/09891cbae37b41b4b0c51a6539f41ab1`
+
+---
+
+## Deployment Attempt #14: CORRECT GitHub Connection
+
+**Time**: August 1, 2025 6:16 PM  
+**Service**: `aiglossarypro-main-fixed-connection`  
+**Service URL**: https://i3tqcmfvpi.us-east-1.awsapprunner.com  
+**Approach**: Using correct GitHub connection ARN  
+**Result**: 🔄 DEPLOYMENT IN PROGRESS
+
+**This WILL work because**:
+- ✅ Using the AVAILABLE GitHub connection
+- ✅ Same connection used by working deployment
+- ✅ Source directory: apps/api (proven configuration)
+- ✅ All files present in main branch
+
+**Status**: ❌ FAILED - Container exit code 1
+
+**Build**: ✅ SUCCESSFUL - All packages built correctly  
+**Runtime**: ❌ FAILED - Application crashed on startup
+
+**Root Cause**: The main branch has additional code that tries to load .env files:
+```typescript
+// Try multiple locations for .env file in monorepo structure
+const envPaths = [
+  path.resolve(__dirname, '../../../.env'),
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(__dirname, '../../.env'),
+];
+```
+
+This code was added in commit `9683b84b` to "fix npm run dev:smart" but it's breaking production deployment because:
+1. No .env file exists in the container
+2. The file system checks might be failing
+3. The monorepo-migration branch (which works) doesn't have this code
+
+**Solution**: Remove the .env loading code from apps/api/src/index.ts in production or use monorepo-migration branch

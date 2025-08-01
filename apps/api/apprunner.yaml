@@ -85,14 +85,11 @@ run:
     # Additional production environment variables from .env.production
     - name: BASE_URL
       value: "https://aiglossarypro.com"
-    - name: GUMROAD_APPLICATION_ID
-      value: "t1jnuDQ_BJI-dWyunbvD9yPwgzQIUNdwXds5H0ZlFlE"
-    - name: GUMROAD_APPLICATION_SECRET
-      value: "aXLCHgNt6XZgKp0jqIxqQTidFuAHAvKygNqeuXGXSyw"
-    - name: GUMROAD_ACCESS_TOKEN
-      value: "RPI41H6oBsDXr6mGAwCuiAC3N6dNld4XfyVX7Y0_ghE"
     - name: EMAIL_ENABLED
       value: "true"
-    - name: RESEND_API_KEY
-      value: "re_hL93cV1B_C1WK1MmZQ6bkcEBi5SM6WuS9"
-    # OPENAI_API_KEY - Add via AWS Console
+    # Add these via AWS Console to avoid GitHub push protection:
+    # - GUMROAD_APPLICATION_ID
+    # - GUMROAD_APPLICATION_SECRET  
+    # - GUMROAD_ACCESS_TOKEN
+    # - RESEND_API_KEY
+    # - OPENAI_API_KEY

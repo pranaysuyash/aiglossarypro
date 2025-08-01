@@ -497,8 +497,39 @@ if (process.env.NODE_ENV !== 'production') {
 4. **Environment variables can be managed via App Runner config** - No need for .env files in production
 5. **The monorepo-migration branch worked because it didn't have the problematic code**
 
-**Total Attempts**: 15 (and counting...)  
+**Total Attempts**: 16 (and counting...)  
 **Root Causes**: 
 - Wrong GitHub connection ARN (attempts 11-13)
 - .env file loading in production (attempts 14-15)
+- Build succeeds but container crashes with exit code 1 (attempt 16)
 - All the earlier attempts (1-10) had various config issues now fixed
+
+---
+
+## Deployment Attempt #17: Root Cause Analysis of Container Exit Code 1
+
+**Time**: August 1, 2025 8:23 PM  
+**Service**: `aiglossarypro-main-working` (FAILED)  
+**Result**: ❌ FAILED - Container exit code 1 after successful build  
+
+**Detailed Build Analysis**:
+✅ **Build Phase**: SUCCESSFUL
+- Successfully pulled source code from GitHub
+- All workspace packages built successfully (@aiglossarypro/shared, database, auth, config)
+- API build completed with esbuild (252 TypeScript files transpiled)
+- Build took 576ms and completed successfully
+- Production dependencies installed correctly
+
+❌ **Runtime Phase**: FAILED
+- Container started but crashed immediately with exit code 1
+- No application logs generated (service log group only contains build logs)
+- Health check failed on TCP port 8080
+
+**Key Finding**: The build process is identical to the working monorepo-migration branch, but the runtime fails. This suggests the issue is in the application startup code, not the build configuration.
+
+**Hypothesis**: The main branch contains code differences from the working monorepo-migration branch that cause runtime crashes. The .env loading fix (commit 8584ebd9) may not have fully resolved all startup issues.
+
+**Next Steps**:
+1. Compare main branch vs monorepo-migration branch app startup code
+2. Identify what specific code is causing the container exit code 1
+3. Test with a minimal service configuration to isolate the issue

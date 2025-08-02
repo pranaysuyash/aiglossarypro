@@ -9,6 +9,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "composite": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
     "skipLibCheck": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false

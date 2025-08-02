@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
 import { desc, sql } from 'drizzle-orm';
-import { db } from '../server/db.js';
-import { enhancedTerms } from '../shared/enhancedSchema.js';
-import { categories, terms } from '../shared/schema.js';
+import { db } from '../server/db';
+import { enhancedTerms } from '../shared/enhancedSchema';
+import { categories, terms } from '../shared/schema';
 
 async function checkDatabaseContent() {
   console.log('🔍 Database Content Investigation\n');

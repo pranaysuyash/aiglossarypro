@@ -5,7 +5,7 @@ dotenv.config();
 import { neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from 'ws';
-import * as schema from '@aiglossarypro/shared/enhancedSchema';
+import * as schema from '@aiglossarypro/shared';
 import { createMonitoredPool, MonitoredPool, PoolStats } from './db/pool-monitor';
 
 // Simple logger for now

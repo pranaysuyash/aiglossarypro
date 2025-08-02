@@ -1,7 +1,7 @@
 /**
  * Access control utilities for feature gating and permissions
  */
-import type { IUser } from '@aiglossarypro/shared/types';
+import type { IUser } from '@aiglossarypro/shared';
 
 type UserWithAccessControl = Partial<IUser> & {
   role?: string;

@@ -1,0 +1,32 @@
+{
+  "family": "aiglossarypro-api-test",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::927289246324:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:latest",
+      "essential": true,
+      "command": ["sh", "-c", "echo 'DATABASE_URL='$DATABASE_URL && echo 'NODE_ENV='$NODE_ENV && sleep 300"],
+      "environment": [
+        {"name": "NODE_ENV", "value": "production"},
+        {"name": "PORT", "value": "8080"}
+      ],
+      "secrets": [
+        {"name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database-HqtDrG"},
+        {"name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt-JGrrVJ"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/aiglossarypro-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "test"
+        }
+      }
+    }
+  ]
+}

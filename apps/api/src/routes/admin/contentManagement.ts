@@ -12,8 +12,8 @@ import { v4 as uuidv4 } from 'uuid';
 // TODO: Fix these imports for production build
 // import ContentGapAnalyzer from '../../../scripts/content-gap-analysis';
 // import ContentPopulator from '../../../scripts/content-population';
-import { enhancedTerms, termSections } from '@aiglossarypro/shared/enhancedSchema';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import { enhancedTerms, termSections } from '@aiglossarypro/shared';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from '../../utils/logger';
 import { DataQualityValidator } from '../../validators/dataQualityValidator';

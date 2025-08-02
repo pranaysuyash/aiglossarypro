@@ -8,7 +8,7 @@ import {
   insertPersonSchema,
   type Person,
   people,
-} from '@aiglossarypro/shared/enhancedSchema';
+} from '@aiglossarypro/shared';
 import { requireFeature } from '@aiglossarypro/shared/featureFlags';
 import { db } from '@aiglossarypro/database';
 import { requireAdmin } from '../../middleware/adminAuth';

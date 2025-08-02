@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from 'express'
 import type { Request, Response } from 'express';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { enhancedStorage as storage } from '../../enhancedStorage';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
 import { log as logger } from '../../utils/logger';

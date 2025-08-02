@@ -2,7 +2,7 @@
 
 import { sql } from 'drizzle-orm';
 import fs from 'fs';
-import { db } from '../server/db.js';
+import { db } from '../server/db';
 
 async function backupDatabase() {
   console.log('🔄 Creating database backup...');

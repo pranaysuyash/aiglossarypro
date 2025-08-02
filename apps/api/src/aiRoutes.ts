@@ -1,5 +1,5 @@
 /// <reference path="./types/express.d.ts" />
-import type { Express, Request } from 'express';
+import type { Express, Request, Response } from 'express';
 import { aiService } from './aiService';
 import { multiAuthMiddleware } from './middleware/multiAuth';
 import { optimizedStorage as storage } from './optimizedStorage';
@@ -8,7 +8,7 @@ import { isUserAdmin } from './utils/authUtils';
 import logger from './utils/logger';
 export function registerAIRoutes(app: Express): void {
   // Generate definition for a new term
-  app.post('/api/ai/generate-definition', multiAuthMiddleware, async (req: Request, res) => {
+  app.post('/api/ai/generate-definition', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const { term, category, context } = req.body;
       const userId = req.user?.claims?.sub;
@@ -42,10 +42,10 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get term suggestions
-  app.get('/api/ai/term-suggestions', multiAuthMiddleware, async (req: Request, res) => {
+  app.get('/api/ai/term-suggestions', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const focusCategory = req.query.category as string;
-      const _limit = parseInt(req.query.limit as string) || 8;
+      // const _limit = parseInt(req.query.limit as string) || 8;
 
       // Get existing terms and categories
       const categories = await storage.getCategories();
@@ -71,7 +71,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Categorize a term
-  app.post('/api/ai/categorize-term', multiAuthMiddleware, async (req: Request, res) => {
+  app.post('/api/ai/categorize-term', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const { term, definition } = req.body;
 
@@ -99,7 +99,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Enhanced semantic search with cost optimization
-  app.post('/api/ai/semantic-search', async (req: Request, res) => {
+  app.post('/api/ai/semantic-search', async (req: Request, res: Response) => {
     try {
       const { query, limit = 10 } = req.body;
       const userId = req.user?.claims?.sub || null;
@@ -122,7 +122,7 @@ export function registerAIRoutes(app: Express): void {
       // Get optimized term set for search (limit to reduce costs)
       const searchLimit = Math.min(100, limit * 10);
       const allTerms = await storage.getAllTermsForSearch(searchLimit);
-      const result = await aiService.semanticSearch(query, allTerms, limit, userId);
+      const result = await aiService.semanticSearch(query, allTerms, limit, userId || undefined);
 
       res.json({
         success: true,
@@ -143,7 +143,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Improve existing term definition
-  app.post('/api/ai/improve-definition/:id', multiAuthMiddleware, async (req: Request, res) => {
+  app.post('/api/ai/improve-definition/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const termId = req.params.id;
 
@@ -179,14 +179,14 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Apply AI-generated improvements to a term
-  app.put('/api/ai/apply-improvements/:id', multiAuthMiddleware, async (req: Request, res) => {
+  app.put('/api/ai/apply-improvements/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const termId = req.params.id;
       const { improvements } = req.body;
 
       // Only allow admin to apply improvements
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({
@@ -208,7 +208,7 @@ export function registerAIRoutes(app: Express): void {
         shortDefinition: improvements.shortDefinition || term.shortDefinition,
         definition: improvements.definition || term.definition,
         characteristics: improvements.characteristics || term.characteristics,
-        applications: improvements.applications || (term as any).applications,
+        // applications: improvements.applications || (term as any).applications, // Property doesn't exist on ITerm
         mathFormulation: improvements.mathFormulation || term.mathFormulation,
       });
 
@@ -230,10 +230,10 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Submit feedback for AI-generated content
-  app.post('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res) => {
+  app.post('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { termId, sectionName, feedbackType, rating, comment } = req.body;
+      const { termId, sectionName, feedbackType, comment } = req.body;
 
       if (!termId || !feedbackType) {
         return res.status(400).json({
@@ -274,10 +274,10 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get feedback list (admin only)
-  app.get('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res) => {
+  app.get('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({
@@ -337,10 +337,10 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update feedback status (admin only)
-  app.put('/api/ai/feedback/:id', multiAuthMiddleware, async (req: Request, res) => {
+  app.put('/api/ai/feedback/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({
@@ -401,10 +401,10 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Get content verification status (admin only)
-  app.get('/api/ai/verification', multiAuthMiddleware, async (req: Request, res) => {
+  app.get('/api/ai/verification', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({
@@ -461,10 +461,10 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update content verification (admin only)
-  app.put('/api/ai/verification/:id', multiAuthMiddleware, async (req: Request, res) => {
+  app.put('/api/ai/verification/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({
@@ -521,10 +521,10 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Get AI usage analytics (admin only)
-  app.get('/api/ai/analytics', multiAuthMiddleware, async (req: Request, res) => {
+  app.get('/api/ai/analytics', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({
@@ -652,10 +652,10 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get AI service health and status
-  app.get('/api/ai/status', multiAuthMiddleware, async (req: Request, res) => {
+  app.get('/api/ai/status', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const isAdmin = await isUserAdmin(userId);
+      const isAdmin = await isUserAdmin(userId || '');
 
       if (!isAdmin) {
         return res.status(403).json({

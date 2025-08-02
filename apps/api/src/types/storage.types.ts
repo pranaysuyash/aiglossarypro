@@ -12,7 +12,7 @@ import type {
   IUser,
   PaginatedResponse,
   UserActivity,
-} from '@aiglossarypro/shared/types';
+} from '@aiglossarypro/shared';
 
 // ===== CORE DATA TYPES =====
 

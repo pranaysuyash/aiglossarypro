@@ -1,8 +1,8 @@
 import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
-import { categories, enhancedTerms, termRelationships } from '@aiglossarypro/shared/enhancedSchema';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import { categories, enhancedTerms, termRelationships } from '@aiglossarypro/shared';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { validateInput, validateParams } from '../middleware/validateRequest';
 import { log as logger } from '../utils/logger';

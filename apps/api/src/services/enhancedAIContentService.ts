@@ -11,7 +11,7 @@ import {
   enhancedTerms,
   aiUsageAnalytics,
   modelContentVersions 
-} from '@aiglossarypro/shared/enhancedSchema';
+} from '@aiglossarypro/shared';
 import { HIERARCHICAL_295_STRUCTURE, getColumnById } from '@aiglossarypro/shared/completeColumnStructure';
 import { generatePromptsForTerm, getPromptsForColumn } from '../prompts/columnPromptTemplates';
 import { getPromptTripletForColumn } from '../prompts/allColumnPrompts';

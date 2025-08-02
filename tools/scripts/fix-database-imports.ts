@@ -27,8 +27,8 @@ function fixDatabaseUsage(filePath: string): FixResult {
         let fixed = content;
 
         // Pattern 1: Fix import statements
-        // Change: import { db } from '../db.js'
-        // To: import { getDb } from '../db.js'
+        // Change: import { db } from '../db'
+        // To: import { getDb } from '../db'
         const importPattern = /import\s*{\s*([^}]*\b)db(\b[^}]*)\s*}\s*from\s*['"][^'"]*\/db(?:\.js)?['"];?/g;
         fixed = fixed.replace(importPattern, (match, before, after) => {
             // If it already has getDb, don't change

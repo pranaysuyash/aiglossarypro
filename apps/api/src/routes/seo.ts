@@ -9,7 +9,7 @@ import { type Express, type Request, type Response, Router } from 'express';
 // import { sampleTermsSeoUtils } // TODO: Move from client - src/utils/sampleTermsSitemap;
 const sampleTermsSeoUtils = { getSitemapPaths: () => [] }; // Temporary placeholder
 import { categories, terms } from '@aiglossarypro/shared/schema';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from '../utils/logger';
 

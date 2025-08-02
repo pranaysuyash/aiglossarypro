@@ -1,7 +1,7 @@
 import path from 'node:path';
 import express from 'express';
 import type { Express, Request, Response } from 'express';
-import type { AdminStats, ApiResponse } from '@aiglossarypro/shared/types';
+import type { AdminStats, ApiResponse } from '@aiglossarypro/shared';
 import type { 
   User, 
   Term, 

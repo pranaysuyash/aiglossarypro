@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { aiUsageAnalytics } from '@aiglossarypro/shared/enhancedSchema';
+import { aiUsageAnalytics } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { enhancedStorage } from '../enhancedStorage';
 import { log as logger } from '../utils/logger';

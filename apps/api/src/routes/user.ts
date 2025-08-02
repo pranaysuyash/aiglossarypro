@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from 'express';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
+import type { AuthenticatedRequest } from '@aiglossarypro/shared';
 import { features } from '@aiglossarypro/config';
 import { authenticateToken } from '../middleware/adminAuth';
 import { parseId, parseNumericQuery, parsePagination } from '../middleware/inputValidation';

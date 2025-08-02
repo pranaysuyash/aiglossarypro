@@ -2,8 +2,8 @@
 
 import { asc, desc, sql } from 'drizzle-orm';
 // Use the existing database setup from the server
-import { db } from '../server/db.js';
-import { categories, enhanced_terms, terms } from '../server/schema.js';
+import { db } from '../server/db';
+import { categories, enhanced_terms, terms } from '../server/schema';
 
 async function checkDataQuality() {
   console.log('🔍 Checking Data Quality Issues...\n');

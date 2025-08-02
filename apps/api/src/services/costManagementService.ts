@@ -7,7 +7,7 @@
 
 import { EventEmitter } from 'node:events';
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
-import { aiUsageAnalytics } from '@aiglossarypro/shared/enhancedSchema';
+import { aiUsageAnalytics } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from '../utils/logger';
 

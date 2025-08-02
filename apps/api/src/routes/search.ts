@@ -2,8 +2,8 @@ import { asc, desc, ilike, or } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express'
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { enhancedTerms as terms } from '@aiglossarypro/shared/enhancedSchema';
-import type { ApiResponse, SearchResult } from '@aiglossarypro/shared/types';
+import { enhancedTerms as terms } from '@aiglossarypro/shared';
+import type { ApiResponse, SearchResult } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { enhancedStorage as storage } from '../enhancedStorage';
 import { paginationSchema, searchQuerySchema } from '../middleware/security';

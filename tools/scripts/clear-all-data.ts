@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { sql } from 'drizzle-orm';
-import { db } from '../server/db.js';
+import { db } from '../server/db';
 
 async function clearAllData() {
   console.log('🗑️ CLEARING ALL DATABASE DATA FOR FRESH START');

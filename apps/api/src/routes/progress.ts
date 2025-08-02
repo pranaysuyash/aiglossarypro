@@ -1,12 +1,12 @@
 import { desc, eq } from 'drizzle-orm';
 import type { Express } from 'express';
-import { enhancedTerms, users, userTermHistory } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms, users, userTermHistory } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { validate } from '../middleware/validationMiddleware';
 import { progressSchemas } from '../schemas/engagementValidation';
 import ProgressTrackingService from '../services/progressTrackingService';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
+import type { AuthenticatedRequest } from '@aiglossarypro/shared';
 import { log as logger } from '../utils/logger';
 import { z } from 'zod';
 

@@ -1,0 +1,52 @@
+{
+  "family": "aiglossarypro-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::927289246324:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:fixed",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {"name": "NODE_ENV", "value": "production"},
+        {"name": "PORT", "value": "8080"},
+        {"name": "LOG_LEVEL", "value": "info"},
+        {"name": "ALLOWED_ORIGINS", "value": "*"},
+        {"name": "MAX_FILE_SIZE", "value": "10485760"},
+        {"name": "ENABLE_RATE_LIMITING", "value": "true"},
+        {"name": "RATE_LIMIT_WINDOW_MS", "value": "900000"},
+        {"name": "RATE_LIMIT_MAX_REQUESTS", "value": "100"}
+      ],
+      "secrets": [
+        {"name": "DATABASE_URL", "valueFrom": ""},
+        {"name": "JWT_SECRET", "valueFrom": ""},
+        {"name": "OPENAI_API_KEY", "valueFrom": ""},
+        {"name": "SESSION_SECRET", "valueFrom": ""}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/aiglossarypro-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 5,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

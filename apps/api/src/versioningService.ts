@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { and, desc, eq } from 'drizzle-orm';
-import { termVersions } from '@aiglossarypro/shared/enhancedSchema';
+import { termVersions } from '@aiglossarypro/shared';
 import { aiService } from './aiService';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from './utils/logger';

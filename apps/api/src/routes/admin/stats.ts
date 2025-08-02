@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from 'express';
-import type { AdminStats, ApiResponse } from '@aiglossarypro/shared/types';
+import type { AdminStats, ApiResponse } from '@aiglossarypro/shared';
 import { HEALTH_STATUS } from '../../constants';
 import { enhancedStorage as storage } from '../../enhancedStorage';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';

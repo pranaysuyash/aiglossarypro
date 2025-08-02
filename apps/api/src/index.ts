@@ -1,4 +1,48 @@
 import { log } from './utils/logger';
+import { validateEnvironment, printValidationResult } from '@aiglossarypro/config';
+
+// Add process error handlers first
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Add startup timestamp
+console.log(`[STARTUP] ${new Date().toISOString()} - Node.js process started`);
+console.log(`[STARTUP] Node version: ${process.version}`);
+console.log(`[STARTUP] Platform: ${process.platform}`);
+console.log(`[STARTUP] Current directory: ${process.cwd()}`);
+
+// Validate environment on startup
+log.info('🚀 Starting AIGlossaryPro API...');
+console.log(`[INIT] ${new Date().toISOString()} - Validating environment...`);
+const envValidation = validateEnvironment();
+printValidationResult(envValidation);
+
+if (!envValidation.isValid && process.env.NODE_ENV === 'production') {
+  log.error('Environment validation failed. Exiting...');
+  process.exit(1);
+}
+
+console.log(`[INIT] ${new Date().toISOString()} - Environment validation complete`);
+
+// Initialize database connection with timeout
+console.log(`[INIT] ${new Date().toISOString()} - Initializing database connection...`);
+console.log(`[INIT] Database URL: ${process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'not set'}`);
+
+// Import database module with error handling
+let dbInitialized = false;
+setTimeout(() => {
+  if (!dbInitialized) {
+    console.error('[FATAL] Database initialization timeout after 30 seconds');
+    process.exit(1);
+  }
+}, 30000);
 
 // Only log Firebase config in development
 if (process.env.NODE_ENV !== 'production') {

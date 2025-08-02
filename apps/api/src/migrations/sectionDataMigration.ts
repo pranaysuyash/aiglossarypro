@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { eq } from 'drizzle-orm';
-import { enhancedTerms, sections } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms, sections } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 
 import logger from '../utils/logger';

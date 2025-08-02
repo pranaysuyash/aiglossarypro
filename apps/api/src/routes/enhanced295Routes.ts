@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { enhanced295AIService } from '../services/enhancedAIContentService';
 import { HIERARCHICAL_295_STRUCTURE, getColumnById, getMainSections } from '@aiglossarypro/shared/completeColumnStructure';
 import { db } from '@aiglossarypro/database';
-import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared';
 import { eq, and } from 'drizzle-orm';
 import { log as logger } from '../utils/logger';
 

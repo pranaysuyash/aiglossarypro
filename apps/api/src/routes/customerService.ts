@@ -10,7 +10,7 @@ import {
   TICKET_STATUSES,
   TICKET_TYPES,
 } from '@aiglossarypro/shared/schema';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
+import type { AuthenticatedRequest } from '@aiglossarypro/shared';
 import { authenticateFirebaseToken } from '../middleware/firebaseAuth';
 import { validateRequest } from '../middleware/validateRequest';
 import {

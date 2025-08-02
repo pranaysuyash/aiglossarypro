@@ -31,7 +31,7 @@ files.forEach(file => {
     { regex: /from ['"]\.\.\/\.\.\/config\/redis['"]/g, replacement: "from '@aiglossarypro/config/config/redis'" },
     
     // Fix server imports that should be from shared
-    { regex: /from ['"]\.\.\/\.\.\/server\/types\/express['"]/g, replacement: "from '@aiglossarypro/shared/types'" },
+    { regex: /from ['"]\.\.\/\.\.\/server\/types\/express['"]/g, replacement: "from '@aiglossarypro/shared'" },
     
     // Fix any remaining client imports
     { regex: /from ['"]\.\.\/\.\.\/client\/(.*?)['"]/g, replacement: "// TODO: Move from client - $1" },

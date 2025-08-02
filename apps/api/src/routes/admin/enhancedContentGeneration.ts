@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import { type Request, type Response, Router } from 'express'
 import type { Request, Response } from 'express';
-import { aiUsageAnalytics } from '@aiglossarypro/shared/enhancedSchema';
+import { aiUsageAnalytics } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
 import { aiContentGenerationService } from '../../services/aiContentGenerationService';

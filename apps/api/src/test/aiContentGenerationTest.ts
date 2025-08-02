@@ -1,4 +1,4 @@
-import { enhancedTerms } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { aiContentGenerationService } from '../services/aiContentGenerationService';
 import { promptTemplateService } from '../services/promptTemplateService';

@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, like, or, sql } from 'drizzle-orm';
 import type { Express } from 'express'
 import type { Request, Response } from 'express';
-import { enhancedTerms } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms } from '@aiglossarypro/shared';
 // import { aiService } from '../../aiService'; // Commented out until AI service is implemented
 import { db } from '@aiglossarypro/database';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';

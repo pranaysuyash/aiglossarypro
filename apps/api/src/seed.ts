@@ -1,4 +1,4 @@
-import { categories, subcategories, termSubcategories, terms } from '@aiglossarypro/shared/enhancedSchema';
+import { categories, subcategories, termSubcategories, terms } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 
 import logger from './utils/logger';

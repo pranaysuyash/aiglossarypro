@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { IUser } from '@aiglossarypro/shared/types';
+import type { IUser } from '@aiglossarypro/shared';
 import { TIME_CONSTANTS } from './constants';
 
 type UserForTransformation = Partial<IUser> & {

@@ -5,7 +5,7 @@ import {
   aiUsageAnalytics,
   sectionItems,
   sections,
-} from '@aiglossarypro/shared/enhancedSchema';
+} from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from '../utils/logger';
 

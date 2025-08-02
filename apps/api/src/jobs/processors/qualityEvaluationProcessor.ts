@@ -1,6 +1,6 @@
 import type { Job } from 'bullmq';
 import { and, eq, lte, or } from 'drizzle-orm';
-import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { aiQualityEvaluationService } from '../../services/aiQualityEvaluationService';
 import { emailService as email } from '../../services/emailService';

@@ -8,7 +8,7 @@ import type {
   ISectionResponse,
   ITermSectionsResponse,
   IUserProgress,
-} from '@aiglossarypro/shared/types';
+} from '@aiglossarypro/shared';
 import { SECTION_NAMES } from '../constants';
 import { authenticateToken } from '../middleware/adminAuth';
 import { optimizedStorage as storage } from '../optimizedStorage';

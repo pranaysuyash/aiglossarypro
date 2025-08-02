@@ -3,7 +3,7 @@
 import { asc, desc, eq, like, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { categories, enhanced_terms, terms } from '../server/schema.js';
+import { categories, enhanced_terms, terms } from '../server/schema';
 
 // Database connection
 const connectionString =

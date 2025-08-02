@@ -13,7 +13,7 @@ import {
   enhancedTerms,
   sectionItems,
   sections,
-} from '@aiglossarypro/shared/enhancedSchema';
+} from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { JobPriority, JobType, jobQueueManager } from '../jobs/queue';
 import { log as logger } from '../utils/logger';

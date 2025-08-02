@@ -32,7 +32,7 @@ declare global {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user: NonNullable<Request['user']>;
+  user: NonNullable<Express.Request['user']>;
 }
 
 export interface AdminRequest extends AuthenticatedRequest {

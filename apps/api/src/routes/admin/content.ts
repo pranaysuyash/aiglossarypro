@@ -3,7 +3,7 @@ import { type Express, type Request, type Response, Router } from 'express'
 import type { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { categories, terms } from '@aiglossarypro/shared/schema';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { BULK_ACTIONS } from '../../constants';
 import { db } from '@aiglossarypro/database';
 import { enhancedStorage as storage } from '../../enhancedStorage';

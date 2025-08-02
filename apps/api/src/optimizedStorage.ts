@@ -24,7 +24,7 @@ import type { UpsertUser, User, Purchase } from '@aiglossarypro/shared';
 import { subDays } from 'date-fns';
 import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
-import type { ICategory, ITerm } from '@aiglossarypro/shared/types';
+import type { ICategory, ITerm } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import {
   CacheInvalidation,

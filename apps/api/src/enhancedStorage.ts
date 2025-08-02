@@ -18,7 +18,7 @@ import type {
   AdminStats,
   AdvancedSearchOptions,
   ITerm,
-} from '@aiglossarypro/shared/types';
+} from '@aiglossarypro/shared';
 import { redisCache as enhancedRedisCache } from '@aiglossarypro/config/config/redis';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
 import { type IStorage, optimizedStorage } from './optimizedStorage';

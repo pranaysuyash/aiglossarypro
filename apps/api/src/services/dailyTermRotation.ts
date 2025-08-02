@@ -8,8 +8,8 @@
 
 import { format, subDays } from 'date-fns';
 import { and, asc, eq, gte, sql } from 'drizzle-orm';
-import { enhancedTerms, termViews } from '@aiglossarypro/shared/enhancedSchema';
-import type { ITerm } from '@aiglossarypro/shared/types';
+import { enhancedTerms, termViews } from '@aiglossarypro/shared';
+import type { ITerm } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from '../utils/logger';
 

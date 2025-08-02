@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import { eq } from 'drizzle-orm';
-import { enhancedTerms } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { enhancedStorage } from '../enhancedStorage';
 import { multiAuthMiddleware } from '../middleware/multiAuth';

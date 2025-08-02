@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { pool } from '../server/db.js';
+import { pool } from '../server/db';
 
 async function cleanupMalformedData() {
   console.log('🧹 Starting Database Cleanup...\n');

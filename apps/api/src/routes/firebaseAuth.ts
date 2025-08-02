@@ -6,7 +6,7 @@
 import type { Express, Request, Response } from 'express'
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import type { ApiResponse, IUser } from '@aiglossarypro/shared/types';
+import type { ApiResponse, IUser } from '@aiglossarypro/shared';
 import { generateToken } from '@aiglossarypro/auth';
 import { createFirebaseUser, verifyFirebaseToken } from '@aiglossarypro/config';
 import { optimizedStorage as storage } from '../optimizedStorage';

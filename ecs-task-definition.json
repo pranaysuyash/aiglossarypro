@@ -1,0 +1,61 @@
+{
+  "family": "aiglossarypro-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::927289246324:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::927289246324:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:fixed",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {"name": "NODE_ENV", "value": "production"},
+        {"name": "PORT", "value": "8080"},
+        {"name": "BASE_URL", "value": "https://aiglossarypro.com"},
+        {"name": "EMAIL_ENABLED", "value": "true"},
+        {"name": "SIMPLE_AUTH_ENABLED", "value": "true"},
+        {"name": "USE_ENHANCED_STORAGE", "value": "true"},
+        {"name": "REDIS_ENABLED", "value": "true"},
+        {"name": "UPSTASH_REDIS_REST_URL", "value": "https://communal-hawk-12289.upstash.io"},
+        {"name": "UPSTASH_REDIS_REST_TOKEN", "value": "ATABAAIjcDE0NmIzNGIyMzM5Yjk0ODU3YTg0ZDQ0NDkzMjFjMTI3NnAxMA"}
+      ],
+      "secrets": [
+        {"name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database-HqtDrG"},
+        {"name": "SESSION_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/session-g7vUMO"},
+        {"name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt-JGrrVJ"},
+        {"name": "FIREBASE_PROJECT_ID", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-ByzzdB:project_id::"},
+        {"name": "FIREBASE_CLIENT_EMAIL", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-ByzzdB:client_email::"},
+        {"name": "FIREBASE_PRIVATE_KEY_BASE64", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-ByzzdB:private_key_base64::"},
+        {"name": "RESEND_API_KEY", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/resend-HryiHG"},
+        {"name": "OPENAI_API_KEY", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/openai-0ltiKK"},
+        {"name": "GUMROAD_ACCESS_TOKEN", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/gumroad-q6sItq:access_token::"},
+        {"name": "GUMROAD_APPLICATION_ID", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/gumroad-q6sItq:app_id::"},
+        {"name": "GUMROAD_APPLICATION_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/gumroad-q6sItq:app_secret::"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/aiglossarypro-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      }
+    }
+  ]
+}

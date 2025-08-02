@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import NodeCache from 'node-cache';
 import OpenAI from 'openai';
-import type { ICategory, ITerm } from '@aiglossarypro/shared/types';
+import type { ICategory, ITerm } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from './utils/logger';
 
@@ -250,7 +250,7 @@ class AIService {
   }
 
   // Enhanced fail-safe for API outages with smart model fallback
-  private async executeWithFailsafe<T>(operation: () => Promise<T>, fallback?: T): Promise<T> {
+  /* private async executeWithFailsafe<T>(operation: () => Promise<T>, fallback?: T): Promise<T> {
     for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
       try {
         return await operation();
@@ -294,7 +294,7 @@ class AIService {
     }
 
     throw new Error('Maximum retries exceeded');
-  }
+  } */
 
   // Smart OpenAI call with cost optimization and model fallback
   private async callOpenAIWithRetry(

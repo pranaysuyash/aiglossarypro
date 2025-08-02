@@ -7,7 +7,7 @@
 import { format, isValid, parseISO } from 'date-fns';
 import type { Express, Request, Response } from 'express'
 import type { Request, Response } from 'express';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { DailyTermRotationService } from '../services/dailyTermRotation';
 import { log as logger } from '../utils/logger';
 

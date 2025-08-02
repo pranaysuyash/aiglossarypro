@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { sql } from 'drizzle-orm';
-import * as schema from '@aiglossarypro/shared/enhancedSchema';
+import * as schema from '@aiglossarypro/shared';
 import * as originalSchema from '@aiglossarypro/shared/schema';
 import { db, pool } from '@aiglossarypro/database';
 

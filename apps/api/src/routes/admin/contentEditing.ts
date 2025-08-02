@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { Router } from 'express';
 import { z } from 'zod';
-import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { authenticateToken } from '../../middleware/adminAuth';
 import { log } from '../../utils/logger';

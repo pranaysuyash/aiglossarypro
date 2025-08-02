@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { sql } from 'drizzle-orm';
-import { db } from '../server/db.js';
+import { db } from '../server/db';
 
 async function comprehensiveDataStatus() {
   console.log('🔍 COMPREHENSIVE DATABASE STATUS INVESTIGATION\n');

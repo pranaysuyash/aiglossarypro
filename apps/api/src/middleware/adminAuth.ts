@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { NextFunction, Request, Response } from 'express';
 import { users } from '@aiglossarypro/shared/schema';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
+import type { AuthenticatedRequest } from '@aiglossarypro/shared';
 import { verifyToken } from '@aiglossarypro/auth';
 import { db } from '@aiglossarypro/database';
 

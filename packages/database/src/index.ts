@@ -1,6 +1,6 @@
 // Database package exports
 // Export default db connection
-export { db, pool } from './db.js';
+export { db, pool } from './db';
 
 // Export monitored db and functions
 export { 
@@ -8,8 +8,8 @@ export {
   pool as monitoredPool,
   checkDatabaseHealth,
   getPoolMetrics 
-} from './db-monitored.js';
+} from './db-monitored';
 
 // Export db directory modules
-export * from './db/pool-monitor.js';
-export * from './db/support-schema.js';
+export * from './db/pool-monitor';
+export * from './db/support-schema';

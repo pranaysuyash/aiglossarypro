@@ -3,8 +3,16 @@
 // This package provides auth-related utilities and middleware
 
 import type { NextFunction, Request, Response } from 'express';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared/types';
 import jwt from 'jsonwebtoken';
+
+// Define AuthenticatedRequest locally to avoid circular dependencies
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    isAdmin?: boolean;
+  };
+}
 
 // Simple logger for now
 const logger = {

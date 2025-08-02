@@ -138,7 +138,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     const total = Number((countResult[0] as any)?.count || 0);
 
     // Map results to SearchResult interface
-    const searchResults: SearchResult[] = (results as any[]).map((result: Response) => ({
+    const searchResults: SearchResult[] = (results as any[]).map((result: any) => ({
       id: result.id,
       name: result.name,
       definition: result.definition || '',
@@ -199,7 +199,7 @@ export async function getPopularTerms(limit = 10): Promise<SearchResult[]> {
       .orderBy(desc(terms.viewCount))
       .limit(limit);
 
-    return (results as any[]).map((result: Response) => ({
+    return (results as any[]).map((result: any) => ({
       id: result.id,
       name: result.name,
       definition: result.definition || '',
@@ -239,7 +239,7 @@ export async function getSearchSuggestions(query: string, limit = 5): Promise<st
       .orderBy(desc(terms.viewCount))
       .limit(limit);
 
-    return (results as any[]).map((result: Response) => result.name);
+    return (results as any[]).map((result: any) => result.name);
   } catch (error) {
     logger.error('Get search suggestions error:', error);
     return [];

@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from 'express';
-import type { ApiResponse, IUser } from '@aiglossarypro/shared/types';
+import type { ApiResponse, IUser } from '@aiglossarypro/shared';
 import { features } from '@aiglossarypro/config';
 import { authenticateToken } from '../middleware/adminAuth';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';

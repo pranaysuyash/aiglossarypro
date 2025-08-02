@@ -27,12 +27,12 @@ interface SearchResult {
   updatedAt?: Date;
 }
 
-interface SearchStrategy {
-  name: string;
-  condition: any;
-  relevanceScore: any;
-  estimatedMatches?: number;
-}
+// interface SearchStrategy {
+//   name: string;
+//   condition: any;
+//   relevanceScore: any;
+//   estimatedMatches?: number;
+// }
 
 export interface AdaptiveSearchOptions {
   query: string;
@@ -241,7 +241,7 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<un
         }
 
         // Transform results
-        const searchResults = results.map((result: SearchResult) => ({
+        const searchResults = results.map((result: any) => ({
           id: result.id,
           name: result.name,
           definition: result.definition || undefined,

@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { requireAdmin } from '../middleware/adminAuth';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { validateQuery } from '../middleware/security';

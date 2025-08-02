@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared/enhancedSchema';
+import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { log as logger } from '../utils/logger';
 

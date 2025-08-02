@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from 'express';
-import type { ApiResponse, ITerm, PaginatedResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse, ITerm, PaginatedResponse } from '@aiglossarypro/shared';
 import { DEFAULT_LIMITS, SORT_ORDERS } from '../constants';
 
 // Types

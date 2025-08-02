@@ -4,7 +4,7 @@
  */
 
 import type { User, UpsertUser, Purchase } from '@aiglossarypro/shared';
-import type { ICategory, ITerm } from '@aiglossarypro/shared/types';
+import type { ICategory, ITerm } from '@aiglossarypro/shared';
 import type {
   UserProgressStats,
   RecentPurchase,

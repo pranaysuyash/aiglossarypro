@@ -9,7 +9,7 @@ import { sql } from 'drizzle-orm';
 import { type Request, type Response, Router } from 'express'
 import type { Request, Response } from 'express';
 import multer from 'multer';
-import type { ApiResponse } from '@aiglossarypro/shared/types';
+import type { ApiResponse } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { requireAdmin } from '../middleware/adminAuth';
 import { log as logger } from '../utils/logger';

@@ -4,12 +4,16 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
   "executionRoleArn": "arn:aws:iam::927289246324:role/ecsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::927289246324:role/ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "api",
-      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:production",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:amd64-production",
       "portMappings": [
         {
           "containerPort": 8080,

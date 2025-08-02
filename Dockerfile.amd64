@@ -1,0 +1,40 @@
+FROM --platform=linux/amd64 node:20-alpine
+
+# Copy the existing built application from the ARM64 image
+# This is a quick workaround to get AMD64 compatibility
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Create user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 appuser
+
+# Copy package files for dependency installation
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/database/package.json ./packages/database/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/config/package.json ./packages/config/
+COPY apps/api/package.json ./apps/api/
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy source code
+COPY packages ./packages
+COPY apps/api ./apps/api
+COPY tsconfig.json ./
+
+# Set permissions
+RUN chown -R appuser:nodejs /app
+
+USER appuser
+
+EXPOSE 8080
+
+CMD ["node", "apps/api/src/index.js"]

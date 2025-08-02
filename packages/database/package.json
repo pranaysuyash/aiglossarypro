@@ -1,7 +1,6 @@
 {
   "name": "@aiglossarypro/database",
   "version": "1.0.0",
-  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,5 +14,8 @@
     "@neondatabase/serverless": "^0.10.4",
     "drizzle-orm": "^0.44.2",
     "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "pg-protocol": "^1.10.3"
   }
 }

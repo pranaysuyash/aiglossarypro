@@ -1,6 +1,5 @@
 import { sql } from 'drizzle-orm';
-import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { db } from '@aiglossarypro/database';
 
 import logger from '../utils/logger';

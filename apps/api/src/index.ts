@@ -19,9 +19,9 @@ console.log(`[STARTUP] Platform: ${process.platform}`);
 console.log(`[STARTUP] Current directory: ${process.cwd()}`);
 
 // Validate environment on startup
-log.info('🚀 Starting AIGlossaryPro API...');
-console.log(`[INIT] ${new Date().toISOString()} - Validating environment...`);
+console.log(`[DEBUG] ${new Date().toISOString()} - About to validate environment...`);
 const envValidation = validateEnvironment();
+console.log(`[DEBUG] ${new Date().toISOString()} - Environment validation result:`, envValidation);
 printValidationResult(envValidation);
 
 if (!envValidation.isValid && process.env.NODE_ENV === 'production') {
@@ -31,20 +31,12 @@ if (!envValidation.isValid && process.env.NODE_ENV === 'production') {
 
 console.log(`[INIT] ${new Date().toISOString()} - Environment validation complete`);
 
-// Initialize database connection with timeout
-console.log(`[INIT] ${new Date().toISOString()} - Initializing database connection...`);
-console.log(`[INIT] Database URL: ${process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'not set'}`);
+// Import database pool for connection testing
+console.log(`[DEBUG] ${new Date().toISOString()} - About to import database pool...`);
+import { pool } from '@aiglossarypro/database';
+console.log(`[DEBUG] ${new Date().toISOString()} - Database pool imported successfully`);
 
-// Import database module with error handling
-let dbInitialized = false;
-setTimeout(() => {
-  if (!dbInitialized) {
-    console.error('[FATAL] Database initialization timeout after 30 seconds');
-    process.exit(1);
-  }
-}, 30000);
-
-// Only log Firebase config in development
+// Only log Firebase config status in development (never log actual values)
 if (process.env.NODE_ENV !== 'production') {
   log.info('🔍 Development - Firebase Environment Check:');
   log.info('- FIREBASE_PROJECT_ID:', { status: process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing' });
@@ -168,7 +160,19 @@ app.use(cdnCacheMiddleware);
 // Commented out to prevent duplicate logging - loggingMiddleware already handles this
 // app.use(responseLoggingMiddleware);
 
-(async () => {
+async function startServer() {
+  // Test database connection first
+  console.log(`[INIT] ${new Date().toISOString()} - Starting server function...`);
+  console.log(`[INIT] ${new Date().toISOString()} - Connecting to database...`);
+  try {
+    console.log(`[DEBUG] ${new Date().toISOString()} - About to call pool.connect()...`);
+    await pool.connect();
+    console.log(`[DB] ${new Date().toISOString()} - Database connected successfully`);
+  } catch (error) {
+    console.error('[FATAL] Database connection failed:', error);
+    process.exit(1);
+  }
+
   // Load and validate configuration
   logConfigStatus();
 
@@ -331,23 +335,15 @@ app.use(cdnCacheMiddleware);
   // Start listening - use 0.0.0.0 in production for external access
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';
 
-  log.info(`Attempting to start server on ${host}:${port}...`);
+  console.log(`[INIT] ${new Date().toISOString()} - Starting HTTP server on ${host}:${port}`);
   
   server.listen(port, host, () => {
+    console.log(`[HTTP] ${new Date().toISOString()} - Server listening on ${host}:${port}`);
     log.info(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
     log.info(`🔍 Server address: ${JSON.stringify(server.address())}`);
     log.info(`🛡️  Error handling and monitoring enabled`);
   });
   
-  // Add error handlers to prevent crash
-  process.on('uncaughtException', (error) => {
-    log.error('Uncaught Exception:', error);
-  });
-  
-  process.on('unhandledRejection', (reason, promise) => {
-    log.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  });
-
   // Setup graceful shutdown
   gracefulShutdown(server);
 
@@ -358,4 +354,21 @@ app.use(cdnCacheMiddleware);
   // TODO: Implement automatic Excel data loading if needed
   // For now, use the admin endpoint /api/admin/import/force-reprocess
   log.info('🚀 Server ready. Use admin endpoint for Excel data processing.');
-})();
+}
+
+// Startup timeout guard
+const startupTimeout = setTimeout(() => {
+  console.error('[FATAL] Startup timed out after 30 seconds');
+  process.exit(1);
+}, 30000);
+
+// Start the server
+startServer()
+  .then(() => {
+    clearTimeout(startupTimeout);
+    console.log(`[STARTUP] ${new Date().toISOString()} - Server startup completed successfully`);
+  })
+  .catch((error) => {
+    console.error('[FATAL] Failed to start server:', error);
+    process.exit(1);
+  });

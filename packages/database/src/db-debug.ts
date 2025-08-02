@@ -44,15 +44,15 @@ pool.on('error', (err) => {
   console.error('PostgreSQL pool error:', err);
 });
 
-pool.on('connect', (client) => {
+pool.on('connect', (_client) => {
   log('New client connected to pool');
 });
 
-pool.on('acquire', (client) => {
+pool.on('acquire', (_client) => {
   log('Client acquired from pool');
 });
 
-pool.on('remove', (client) => {
+pool.on('remove', (_client) => {
   log('Client removed from pool');
 });
 

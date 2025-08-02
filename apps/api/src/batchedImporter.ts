@@ -8,6 +8,7 @@ import path from 'node:path';
 import { and, eq } from 'drizzle-orm';
 import { categories, subcategories, termSubcategories, terms } from '@aiglossarypro/shared/schema';
 import { db } from '@aiglossarypro/database';
+import type { ICategory, ISubcategory, ITerm } from '@aiglossarypro/shared/types';
 
 import logger from './utils/logger';
 interface ImportOptions {
@@ -124,7 +125,7 @@ export async function batchedImportProcessedData(
  * Import categories in batches
  */
 async function importCategoriesInBatches(
-  categoriesData: unknown[],
+  categoriesData: ICategory[],
   batchSize: number,
   skipExisting: boolean,
   categoryIdMap: Map<string, string>
@@ -183,7 +184,7 @@ async function importCategoriesInBatches(
  * Import subcategories in batches
  */
 async function importSubcategoriesInBatches(
-  subcategoriesData: unknown[],
+  subcategoriesData: ISubcategory[],
   batchSize: number,
   skipExisting: boolean,
   categoryIdMap: Map<string, string>
@@ -248,7 +249,7 @@ async function importSubcategoriesInBatches(
  * Import terms in batches
  */
 async function importTermsInBatches(
-  termsData: unknown[],
+  termsData: ITerm[],
   batchSize: number,
   skipExisting: boolean
 ): Promise<{ imported: number; errors: string[] }> {

@@ -2,14 +2,14 @@
   "family": "aiglossarypro-api",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "256",
-  "memory": "512",
+  "cpu": "512",
+  "memory": "1024",
   "executionRoleArn": "arn:aws:iam::927289246324:role/ecsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::927289246324:role/ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "api",
-      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:fixed",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:production",
       "portMappings": [
         {
           "containerPort": 8080,

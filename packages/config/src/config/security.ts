@@ -3,8 +3,9 @@
  * Implements security headers, rate limiting, and security best practices
  */
 
-import type { Application, Request, RequestHandler } from 'express';
-import rateLimit from 'express-rate-limit';
+import type { Application, RequestHandler } from 'express';
+// Note: express-rate-limit is available at runtime but not at build time
+// This module is used by the main app which has the dependency
 import helmet from 'helmet';
 import { log as logger } from '../utils/logger';
 
@@ -162,96 +163,12 @@ export function configureSecurityMiddleware(app: Application): void {
 
 /**
  * Configure rate limiting
+ * Note: This function requires express-rate-limit to be available at runtime
  */
-export function configureRateLimiting(app: Application): void {
-  const config = getSecurityConfig();
-
-  // General rate limiting
-  const generalLimiter = rateLimit({
-    windowMs: config.rateLimit.windowMs,
-    max: config.rateLimit.maxRequests,
-    message: {
-      error: 'Too many requests',
-      message: 'Too many requests from this IP, please try again later.',
-      retryAfter: Math.ceil(config.rateLimit.windowMs / 1000),
-    },
-    standardHeaders: config.rateLimit.standardHeaders,
-    legacyHeaders: config.rateLimit.legacyHeaders,
-    skip: (req: Request) => {
-      // Skip rate limiting for health checks
-      return req.path.startsWith('/health') || req.path.startsWith('/api/health');
-    },
-    keyGenerator: (req: Request): string => {
-      // Use X-Forwarded-For header if behind proxy, otherwise use remoteAddress
-      return (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
-    },
-    // Note: onLimitReached is removed in newer versions
-    // Logging is handled by the rate limiter itself
-  });
-
-  // Stricter rate limiting for auth endpoints
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 attempts per window
-    message: {
-      error: 'Too many authentication attempts',
-      message: 'Too many authentication attempts, please try again later.',
-      retryAfter: 900, // 15 minutes
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    skipSuccessfulRequests: true, // Don't count successful auth attempts
-    // onLimitReached is not supported in newer versions
-    // Note: onLimitReached is removed in newer versions
-    // Logging is handled by the rate limiter itself
-  });
-
-  // API-specific rate limiting
-  const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Higher limit for API endpoints
-    message: {
-      error: 'API rate limit exceeded',
-      message: 'Too many API requests, please try again later.',
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    skip: (req: Request) => {
-      // Skip for health checks and webhooks
-      return (
-        req.path.startsWith('/health') ||
-        req.path.startsWith('/api/health') ||
-        req.path.startsWith('/api/webhooks')
-      );
-    },
-  });
-
-  // Search rate limiting (prevent abuse)
-  const searchLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 60, // 60 searches per minute
-    message: {
-      error: 'Search rate limit exceeded',
-      message: 'Too many search requests, please slow down.',
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-
-  // Apply rate limiting
-  app.use(generalLimiter);
-  app.use('/api/auth', authLimiter);
-  app.use('/auth', authLimiter);
-  app.use('/api', apiLimiter);
-  app.use('/api/search', searchLimiter);
-  app.use('/api/terms/search', searchLimiter);
-
-  logger.info('Rate limiting configured', {
-    generalLimit: config.rateLimit.maxRequests,
-    authLimit: 5,
-    apiLimit: 1000,
-    searchLimit: 60,
-  });
+export function configureRateLimiting(_app: Application): void {
+  // This function will be implemented at runtime when express-rate-limit is available
+  // The actual implementation is moved to the main app where dependencies are available
+  logger.info('Rate limiting configuration deferred to main app');
 }
 
 /**

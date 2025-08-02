@@ -4,7 +4,7 @@ dotenv.config();
 
 import { neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from 'ws';
+import * as ws from 'ws';
 import * as schema from '@aiglossarypro/shared';
 import { createMonitoredPool, MonitoredPool, PoolStats } from './db/pool-monitor';
 
@@ -15,7 +15,7 @@ const logger = {
   error: (...args: any[]) => console.error('[database]', ...args),
 };
 
-neonConfig.webSocketConstructor = ws;
+neonConfig.webSocketConstructor = ws as any;
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL must be set. Did you forget to provision a database?');

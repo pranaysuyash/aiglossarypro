@@ -116,11 +116,10 @@ async function fixFile(filePath: string): Promise<number> {
         if (content.includes("from 'express'")) {
           // Add Request to existing express import
           content = content.replace(
-            /import ({[^}]+}) from 'express'
-import type { Request, Response } from 'express';/,
+            /import ({[^}]+}) from 'express'/,
             (match, imports) => {
               if (!imports.includes('Request')) {
-                return `import { Request, ${imports.substring(1) } from 'express'`;
+                return `import { Request, ${imports.substring(1)} } from 'express'`;
               }
               return match;
             }

@@ -1,12 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { analyticsService } from '../../services/analyticsService';
 import { performanceTrackingMiddleware } from '../analyticsMiddleware';
 
 // Mock the analytics service
-vi.mock('../../services/analyticsService', () => ({
+jest.mock('../../services/analyticsService', () => ({
   analyticsService: {
-    trackPerformance: vi.fn().mockResolvedValue(undefined),
+    trackPerformance: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -18,7 +17,7 @@ describe('Analytics Middleware', () => {
 
   beforeEach(() => {
     // Reset mocks
-    vi.clearAllMocks();
+    jest.clearAllMocks();
 
     // Create mock request
     mockReq = {
@@ -31,7 +30,7 @@ describe('Analytics Middleware', () => {
     };
 
     // Create mock response with proper end function
-    originalEnd = vi.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
+    originalEnd = jest.fn((_chunk?: any, _encoding?: BufferEncoding, callback?: () => void) => {
       if (callback) {callback();}
       return mockRes as Response;
     });
@@ -39,10 +38,10 @@ describe('Analytics Middleware', () => {
     mockRes = {
       statusCode: 200,
       end: originalEnd,
-      setHeader: vi.fn(),
+      setHeader: jest.fn(),
     };
 
-    mockNext = vi.fn();
+    mockNext = jest.fn();
   });
 
   describe('performanceTrackingMiddleware', () => {

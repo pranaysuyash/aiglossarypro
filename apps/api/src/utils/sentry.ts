@@ -184,8 +184,8 @@ export const startTransaction = (name: string, operation: string) => {
     name,
     op: operation,
   }, (span) => {
-    span.setTag('environment', process.env.NODE_ENV || 'development');
-    span.setTag('service', 'ai-glossary-pro');
+    span.setAttribute('environment', process.env.NODE_ENV || 'development');
+    span.setAttribute('service', 'ai-glossary-pro');
     return span;
   });
 };
@@ -206,8 +206,8 @@ export const monitorAPIPerformance = (
       op: 'api.request',
     },
     async (span) => {
-      if (context?.endpoint) span.setTag('endpoint', context.endpoint);
-      if (context?.method) span.setTag('method', context.method);
+      if (context?.endpoint) span.setAttribute('endpoint', context.endpoint);
+      if (context?.method) span.setAttribute('method', context.method);
       const startTime = Date.now();
 
       try {

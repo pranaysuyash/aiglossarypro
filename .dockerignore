@@ -1,8 +1,10 @@
 # Dependencies
 node_modules
+**/node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Build outputs
 dist
@@ -51,12 +53,29 @@ vitest*
 
 # Logs
 logs
+logs/
 *.log
+server.log
 
 # Temporary files
 tmp
 temp
 *.tmp
+
+# Large directories
+reports/
+backups/
+test-results/
+landing-audit-results/
+navigation/
+comprehensive-audit/
+frontend-audit*/
+artifacts/
+visual-audit*/
+storybook-static/
+
+# Large JSON trace files (keep package.json, tsconfig.json, etc)
+Trace-*.json
 
 # Optional - keep if needed in container
 # drizzle

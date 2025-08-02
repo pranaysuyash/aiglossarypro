@@ -44,7 +44,7 @@ class QueryOptimizer {
             tags?: string[];
         } = {}
     ): Promise<T> {
-        const { cache = false, cacheTtl = 300, tags = [] } = options;
+        const { cache = false, cacheTtl = 300 } = options;
         const queryHash = this.hashQuery(query);
         const startTime = Date.now();
 

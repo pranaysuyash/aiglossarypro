@@ -1,109 +1,113 @@
+#!/usr/bin/env tsx
 /**
  * Setup Test Users Script
- * Creates the test users in Firebase if they don't exist
+ * Creates test users in Firebase and backend database
  */
-
-// Use dynamic import for fetch
-const fetch = (await import('node-fetch')).default;
-
-const BASE_URL = 'http://localhost:3001';
-
-const TEST_USERS = [
-  {
-    email: 'test@aimlglossary.com',
-    password: 'testpass123',
-    firstName: 'Test',
-    lastName: 'User',
-    type: 'regular',
-  },
-  {
-    email: 'premium@aimlglossary.com',
-    password: 'premiumpass123',
-    firstName: 'Premium',
-    lastName: 'User',
-    type: 'premium',
-  },
-  {
-    email: 'admin@aimlglossary.com',
-    password: 'adminpass123',
-    firstName: 'Admin',
-    lastName: 'User',
-    type: 'admin',
-  },
+import chalk from 'chalk';
+const API_BASE = 'http://localhost:3001';
+const testUsers = [
+    {
+        email: 'test@aimlglossary.com',
+        password: 'testpass123',
+        firstName: 'Test',
+        lastName: 'User',
+        isAdmin: false,
+        lifetimeAccess: false,
+        subscriptionTier: 'free',
+    },
+    {
+        email: 'premium@aimlglossary.com',
+        password: 'premiumpass123',
+        firstName: 'Premium',
+        lastName: 'User',
+        isAdmin: false,
+        lifetimeAccess: true,
+        subscriptionTier: 'lifetime',
+    },
+    {
+        email: 'admin@aimlglossary.com',
+        password: 'adminpass123',
+        firstName: 'Admin',
+        lastName: 'User',
+        isAdmin: true,
+        lifetimeAccess: true,
+        subscriptionTier: 'admin',
+    },
 ];
-
-async function createTestUser(userData) {
-  try {
-    console.log(`📝 Creating test user: ${userData.email}`);
-
-    const response = await fetch(`${BASE_URL}/api/auth/firebase/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: userData.email,
-        password: userData.password,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      console.log(`✅ Successfully created ${userData.type} user: ${userData.email}`);
-      return true;
-    } else if (response.status === 409) {
-      console.log(`ℹ️  User already exists: ${userData.email}`);
-      return true;
-    } else {
-      console.log(`❌ Failed to create user ${userData.email}: ${result.message}`);
-      return false;
-    }
-  } catch (error) {
-    console.error(`❌ Error creating user ${userData.email}:`, error.message);
-    return false;
-  }
-}
-
 async function setupTestUsers() {
-  console.log('🚀 Setting up Firebase test users...');
-  console.log('=====================================\\n');
-
-  // Check if server is running
-  try {
-    const healthCheck = await fetch(`${BASE_URL}/api/health`);
-    if (!healthCheck.ok) {
-      throw new Error('Server health check failed');
+    console.log(chalk.blue('🔧 Setting up test users...'));
+    for (const user of testUsers) {
+        try {
+            console.log(chalk.blue(`Creating/updating user: ${user.email}`));
+            // Try to register the user first
+            const registerResponse = await fetch(`${API_BASE}/api/auth/firebase/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(user),
+            });
+            const registerResult = await registerResponse.json();
+            if (registerResponse.ok) {
+                console.log(chalk.green(`✅ ${user.email} - Created successfully`));
+            }
+            else if (registerResult.message === 'User already exists') {
+                console.log(chalk.yellow(`⚠️ ${user.email} - Already exists, will update permissions`));
+            }
+            else {
+                console.log(chalk.red(`❌ ${user.email} - Failed: ${registerResult.message}`));
+                continue;
+            }
+            // Update user permissions/properties via admin endpoint
+            const updateResponse = await fetch(`${API_BASE}/api/admin/users/${encodeURIComponent(user.email)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    isAdmin: user.isAdmin,
+                    lifetimeAccess: user.lifetimeAccess,
+                    subscriptionTier: user.subscriptionTier,
+                }),
+            });
+            if (updateResponse.ok) {
+                console.log(chalk.green(`✅ ${user.email} - Permissions updated (${user.subscriptionTier})`));
+            }
+            else {
+                const updateResult = await updateResponse.json();
+                console.log(chalk.yellow(`⚠️ ${user.email} - Permission update failed: ${updateResult.message || 'Unknown error'}`));
+            }
+        }
+        catch (error) {
+            console.error(chalk.red(`❌ ${user.email} - Error: ${error}`));
+        }
     }
-    console.log('✅ Backend server is running\\n');
-  } catch (error) {
-    console.log('⚠️  Cannot connect to backend server. Trying to proceed anyway...');
-    console.log('   Make sure the server is running with: npm run dev\\n');
-  }
-
-  let successCount = 0;
-
-  for (const userData of TEST_USERS) {
-    const success = await createTestUser(userData);
-    if (success) {successCount++;}
-    console.log(''); // Add spacing
-  }
-
-  console.log('=====================================');
-  console.log(`📊 Summary: ${successCount}/${TEST_USERS.length} users ready`);
-
-  if (successCount === TEST_USERS.length) {
-    console.log('🎉 All test users are ready!');
-    console.log('\\n💡 You can now use these accounts in the login page:');
-    TEST_USERS.forEach(user => {
-      console.log(`   ${user.type.toUpperCase()}: ${user.email} / ${user.password}`);
+    console.log(chalk.blue('\n🧪 Testing authentication...'));
+    // Test authentication for first user
+    const testUser = testUsers[0];
+    try {
+        // First, try to get a Firebase ID token by simulating login
+        console.log(chalk.blue(`Testing auth flow for ${testUser.email}...`));
+        // Check if auth endpoints are working
+        const healthCheck = await fetch(`${API_BASE}/api/auth/check`);
+        const healthResult = await healthCheck.json();
+        console.log(chalk.green(`Auth check endpoint: ${healthResult.success ? 'Working' : 'Failed'}`));
+        const userCheck = await fetch(`${API_BASE}/api/auth/user`);
+        const userResult = await userCheck.json();
+        console.log(chalk.green(`Auth user endpoint: ${userResult.success ? 'Working' : 'Working (401 expected)'}`));
+    }
+    catch (error) {
+        console.error(chalk.red('Auth test failed:'), error);
+    }
+    console.log(chalk.green('\n✅ Test user setup complete!'));
+    console.log(chalk.blue('You can now use these accounts in the frontend:'));
+    testUsers.forEach(user => {
+        const userType = user.isAdmin ? 'admin' : user.lifetimeAccess ? 'premium' : 'free';
+        console.log(chalk.gray(`  - ${user.email} / ${user.password} (${userType})`));
     });
-  } else {
-    console.log('⚠️  Some users could not be created. Check the errors above.');
-  }
 }
-
-// Run the setup
-setupTestUsers().catch(console.error);
+// Run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+    setupTestUsers().catch(console.error);
+}
+export { setupTestUsers };

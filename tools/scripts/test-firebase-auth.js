@@ -1,107 +1,133 @@
-#!/usr/bin/env node
-
-/**
- * Test Firebase authentication directly without service workers
- */
-
-import https from 'https';
-import dns from 'dns';
-
-// Test direct API call to Firebase
-function testFirebaseEndpoint() {
-  console.log('Testing Firebase Auth endpoint directly...\n');
-  
-  const options = {
-    hostname: 'identitytoolkit.googleapis.com',
-    port: 443,
-    path: '/v1/accounts:signInWithPassword?key=AIzaSyBBMv0o12J-irIDt0vqjQFgHwgO_Qp6g9Q',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+import { chromium } from 'playwright';
+async function testFirebaseAuth() {
+    const browser = await chromium.launch({ headless: false });
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    // Enable detailed console logging
+    page.on('console', msg => {
+        console.log(`Browser [${msg.type()}]:`, msg.text());
+    });
+    page.on('pageerror', error => {
+        console.error('Page error:', error);
+    });
+    try {
+        console.log('🔍 Testing Firebase authentication flow...\n');
+        // 1. Go to login page
+        console.log('1️⃣ Navigating to login page...');
+        await page.goto('http://localhost:5173/login');
+        await page.waitForTimeout(2000);
+        // Close any modals
+        try {
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500);
+        }
+        catch { }
+        // 2. Fill login form
+        console.log('\n2️⃣ Filling login form...');
+        await page.fill('input[type="email"]', 'test@aimlglossary.com');
+        await page.fill('input[type="password"]', 'testpassword123');
+        // 3. Monitor network requests
+        console.log('\n3️⃣ Monitoring authentication requests...');
+        // Set up request logging
+        page.on('request', request => {
+            if (request.url().includes('/api/auth')) {
+                console.log(`→ ${request.method()} ${request.url()}`);
+            }
+        });
+        page.on('response', response => {
+            if (response.url().includes('/api/auth')) {
+                console.log(`← ${response.status()} ${response.url()}`);
+            }
+        });
+        // 4. Submit form and wait
+        console.log('\n4️⃣ Submitting login form...');
+        // Click submit button
+        const submitButton = await page.$('button[type="submit"]');
+        if (submitButton) {
+            await submitButton.click();
+        }
+        else {
+            await page.keyboard.press('Enter');
+        }
+        // Wait for navigation or error
+        await page.waitForTimeout(5000);
+        // 5. Check authentication state
+        console.log('\n5️⃣ Checking authentication state...');
+        const authState = await page.evaluate(async () => {
+            // Check cookies
+            const cookies = document.cookie;
+            // Check localStorage
+            const localStorageData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('auth') || key.includes('firebase'))) {
+                    localStorageData[key] = localStorage.getItem(key);
+                }
+            }
+            // Check auth API
+            let authCheck;
+            try {
+                const response = await fetch('/api/auth/check', { credentials: 'include' });
+                authCheck = await response.json();
+            }
+            catch (e) {
+                authCheck = { error: e.message };
+            }
+            return {
+                cookies,
+                localStorage: localStorageData,
+                authCheck,
+                currentUrl: window.location.href
+            };
+        });
+        console.log('\n📊 Authentication State:');
+        console.log('- Current URL:', authState.currentUrl);
+        console.log('- Cookies:', authState.cookies || 'None');
+        console.log('- LocalStorage keys:', Object.keys(authState.localStorage));
+        console.log('- Auth check:', authState.authCheck);
+        // 6. Test Firebase token exchange
+        console.log('\n6️⃣ Testing direct Firebase token exchange...');
+        const tokenExchange = await page.evaluate(async () => {
+            try {
+                // Try to get Firebase instance
+                const firebase = window.firebase;
+                if (!firebase) {
+                    return { error: 'Firebase not available' };
+                }
+                // Check if user is signed in to Firebase
+                const auth = firebase.auth();
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    const idToken = await currentUser.getIdToken();
+                    // Exchange token with backend
+                    const response = await fetch('/api/auth/firebase/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ idToken })
+                    });
+                    return await response.json();
+                }
+                else {
+                    return { error: 'No Firebase user' };
+                }
+            }
+            catch (e) {
+                return { error: e.message };
+            }
+        });
+        console.log('- Token exchange result:', tokenExchange);
+        await browser.close();
     }
-  };
-
-  const data = JSON.stringify({
-    email: 'test@example.com',
-    password: 'password123',
-    returnSecureToken: true
-  });
-
-  const startTime = Date.now();
-  
-  const req = https.request(options, (res) => {
-    const elapsed = Date.now() - startTime;
-    console.log(`Response received in ${elapsed}ms`);
-    console.log(`Status Code: ${res.statusCode}`);
-    console.log(`Headers:`, res.headers);
-    
-    let responseData = '';
-    
-    res.on('data', (chunk) => {
-      responseData += chunk;
-    });
-    
-    res.on('end', () => {
-      console.log('\nResponse body:');
-      try {
-        const parsed = JSON.parse(responseData);
-        console.log(JSON.stringify(parsed, null, 2));
-      } catch (e) {
-        console.log(responseData);
-      }
-      
-      console.log(`\nTotal time: ${Date.now() - startTime}ms`);
-      
-      if (res.statusCode === 400 && responseData.includes('INVALID_LOGIN_CREDENTIALS')) {
-        console.log('\n✅ Firebase Auth endpoint is working correctly!');
-        console.log('(Invalid credentials error is expected for test data)');
-      }
-    });
-  });
-
-  req.on('error', (error) => {
-    console.error(`\n❌ Request failed after ${Date.now() - startTime}ms:`, error);
-  });
-
-  req.setTimeout(60000, () => {
-    console.error(`\n❌ Request timed out after 60 seconds`);
-    req.destroy();
-  });
-
-  console.log('Sending request...');
-  req.write(data);
-  req.end();
+    catch (error) {
+        console.error('❌ Test error:', error);
+        // Take screenshot
+        try {
+            await page.screenshot({ path: 'firebase-auth-error.png' });
+            console.log('📸 Screenshot saved as firebase-auth-error.png');
+        }
+        catch { }
+        await browser.close();
+    }
 }
-
-// Test DNS resolution
-function testDNS() {
-  console.log('Testing DNS resolution for Firebase domains...\n');
-  
-  const domains = [
-    'identitytoolkit.googleapis.com',
-    'securetoken.googleapis.com',
-    'firebaseapp.com',
-    'googleapis.com'
-  ];
-  
-  domains.forEach(domain => {
-    dns.resolve4(domain, (err, addresses) => {
-      if (err) {
-        console.log(`❌ ${domain}: DNS resolution failed - ${err.message}`);
-      } else {
-        console.log(`✅ ${domain}: Resolved to ${addresses.join(', ')}`);
-      }
-    });
-  });
-  
-  setTimeout(() => {
-    console.log('\n' + '='.repeat(50) + '\n');
-    testFirebaseEndpoint();
-  }, 2000);
-}
-
-// Run tests
-console.log('Firebase Authentication Network Test');
-console.log('=' + '='.repeat(50) + '\n');
-
-testDNS();
+testFirebaseAuth().catch(console.error);

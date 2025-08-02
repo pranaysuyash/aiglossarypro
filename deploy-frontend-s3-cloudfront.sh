@@ -221,9 +221,6 @@ else
                 "ViewerProtocolPolicy": "redirect-to-https",
                 "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
                 "OriginRequestPolicyId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf",
-                "DefaultTTL": 0,
-                "MaxTTL": 86400,
-                "MinTTL": 0,
                 "AllowedMethods": {
                     "Quantity": 2,
                     "Items": ["GET", "HEAD"],
@@ -239,9 +236,6 @@ else
                 "ViewerProtocolPolicy": "redirect-to-https",
                 "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
                 "OriginRequestPolicyId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf",
-                "DefaultTTL": 31536000,
-                "MaxTTL": 31536000,
-                "MinTTL": 31536000,
                 "AllowedMethods": {
                     "Quantity": 2,
                     "Items": ["GET", "HEAD"],
@@ -266,9 +260,9 @@ else
             },
             {
                 "Id": "API-Backend",
-                "DomainName": "54.152.245.210",
+                "DomainName": "aiglossarypro-api-alb-1884179415.us-east-1.elb.amazonaws.com",
                 "CustomOriginConfig": {
-                    "HTTPPort": 8080,
+                    "HTTPPort": 80,
                     "HTTPSPort": 443,
                     "OriginProtocolPolicy": "http-only",
                     "OriginSslProtocols": {

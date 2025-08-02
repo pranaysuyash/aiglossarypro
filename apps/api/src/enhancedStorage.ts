@@ -18,8 +18,11 @@ import type {
   AdminStats,
   AdvancedSearchOptions,
   ITerm,
+  UpsertUser,
+  UserActivity,
+  User,
 } from '@aiglossarypro/shared';
-import { redisCache as enhancedRedisCache } from '@aiglossarypro/config/config/redis';
+import { redisCache as enhancedRedisCache } from '@aiglossarypro/config';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
 import { type IStorage, optimizedStorage } from './optimizedStorage';
 import type {
@@ -60,7 +63,6 @@ import type {
   TermFeedback,
   TermSection,
   TermUpdate,
-  User,
   UserProgressStats,
 } from './types/storage.types';
 
@@ -368,7 +370,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     return this.baseStorage.getUser(id);
   }
 
-  async upsertUser(user: Partial<User>) {
+  async upsertUser(user: UpsertUser) {
     return this.baseStorage.upsertUser(user);
   }
 
@@ -435,7 +437,27 @@ export class EnhancedStorage implements IEnhancedStorage {
   // ===== ENHANCED TERMS INTEGRATION (delegates to termsStorage) =====
 
   async getEnhancedTermWithSections(identifier: string, userId?: string | null): Promise<EnhancedTermWithSections> {
-    return this.termsStorage.getEnhancedTermWithSections(identifier, userId);
+    const result = await this.termsStorage.getEnhancedTermWithSections(identifier, userId);
+    if (!result) {
+      throw new Error('Term not found');
+    }
+    
+    // Ensure the result has all required EnhancedTermWithSections fields
+    return {
+      ...result,
+      // Required EnhancedTerm fields
+      relatedTerms: result.relatedTerms || [],
+      prerequisites: result.prerequisites || [],
+      nextTerms: result.nextTerms || [],
+      definition: result.definition || result.fullDefinition || '',
+      category: result.category || result.mainCategories?.[0] || '',
+      // Optional EnhancedTermWithSections fields
+      sections: result.sections || [],
+      interactiveElements: result.interactiveElements,
+      analytics: result.analytics,
+      qualityMetrics: result.qualityMetrics,
+      userSpecificData: result.userSpecificData,
+    };
   }
 
   async enhancedSearch(params: SearchFilters & PaginationOptions, userId?: string | null): Promise<SearchResult> {
@@ -451,7 +473,20 @@ export class EnhancedStorage implements IEnhancedStorage {
       applicationDomains: params.applicationDomains?.join(','),
       techniques: params.techniques?.join(','),
     };
-    return this.termsStorage.enhancedSearch(enhancedParams, userId);
+    const result = await this.termsStorage.enhancedSearch(enhancedParams, userId);
+    
+    // Ensure the result conforms to SearchResult interface
+    const { page = 1, limit = 20 } = params;
+    return {
+      terms: result.terms || [],
+      total: result.pagination?.total || result.terms?.length || 0,
+      page: result.pagination?.page || page,
+      limit: result.pagination?.limit || limit,
+      hasMore: result.pagination?.hasMore || false,
+      query: params.query,
+      facets: result.facets,
+      suggestions: result.suggestions,
+    };
   }
 
   async advancedFilter(params: SearchFilters & PaginationOptions, userId?: string | null): Promise<SearchResult> {
@@ -471,7 +506,20 @@ export class EnhancedStorage implements IEnhancedStorage {
       sortBy: params.sortBy || 'relevance',
       sortOrder: params.sortOrder || 'desc',
     };
-    return this.termsStorage.advancedFilter(filterParams, userId);
+    const result = await this.termsStorage.advancedFilter(filterParams, userId);
+    
+    // Ensure the result conforms to SearchResult interface
+    const { page = 1, limit = 20 } = params;
+    return {
+      terms: result.terms || [],
+      total: result.pagination?.total || result.terms?.length || 0,
+      page: result.pagination?.page || page,
+      limit: result.pagination?.limit || limit,
+      hasMore: result.pagination?.hasMore || false,
+      query: params.query,
+      facets: result.facets,
+      suggestions: result.suggestions,
+    };
   }
 
   async getSearchFacets(): Promise<EnhancedSearchFacets> {
@@ -479,11 +527,29 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async getAutocompleteSuggestions(query: string, limit: number): Promise<AutocompleteSuggestion[]> {
-    return this.termsStorage.getAutocompleteSuggestions(query, limit);
+    const results = await this.termsStorage.getAutocompleteSuggestions(query, limit);
+    // Convert the results to AutocompleteSuggestion format
+    return results.map(result => ({
+      value: result.name || result.value || '',
+      type: 'term' as const,
+      termId: result.id || result.termId,
+      popularity: result.viewCount || result.popularity,
+    }));
   }
 
   async getInteractiveElements(termId: string): Promise<InteractiveElement[]> {
-    return this.termsStorage.getInteractiveElements(termId);
+    const results = await this.termsStorage.getInteractiveElements(termId);
+    // Map database results to InteractiveElement interface
+    return results.map(element => ({
+      id: element.id,
+      termId: element.termId,
+      type: element.elementType || element.type,
+      title: element.title || '',
+      content: element.elementData || element.content,
+      order: element.displayOrder || element.order || 0,
+      state: element.state || {},
+      metadata: element.metadata || {},
+    }));
   }
 
   async updateInteractiveElementState(elementId: string, state: InteractiveElementState, userId?: string | null) {
@@ -1062,7 +1128,16 @@ export class EnhancedStorage implements IEnhancedStorage {
     try {
       // Use optimizedStorage if it has a user listing method
       if ('getAllUsers' in this.baseStorage) {
-        return await this.baseStorage.getAllUsers(options);
+        const result = await this.baseStorage.getAllUsers(options);
+        // Convert UserListResult to PaginatedResult<User>
+        return {
+          data: result.data,
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: Math.ceil(result.total / result.limit),
+          hasMore: result.hasMore,
+        };
       }
 
       // If not available, implement basic user retrieval

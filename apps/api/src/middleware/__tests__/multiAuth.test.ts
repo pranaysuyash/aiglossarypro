@@ -1,23 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Request, Response, NextFunction } from 'express'
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 // Mock all dependencies before importing the module
-vi.mock('../../firebaseUtils', () => ({
-  verifyFirebaseToken: vi.fn(),
+jest.mock('../../firebaseUtils', () => ({
+  verifyFirebaseToken: jest.fn(),
 }));
 
-vi.mock('../../jwtUtils', () => ({
-  verifyToken: vi.fn(),
-  isTokenBlacklisted: vi.fn().mockReturnValue(false),
+jest.mock('../../jwtUtils', () => ({
+  verifyToken: jest.fn(),
+  isTokenBlacklisted: jest.fn().mockReturnValue(false),
 }));
 
-vi.mock('../../storage', () => ({
+jest.mock('../../storage', () => ({
   default: {
-    getUserByEmail: vi.fn(),
-    getUser: vi.fn(),
-    upsertUser: vi.fn(),
-    updateUser: vi.fn(),
+    getUserByEmail: jest.fn(),
+    getUser: jest.fn(),
+    upsertUser: jest.fn(),
+    updateUser: jest.fn(),
   },
 }));
 
@@ -33,17 +31,17 @@ describe('multiAuthMiddleware', () => {
   let next: NextFunction;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     req = {
       headers: {},
       cookies: {},
-      isAuthenticated: vi.fn().mockReturnValue(false),
+      isAuthenticated: jest.fn().mockReturnValue(false),
     };
     res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
     };
-    next = vi.fn();
+    next = jest.fn();
   });
 
   describe('JWT Token Authentication', () => {
@@ -129,7 +127,7 @@ describe('multiAuthMiddleware', () => {
 
       // Mock token header detection
       req.headers = { authorization: `Bearer ${token}` };
-      vi.spyOn(JSON, 'parse').mockReturnValueOnce({ kid: 'firebase-key-id' });
+      jest.spyOn(JSON, 'parse').mockReturnValueOnce({ kid: 'firebase-key-id' });
       
       (verifyFirebaseToken as unknown).mockResolvedValue(firebaseUser);
       (storage.getUserByEmail as unknown).mockResolvedValue(null);
@@ -157,7 +155,7 @@ describe('multiAuthMiddleware', () => {
       };
 
       req.headers = { authorization: `Bearer ${token}` };
-      vi.spyOn(JSON, 'parse').mockReturnValueOnce({ kid: 'firebase-key-id' });
+      jest.spyOn(JSON, 'parse').mockReturnValueOnce({ kid: 'firebase-key-id' });
       
       (verifyFirebaseToken as unknown).mockResolvedValue(firebaseUser);
       (storage.getUserByEmail as unknown).mockResolvedValue({
@@ -232,7 +230,7 @@ describe('multiAuthMiddleware', () => {
       const token = 'invalid-firebase-token';
       req.headers = { authorization: `Bearer ${token}` };
       
-      vi.spyOn(JSON, 'parse').mockReturnValueOnce({ kid: 'firebase-key-id' });
+      jest.spyOn(JSON, 'parse').mockReturnValueOnce({ kid: 'firebase-key-id' });
       (verifyFirebaseToken as unknown).mockRejectedValue(new Error('Invalid token'));
       (verifyToken as unknown).mockReturnValue(null);
 

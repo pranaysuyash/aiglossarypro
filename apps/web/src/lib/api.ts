@@ -24,13 +24,17 @@ class ApiError extends Error {
 async function request<T = Record<string, unknown>>(
   method: string,
   endpoint: string,
-  data?: Record<string, unknown>
+  data?: Record<string, unknown>,
+  options?: { timeout?: number; signal?: AbortSignal }
 ): Promise<ApiResponse<T>> {
-  // Fix double /api issue - only add /api if endpoint doesn't already start with /api
+  // Get API base URL from environment or use relative path as fallback
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+  
+  // Build the full URL
   const url = endpoint.startsWith('/api')
     ? endpoint
     : endpoint.startsWith('/')
-      ? `/api${endpoint}`
+      ? `${apiBaseUrl}${endpoint}`
       : endpoint;
 
   const headers: Record<string, string> = {
@@ -38,28 +42,59 @@ async function request<T = Record<string, unknown>>(
   };
 
   // Add Authorization header if token exists
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  try {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (error) {
+    // localStorage might not be available (SSR, incognito mode, etc.)
+    console.warn('Failed to access localStorage for auth token:', error);
   }
 
-  const options: RequestInit = {
+  // Setup timeout and abort controller
+  const timeout = options?.timeout || 30000; // 30 second default timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  const requestOptions: RequestInit = {
     method,
     headers,
     credentials: 'include',
+    signal: options?.signal || controller.signal,
   };
 
   if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-    options.body = JSON.stringify(data);
+    requestOptions.body = JSON.stringify(data);
   }
 
   try {
-    const response = await fetch(url, options);
-    const result = await response.json();
+    const response = await fetch(url, requestOptions);
+    clearTimeout(timeoutId); // Clear timeout on successful response
+    
+    // Check if response is valid JSON
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      throw new ApiError(
+        `Invalid JSON response: ${parseError instanceof Error ? parseError.message : 'Parse error'}`,
+        response.status
+      );
+    }
 
     if (!response.ok) {
       throw new ApiError(
-        result.error || result.message || `HTTP ${response.status}`,
+        result?.error || result?.message || `HTTP ${response.status}: ${response.statusText}`,
+        response.status,
+        result
+      );
+    }
+
+    // Validate response structure
+    if (typeof result !== 'object' || result === null) {
+      throw new ApiError(
+        'Invalid response format: expected object',
         response.status,
         result
       );
@@ -67,22 +102,58 @@ async function request<T = Record<string, unknown>>(
 
     return result;
   } catch (error) {
+    clearTimeout(timeoutId); // Clear timeout on error
+    
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(error instanceof Error ? error.message : 'Network error', 0);
+    
+    // Handle abort/timeout errors
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('Request timeout or was cancelled', 0, error);
+    }
+    
+    // Handle network errors, CORS issues, etc.
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new ApiError('Network error: Unable to connect to server', 0, error);
+    }
+    
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Unknown error occurred',
+      0,
+      error
+    );
   }
 }
 
 export const api = {
-  get: <T = Record<string, unknown>>(endpoint: string) => request<T>('GET', endpoint),
-  post: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) =>
-    request<T>('POST', endpoint, data),
-  put: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) =>
-    request<T>('PUT', endpoint, data),
-  patch: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) =>
-    request<T>('PATCH', endpoint, data),
-  delete: <T = Record<string, unknown>>(endpoint: string) => request<T>('DELETE', endpoint),
+  get: <T = Record<string, unknown>>(
+    endpoint: string, 
+    options?: { timeout?: number; signal?: AbortSignal }
+  ) => request<T>('GET', endpoint, undefined, options),
+  
+  post: <T = Record<string, unknown>>(
+    endpoint: string, 
+    data?: Record<string, unknown>,
+    options?: { timeout?: number; signal?: AbortSignal }
+  ) => request<T>('POST', endpoint, data, options),
+  
+  put: <T = Record<string, unknown>>(
+    endpoint: string, 
+    data?: Record<string, unknown>,
+    options?: { timeout?: number; signal?: AbortSignal }
+  ) => request<T>('PUT', endpoint, data, options),
+  
+  patch: <T = Record<string, unknown>>(
+    endpoint: string, 
+    data?: Record<string, unknown>,
+    options?: { timeout?: number; signal?: AbortSignal }
+  ) => request<T>('PATCH', endpoint, data, options),
+  
+  delete: <T = Record<string, unknown>>(
+    endpoint: string,
+    options?: { timeout?: number; signal?: AbortSignal }
+  ) => request<T>('DELETE', endpoint, undefined, options),
 };
 
 export type { ApiResponse, ApiError };

@@ -11,7 +11,14 @@ const logger = {
 };
 
 // Environment validation interface
-interface EnvironmentConfig {
+export interface EnvironmentConfig {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  config?: EnvironmentConfigData;
+}
+
+interface EnvironmentConfigData {
   // Database Configuration
   DATABASE_URL: string;
   PGDATABASE?: string;
@@ -50,9 +57,10 @@ interface EnvironmentConfig {
 }
 
 // Environment variable validation
-function validateEnvironment(): EnvironmentConfig {
-  const config: Partial<EnvironmentConfig> = {};
+export function validateEnvironment(): EnvironmentConfig {
+  const config: Partial<EnvironmentConfigData> = {};
   const errors: string[] = [];
+  const warnings: string[] = [];
 
   // Required environment variables
   const requiredVars = ['DATABASE_URL', 'SESSION_SECRET', 'NODE_ENV', 'PORT'];
@@ -111,8 +119,8 @@ function validateEnvironment(): EnvironmentConfig {
   const hasS3Bucket = config.S3_BUCKET_NAME;
 
   if ((hasS3Keys && !hasS3Bucket) || (!hasS3Keys && hasS3Bucket)) {
-    logger.warn(
-      'Warning: Incomplete S3 configuration detected. Ensure all S3 variables are set for full functionality.'
+    warnings.push(
+      'Incomplete S3 configuration detected. Ensure all S3 variables are set for full functionality.'
     );
   }
 
@@ -120,22 +128,26 @@ function validateEnvironment(): EnvironmentConfig {
   const hasSimpleAuth = config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID);
 
   if (config.NODE_ENV === 'production' && !hasSimpleAuth) {
-    logger.warn(
-      'Warning: No authentication configured. Set up JWT_SECRET with Google/GitHub OAuth.'
+    warnings.push(
+      'No authentication configured. Set up JWT_SECRET with Google/GitHub OAuth.'
     );
   }
 
-  if (errors.length > 0) {
-    logger.error('Environment validation failed:');
-    errors.forEach(error => logger.error(`  - ${error}`));
-    throw new Error(`Environment validation failed: ${errors.join(', ')}`);
-  }
-
-  return config as EnvironmentConfig;
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+    config: errors.length === 0 ? (config as EnvironmentConfigData) : undefined
+  };
 }
 
 // Configuration object with validation
-const config = validateEnvironment();
+const validationResult = validateEnvironment();
+if (!validationResult.isValid || !validationResult.config) {
+  logger.error('Environment validation failed:', validationResult.errors);
+  throw new Error(`Environment validation failed: ${validationResult.errors.join(', ')}`);
+}
+const config = validationResult.config;
 
 // Feature flags based on environment variables
 export const features = {
@@ -155,6 +167,30 @@ export const features = {
 
 // Export configuration
 export { config };
+
+// Export validation utilities
+export function printValidationResult(validation: EnvironmentConfig): void {
+  if (!validation.isValid) {
+    console.error('❌ Environment validation failed:');
+    validation.errors.forEach(error => {
+      console.error(`  - ${error}`);
+    });
+    if (validation.warnings.length > 0) {
+      console.warn('⚠️ Warnings:');
+      validation.warnings.forEach(warning => {
+        console.warn(`  - ${warning}`);
+      });
+    }
+  } else {
+    console.log('✅ Environment validation passed');
+    if (validation.warnings.length > 0) {
+      console.warn('⚠️ Warnings:');
+      validation.warnings.forEach(warning => {
+        console.warn(`  - ${warning}`);
+      });
+    }
+  }
+}
 
 // Helper functions for configuration
 export function getRequiredEnvVar(name: string): string {

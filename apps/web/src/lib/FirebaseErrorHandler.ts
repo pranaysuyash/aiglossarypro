@@ -5,7 +5,27 @@
  */
 
 import type { FirebaseError } from 'firebase/app';
-import { ErrorManager, ErrorSeverity, ErrorType, type EnhancedError } from '@aiglossarypro/shared';
+// import { ErrorManager, ErrorSeverity, ErrorType, type EnhancedError } from '@aiglossarypro/shared/dist/errorManager';
+
+// Temporary fallback types until shared package import is fixed
+enum ErrorType {
+  AUTHENTICATION = 'authentication',
+  NETWORK = 'network',
+  SYSTEM = 'system'
+}
+
+enum ErrorSeverity {
+  LOW = 'low',
+  MEDIUM = 'medium', 
+  HIGH = 'high'
+}
+
+interface EnhancedError extends Error {
+  type: ErrorType;
+  severity: ErrorSeverity;
+  context: any;
+  userMessage?: string;
+}
 
 // Firebase-specific error interface
 export interface FirebaseAuthError extends EnhancedError {
@@ -45,7 +65,7 @@ export interface FallbackAuthState {
  */
 export class FirebaseErrorHandler {
     private static instance: FirebaseErrorHandler;
-    private errorManager: ErrorManager;
+    // private errorManager: ErrorManager; // TODO: Fix shared package import
     private networkStatus: NetworkStatus;
     private fallbackState: FallbackAuthState;
     private retryConfig: RetryConfig;
@@ -62,7 +82,7 @@ export class FirebaseErrorHandler {
     };
 
     private constructor() {
-        this.errorManager = ErrorManager.getInstance();
+        // this.errorManager = ErrorManager.getInstance(); // TODO: Fix shared package import
         this.networkStatus = {
             online: navigator.onLine,
             lastChecked: new Date(),
@@ -112,7 +132,8 @@ export class FirebaseErrorHandler {
         this.recordFailure();
 
         // Log error for monitoring
-        await this.errorManager.handleError(firebaseError);
+        // await this.errorManager.handleError(firebaseError); // TODO: Fix shared package import
+        console.error('Firebase error:', firebaseError);
 
         return firebaseError;
     }
@@ -180,14 +201,15 @@ export class FirebaseErrorHandler {
         console.warn(`🔄 Fallback authentication enabled: ${reason}`);
 
         // Notify error manager
-        this.errorManager.handleError(
-            this.errorManager.createError(
-                `Fallback authentication enabled: ${reason}`,
-                ErrorType.AUTHENTICATION,
-                ErrorSeverity.HIGH,
-                { metadata: { fallbackEnabled: true, reason } }
-            )
-        );
+        // this.errorManager.handleError(
+        //     this.errorManager.createError(
+        //         `Fallback authentication enabled: ${reason}`,
+        //         ErrorType.AUTHENTICATION,
+        //         ErrorSeverity.HIGH,
+        //         { metadata: { fallbackEnabled: true, reason } }
+        //     )
+        // );
+        console.error('Fallback authentication enabled:', { reason, enabled: true });
     }
 
     /**
@@ -286,16 +308,16 @@ export class FirebaseErrorHandler {
 
     private initializeErrorRecoveryStrategies(): void {
         // Register Firebase-specific recovery strategies
-        this.errorManager.registerRecoveryStrategy({
-            canRecover: (error) => error.type === ErrorType.AUTHENTICATION && this.shouldRetry(error.originalError || error),
-            recover: async (error) => {
-                if (this.isFirebaseError(error.originalError)) {
-                    // Don't enable fallback auth - let Firebase handle retries
-                    // The connectivity check was causing false positives
-                    console.debug('Firebase network error, but not enabling fallback auth');
-                }
-            },
-        });
+        // this.errorManager.registerRecoveryStrategy({ // TODO: Fix shared package import
+        //     canRecover: (error) => error.type === ErrorType.AUTHENTICATION && this.shouldRetry(error.originalError || error),
+        //     recover: async (error) => {
+        //         if (this.isFirebaseError(error.originalError)) {
+        //             // Don't enable fallback auth - let Firebase handle retries
+        //             // The connectivity check was causing false positives
+        //             console.debug('Firebase network error, but not enabling fallback auth');
+        //         }
+        //     },
+        // });
     }
 
     private createFirebaseError(
@@ -306,11 +328,13 @@ export class FirebaseErrorHandler {
         const isFirebaseErr = this.isFirebaseError(error);
         const firebaseCode = isFirebaseErr ? error.code : 'unknown';
 
-        const baseError = this.errorManager.createError(
-            error,
-            ErrorType.AUTHENTICATION,
-            this.getErrorSeverity(firebaseCode),
-            {
+        // const baseError = this.errorManager.createError( // TODO: Fix shared package import
+        const baseError: EnhancedError = {
+            name: error.name || 'FirebaseError',
+            message: error.message,
+            type: ErrorType.AUTHENTICATION,
+            severity: this.getErrorSeverity(firebaseCode),
+            context: {
                 ...context,
                 metadata: {
                     ...context.metadata,
@@ -319,8 +343,8 @@ export class FirebaseErrorHandler {
                     networkOnline: this.networkStatus.online,
                 },
             },
-            this.getUserMessage(firebaseCode)
-        );
+            userMessage: this.getUserMessage(firebaseCode)
+        };
 
         const firebaseError: FirebaseAuthError = {
             ...baseError,

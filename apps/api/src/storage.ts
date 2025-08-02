@@ -370,7 +370,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getTermById(id: string): Promise<unknown> {
+  async getTermById(id: string): Promise<Term | null> {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       return null;
@@ -434,9 +434,9 @@ export class DatabaseStorage implements IStorage {
     return {
       ...term,
       updatedAt: formattedDate,
-      subcategories: termSubcats.map(sc => sc.name),
+      subcategories: termSubcats.map((sc: any) => sc.name),
       relatedTerms,
-    };
+    } as Term;
   }
 
   async getRecentlyViewedTerms(userId: string): Promise<RecentActivity[]> {
@@ -456,7 +456,7 @@ export class DatabaseStorage implements IStorage {
       .limit(10);
 
     // Format the dates and return as RecentActivity
-    return recentViews.map(view => ({
+    return recentViews.map((view: any) => ({
       id: `view-${view.termId}-${view.viewedAt?.getTime() || Date.now()}`,
       type: 'view' as const,
       userId,
@@ -544,7 +544,7 @@ export class DatabaseStorage implements IStorage {
 
       resultWithSubcats.push({
         ...term,
-        subcategories: termSubcats.map(sc => sc.name),
+        subcategories: termSubcats.map((sc: any) => sc.name),
       });
     }
 
@@ -598,7 +598,7 @@ export class DatabaseStorage implements IStorage {
         category: fav.category,
         categoryId: fav.categoryId,
         favoriteDate: fav.createdAt?.toISOString() || new Date().toISOString(),
-        subcategories: termSubcats.map(sc => sc.name),
+        subcategories: termSubcats.map((sc: any) => sc.name),
       });
     }
 
@@ -797,7 +797,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User activity operations
-  async getUserActivity(userId: string): Promise<unknown> {
+  async getUserActivity(userId: string): Promise<{
+    labels: string[];
+    views: number[];
+    learned: number[];
+    totalViews: number;
+    categoriesExplored: number;
+    lastActivity: string;
+  }> {
     // Get view counts per day for last 14 days
     const viewsData = [];
     const learnedData = [];
@@ -1014,7 +1021,7 @@ export class DatabaseStorage implements IStorage {
       .from(termViews)
       .where(eq(termViews.userId, userId));
 
-    const viewedTermIds = viewedTerms.map(v => v.termId);
+    const viewedTermIds = viewedTerms.map((v: any) => v.termId);
 
     // Get categories from viewed terms
     const viewedCategories = await db
@@ -1030,7 +1037,7 @@ export class DatabaseStorage implements IStorage {
       )
       .groupBy(terms.categoryId);
 
-    const categoryIds = viewedCategories.map(c => c.categoryId);
+    const categoryIds = viewedCategories.map((c: any) => c.categoryId);
 
     // Get related terms from the same categories, excluding already viewed
     const recommendedTerms = await db
@@ -1095,7 +1102,7 @@ export class DatabaseStorage implements IStorage {
       result.push({
         ...term,
         isFavorite: !!favorite,
-        subcategories: termSubcats.map(sc => sc.name),
+        subcategories: termSubcats.map((sc: any) => sc.name),
       });
     }
 
@@ -1185,7 +1192,7 @@ export class DatabaseStorage implements IStorage {
         result.push({
           ...relTerm,
           isFavorite,
-          subcategories: termSubcats.map(sc => sc.name),
+          subcategories: termSubcats.map((sc: any) => sc.name),
         });
       }
 
@@ -1278,7 +1285,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(terms.viewCount))
       .limit(10);
 
-    const topTerms = topTermsData.map(term => ({
+    const topTerms = topTermsData.map((term: any) => ({
       termId: term.id,
       name: term.name,
       category: term.category || '',
@@ -1302,7 +1309,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(sql`sum(${terms.viewCount})`))
       .limit(10);
 
-    const topCategories = categoryStats.map(cat => ({
+    const topCategories = categoryStats.map((cat: any) => ({
       categoryId: cat.categoryId,
       name: cat.name,
       termCount: Number(cat.termCount),
@@ -1472,7 +1479,7 @@ export class DatabaseStorage implements IStorage {
         achievements,
       },
       termsData: {
-        viewedTerms: viewData.map(v => ({
+        viewedTerms: viewData.map((v: any) => ({
           termId: v.termId,
           termName: v.termName,
           viewCount: Number(v.viewCount),
@@ -1552,14 +1559,14 @@ export class DatabaseStorage implements IStorage {
       })
       .from(categories);
 
-    // Get verification stats
-    const verificationStats = await db
-      .select({
-        status: terms.verificationStatus,
-        count: sql<number>`count(*)`,
-      })
-      .from(terms)
-      .groupBy(terms.verificationStatus);
+    // Get verification stats (commented out - verificationStatus field doesn't exist)
+    // const verificationStats = await db
+    //   .select({
+    //     status: terms.verificationStatus,
+    //     count: sql<number>`count(*)`,
+    //   })
+    //   .from(terms)
+    //   .groupBy(terms.verificationStatus);
 
     const verificationStatsMap = {
       unverified: 0,
@@ -1569,11 +1576,11 @@ export class DatabaseStorage implements IStorage {
       expertReviewed: 0,
     };
 
-    verificationStats.forEach(stat => {
-      if (stat.status && stat.status in verificationStatsMap) {
-        verificationStatsMap[stat.status as keyof typeof verificationStatsMap] = Number(stat.count);
-      }
-    });
+    // verificationStats.forEach((stat: any) => {
+    //   if (stat.status && stat.status in verificationStatsMap) {
+    //     verificationStatsMap[stat.status as keyof typeof verificationStatsMap] = Number(stat.count);
+    //   }
+    // });
 
     // Get category distribution
     const categoryDist = await db
@@ -1588,9 +1595,9 @@ export class DatabaseStorage implements IStorage {
       .having(sql`count(${terms.id}) > 0`)
       .orderBy(desc(sql`count(${terms.id})`));
 
-    const totalTermsInCategories = categoryDist.reduce((sum, cat) => sum + Number(cat.termCount), 0);
+    const totalTermsInCategories = categoryDist.reduce((sum: number, cat: any) => sum + Number(cat.termCount), 0);
     
-    const categoryDistribution = categoryDist.map(cat => ({
+    const categoryDistribution = categoryDist.map((cat: any) => ({
       categoryId: cat.categoryId,
       categoryName: cat.categoryName,
       termCount: Number(cat.termCount),
@@ -1726,8 +1733,8 @@ export class DatabaseStorage implements IStorage {
 
     // Filter out null currencies and ensure string type
     return result
-      .filter(r => r.currency != null)
-      .map(r => ({
+      .filter((r: any) => r.currency != null)
+      .map((r: any) => ({
         currency: r.currency as string,
         amount: r.amount,
         count: r.count,
@@ -1813,7 +1820,7 @@ export class DatabaseStorage implements IStorage {
     const total = totalResult[0]?.count || 0;
 
     // Map to RecentPurchase type
-    const recentPurchases: RecentPurchase[] = items.map(item => ({
+    const recentPurchases: RecentPurchase[] = items.map((item: any) => ({
       orderId: item.gumroadOrderId,
       email: item.userEmail || '',
       productName: (item.purchaseData as any)?.product_name || 'AI Glossary Pro',
@@ -1888,7 +1895,7 @@ export class DatabaseStorage implements IStorage {
       .limit(5);
 
     // Map to RevenuePeriodData
-    return result.map(r => {
+    return result.map((r: any) => {
       const revenue = Number(r.revenue);
       const purchaseCount = Number(r.purchases);
       
@@ -1899,7 +1906,7 @@ export class DatabaseStorage implements IStorage {
         totalRevenue: revenue,
         totalPurchases: purchaseCount,
         averageOrderValue: purchaseCount > 0 ? revenue / purchaseCount : 0,
-        topProducts: topProducts.map(p => ({
+        topProducts: topProducts.map((p: any) => ({
           productId: p.productName || 'unknown',
           productName: p.productName || 'AI Glossary Pro',
           revenue: Number(p.revenue),
@@ -1926,11 +1933,11 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
 
     // Calculate total revenue for percentage calculation
-    const totalRevenue = result.reduce((sum, r) => sum + Number(r.revenue), 0);
+    const totalRevenue = result.reduce((sum: number, r: any) => sum + Number(r.revenue), 0);
 
     return result
-      .filter(r => r.country) // Filter out null countries
-      .map(r => ({
+      .filter((r: any) => r.country) // Filter out null countries
+      .map((r: any) => ({
         country: r.country || 'Unknown',
         countryCode: r.country?.substring(0, 2).toUpperCase() || 'UN',
         revenue: Number(r.revenue),
@@ -2065,14 +2072,14 @@ export class DatabaseStorage implements IStorage {
       refundRate: Math.round(refundRate * 100) / 100,
       averageRefundTime,
       refundReasons: refundReasons
-        .filter(r => r.reason)
-        .map(r => ({
+        .filter((r: any) => r.reason)
+        .map((r: any) => ({
           reason: r.reason || 'Unknown',
           count: Number(r.count),
           percentage: refunds[0]?.count > 0 ? (Number(r.count) / refunds[0].count) * 100 : 0,
           averageAmount: Number(r.count) > 0 ? Number(r.amount) / Number(r.count) : 0,
         })),
-      refundTrend: refundTrend.map(r => ({
+      refundTrend: refundTrend.map((r: any) => ({
         date: new Date(r.date),
         refunds: Number(r.refunds),
         amount: Number(r.amount),

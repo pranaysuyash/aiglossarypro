@@ -1,6 +1,14 @@
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { createReactError, errorManager, type EnhancedError } from '@aiglossarypro/shared';
+// import { createReactError, errorManager, type EnhancedError } from '@aiglossarypro/shared'; // TODO: Fix shared package import
+
+// Temporary fallback until shared package is fixed
+interface EnhancedError extends Error {
+  type: string;
+  severity: string;
+  context: any;
+  userMessage?: string;
+}
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
@@ -30,11 +38,24 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Create enhanced error with React context
-    const enhancedError = createReactError(error, errorInfo, {
-      errorBoundary: this.props.errorBoundaryName || 'ErrorBoundary',
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-    });
+    // const enhancedError = createReactError(error, errorInfo, { // TODO: Fix shared package import
+    //   errorBoundary: this.props.errorBoundaryName || 'ErrorBoundary',
+    //   url: window.location.href,
+    //   userAgent: navigator.userAgent,
+    // });
+
+    const enhancedError: EnhancedError = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      type: 'system',
+      severity: 'high',
+      context: {
+        errorBoundary: this.props.errorBoundaryName || 'ErrorBoundary',
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      }
+    };
 
     this.setState({
       errorInfo,
@@ -42,7 +63,8 @@ export class ErrorBoundary extends Component<Props, State> {
     });
 
     // Handle through centralized error manager
-    errorManager.handleError(enhancedError);
+    // errorManager.handleError(enhancedError); // TODO: Fix shared package import
+    console.error('Error caught by boundary:', enhancedError);
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
@@ -110,14 +132,16 @@ export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
     if (errorInfo) {
       // React error with component stack
-      const enhancedError = createReactError(error, errorInfo, {
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-      });
-      errorManager.handleError(enhancedError);
+      // const enhancedError = createReactError(error, errorInfo, { // TODO: Fix shared package import
+      //   url: window.location.href,
+      //   userAgent: navigator.userAgent,
+      // });
+      // errorManager.handleError(enhancedError);
+      console.error('React error in hook:', error, errorInfo);
     } else {
       // Generic error
-      errorManager.handleError(error);
+      // errorManager.handleError(error); // TODO: Fix shared package import
+      console.error('Generic error in hook:', error);
     }
   };
 }

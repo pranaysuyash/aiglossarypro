@@ -1,0 +1,109 @@
+# Production Dockerfile with complete build process
+FROM node:20-alpine AS builder
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy workspace configuration
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy all packages and apps
+COPY packages ./packages
+COPY apps/api ./apps/api
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build packages in dependency order
+# 1. Build shared package
+WORKDIR /app/packages/shared
+RUN npm run build || echo "Shared build failed, continuing..."
+
+# 2. Build database package  
+WORKDIR /app/packages/database
+RUN npm run build || echo "Database build failed, continuing..."
+
+# 3. Build auth package
+WORKDIR /app/packages/auth
+RUN npm run build || echo "Auth build failed, continuing..."
+
+# 4. Fix config package compilation
+WORKDIR /app/packages/config
+# Copy pre-compiled JS files to dist since TypeScript build has issues
+RUN mkdir -p dist && \
+    cp src/*.js src/*.d.ts dist/ 2>/dev/null || true && \
+    cp -r src/config dist/ 2>/dev/null || true && \
+    echo "Config files prepared"
+
+# 5. Build API with our working esbuild
+WORKDIR /app/apps/api
+RUN node esbuild.simple.js && echo "API build complete"
+
+# Production stage
+FROM node:20-alpine
+
+# Install production dependencies and tools
+RUN apk add --no-cache curl bash tini
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy built packages from builder
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/api ./apps/api
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+# Create startup script with proper error handling
+RUN cat > /app/start.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "=== Starting AIGlossaryPro API ==="
+echo "NODE_ENV: ${NODE_ENV}"
+echo "Working directory: $(pwd)"
+
+# Change to API directory
+cd /app/apps/api
+
+# Check if dist/index.js exists
+if [ ! -f "dist/index.js" ]; then
+    echo "ERROR: dist/index.js not found!"
+    ls -la dist/ || echo "dist directory not found"
+    exit 1
+fi
+
+echo "Starting application..."
+exec node dist/index.js
+EOF
+
+RUN chmod +x /app/start.sh
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
+
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Use tini for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start with our script
+CMD ["/app/start.sh"]

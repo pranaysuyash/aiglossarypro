@@ -251,3 +251,230 @@ app-runner-deploy.json
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# ===========================================
+# DEPLOYMENT AND SCRIPT FILES
+# ===========================================
+
+# All deployment scripts (often contain secrets)
+scripts/deploy*.sh
+scripts/deploy*.js
+scripts/*deploy*.sh
+scripts/*deploy*.js
+**/deploy-*.sh
+**/deploy-*.js
+deploy*.sh
+deploy*.js
+
+# AWS and cloud deployment files
+scripts/*ecs*.sh
+scripts/*aws*.sh
+scripts/*cloud*.sh
+scripts/*fargate*.sh
+scripts/*docker*.sh
+scripts/*build*.sh
+task-definition*.json
+*task-definition*.json
+infrastructure/aws/*
+infrastructure/secrets/*
+
+# Production and environment specific scripts
+scripts/*production*.sh
+scripts/*prod*.sh
+scripts/*staging*.sh
+scripts/*env*.sh
+
+# Cleanup and fix scripts
+scripts/*clean*.sh
+scripts/*fix*.sh
+scripts/*test*.sh
+scripts/*setup*.sh
+
+# Docker and container files
+Dockerfile.*
+dockerfile.*
+docker-compose*.yml
+docker-compose*.yaml
+
+# Kubernetes and orchestration
+*.k8s.yml
+*.k8s.yaml
+k8s/
+kubernetes/
+
+# Terraform and infrastructure as code
+*.tf
+*.tfvars
+*.tfstate
+*.tfstate.*
+terraform/
+
+# CI/CD configuration files
+.github/workflows/*deploy*.yml
+.github/workflows/*secret*.yml
+.gitlab-ci*.yml
+.circleci/
+.travis.yml
+jenkins*
+
+# Secret and credential patterns
+*secret*.json
+*secrets*.json
+*credential*.json
+*credentials*.json
+*apikey*.json
+*apikeys*.json
+*token*.json
+*tokens*.json
+*.secret
+*.secrets
+*-secret.*
+*-secrets.*
+
+# Environment and configuration files
+.env*
+!.env.example
+!.env.sample
+!.env.template
+env/
+envs/
+config/secrets/
+config/credentials/
+**/secrets/
+**/credentials/
+
+# Private keys and certificates
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+ssl/
+certs/
+certificates/
+
+# Database dumps and backups
+*.sql
+*.dump
+*.bak
+*.backup
+backups/
+dumps/
+db-backups/
+
+# Temporary and test files
+temp/
+tmp/
+test-results/
+test-outputs/
+*.test.json
+*.test.yml
+
+# Build artifacts and compiled files
+dist/
+build/
+out/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Log files
+*.log
+logs/
+*.out
+*.err
+
+# AWS specific
+.aws/
+aws-exports.js
+amplify/
+
+# Google Cloud specific
+.gcloud/
+gcloud-key.json
+service-account*.json
+
+# Azure specific
+.azure/
+azure-pipelines*.yml
+
+# Monitoring and analytics
+datadog/
+newrelic/
+sentry/
+
+# ===========================================
+# ADDITIONAL SECURITY PATTERNS
+# ===========================================
+
+# Any file with 'key' in the name
+*key*.txt
+*key*.json
+*key*.yml
+*key*.yaml
+
+# Any file with 'password' in the name
+*password*
+*passwd*
+*pwd*
+
+# SSH keys
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+*.ssh
+
+# OAuth and API configurations
+*oauth*.json
+*api-config*.json
+client_secret*.json
+
+# Service account files
+service-account*.json
+sa-*.json
+
+# Webhook configurations
+*webhook*.json
+webhook-config*
+
+# Payment and financial
+*stripe*.json
+*paypal*.json
+*payment*.json
+
+# Firebase specific
+firebase-*.json
+!firebase.json
+.firebaserc
+firebase-debug.log
+
+# Sensitive documentation
+*confidential*
+*private*
+SECRETS.md
+CREDENTIALS.md
+KEYS.md
+
+# Ignore all shell scripts by default
+*.sh
+!scripts/example*.sh
+!scripts/template*.sh
+
+# Ignore all JSON files in scripts directory
+scripts/*.json
+
+# Ignore all files in certain directories
+infrastructure/**/*
+!infrastructure/README.md
+!infrastructure/.gitkeep
+
+deployment/**/*
+!deployment/README.md
+!deployment/.gitkeep
+
+secrets/**/*
+credentials/**/*

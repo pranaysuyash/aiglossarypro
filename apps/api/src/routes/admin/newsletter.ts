@@ -49,6 +49,12 @@ const updateContactStatusSchema = z.object({
  */
 function requireAdminAccess(req: Request, res: Response, next: Request) {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const user = req.user;
 
     if (!user) {

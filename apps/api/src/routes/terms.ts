@@ -470,6 +470,12 @@ export function registerTermRoutes(app: Express): void {
    */
   app.get('/api/terms/recently-viewed', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
 

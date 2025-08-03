@@ -174,6 +174,12 @@ mediaRouter.post(
       }
 
       const { altText, caption, termId } = req.body;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
 
       // Get image dimensions if it's an image

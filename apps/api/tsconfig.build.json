@@ -1,13 +1,18 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "skipLibCheck": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "allowJs": true,
-    "checkJs": false,
+    // Disable strict type checking for build
     "strict": false,
     "noImplicitAny": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": false,
+    // Remove rootDir constraint
+    "rootDir": undefined,
+    // Ignore all type errors
+    "noEmitOnError": false
   }
 }

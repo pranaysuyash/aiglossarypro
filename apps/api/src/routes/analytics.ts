@@ -84,6 +84,12 @@ export function registerAnalyticsRoutes(app: Express): void {
     validateQuery(UserAnalyticsQuerySchema),
     async (req: Request, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const { timeframe } = req.query as unknown as UserAnalyticsQuery;
 
@@ -290,6 +296,12 @@ export function registerAnalyticsRoutes(app: Express): void {
     validateQuery(ExportAnalyticsQuerySchema),
     async (req: Request, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const _userId = req.user.claims.sub;
 
         const { format, timeframe, type } = req.query as unknown as ExportAnalyticsQuery;

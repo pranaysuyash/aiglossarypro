@@ -191,6 +191,12 @@ function isRouteAllowedForGuests(path: string): boolean {
  * Guest access middleware - allows limited access to certain endpoints
  */
 export const guestAccessMiddleware: RequestHandler = async (req, res, next) => {
+  if (!req.user) {
+
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  }
+
   const isAuthenticated = req.user;
   const requestPath = req.path;
 

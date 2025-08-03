@@ -4,24 +4,21 @@
  */
 
 import type {
-  Term,
   EnhancedTerm,
   TermSection,
-  User,
   SearchFacets,
   InteractiveElement,
-  PersonalizedRecommendation,
-  LearningPath,
   Category,
-  ICategory,
-  ITerm,
-  PaginatedResult,
   Achievement,
   LearningStreak,
   UserProgressStats,
   SectionProgress,
   CategoryProgress,
 } from './storage.types';
+
+import type {
+  ICategory,
+} from '@aiglossarypro/shared/types';
 
 // ===== ENHANCED TERM TYPES =====
 

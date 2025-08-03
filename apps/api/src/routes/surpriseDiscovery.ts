@@ -49,6 +49,12 @@ router.get('/', optionalFirebaseAuth, validateQuery(surpriseDiscoverySchema), as
       excludeRecentlyViewed?: string;
       maxResults?: string;
     };
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id;
 
     // Generate session ID for tracking
@@ -98,6 +104,12 @@ router.post(
   async (req, res) => {
     try {
       const { sessionId, termId, surpriseRating, relevanceRating } = req.body;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id;
 
       if (!userId) {
@@ -143,6 +155,12 @@ router.post(
  */
 router.get('/preferences', optionalFirebaseAuth, async (req, res) => {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id;
 
     if (!userId) {
@@ -177,6 +195,12 @@ router.put(
   validateRequest(preferencesSchema),
   async (req, res) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id;
       const preferences = req.body;
 
@@ -257,6 +281,12 @@ router.get('/modes', (_req, res) => {
  */
 router.get('/analytics', optionalFirebaseAuth, async (req, res) => {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id;
 
     if (!userId) {

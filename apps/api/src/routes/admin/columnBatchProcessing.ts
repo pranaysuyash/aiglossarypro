@@ -99,6 +99,12 @@ router.post(
   validateRequest(costEstimationRequestSchema),
   async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id || 'unknown';
 
       logger.info(`Cost estimation requested by ${userId}:`, {
@@ -201,6 +207,12 @@ router.post(
   validateRequest(columnBatchRequestSchema),
   async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id || 'unknown';
       const request = {
         ...req.body,
@@ -387,6 +399,12 @@ router.get('/operations/:operationId', async (req: Request, res: Response) => {
 router.post('/operations/:operationId/pause', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id || 'unknown';
 
     const success = await columnBatchProcessorService.pauseBatchOperation(operationId);
@@ -424,6 +442,12 @@ router.post('/operations/:operationId/pause', async (req: Request, res: Response
 router.post('/operations/:operationId/resume', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id || 'unknown';
 
     const success = await columnBatchProcessorService.resumeBatchOperation(operationId);
@@ -461,6 +485,12 @@ router.post('/operations/:operationId/resume', async (req: Request, res: Respons
 router.post('/operations/:operationId/cancel', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id || 'unknown';
 
     const success = await columnBatchProcessorService.cancelBatchOperation(operationId);
@@ -587,6 +617,12 @@ router.get('/safety/status', async (_req: Request, res: Response) => {
 router.post('/safety/emergency-stop', async (req: Request, res: Response) => {
   try {
     const { reason } = req.body;
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id || 'unknown';
 
     if (!reason) {
@@ -625,6 +661,12 @@ router.post('/safety/emergency-stop', async (req: Request, res: Response) => {
  */
 router.post('/safety/emergency-stop/deactivate', async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id || 'unknown';
 
     await batchSafetyControlsService.deactivateEmergencyStop(userId);
@@ -681,6 +723,12 @@ router.get('/costs/budgets', async (_req: Request, res: Response) => {
  */
 router.post('/costs/budgets', async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user?.id || 'unknown';
     const budgetData = {
       ...req.body,

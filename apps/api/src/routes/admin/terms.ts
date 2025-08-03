@@ -122,7 +122,10 @@ export function registerAdminTermsRoutes(app: Express): void {
     async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
-        // const userId = req.user.id;
+        if (!req.user) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const userId = req.user.id;
 
         const {
           search = '',
@@ -365,6 +368,12 @@ export function registerAdminTermsRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.id;
 
         const { changes } = req.body;
@@ -504,6 +513,12 @@ export function registerAdminTermsRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.id;
 
         const { termIds, verified } = req.body;
@@ -554,7 +569,10 @@ export function registerAdminTermsRoutes(app: Express): void {
     async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
-        // const userId = req.user.id;
+        if (!req.user) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const userId = req.user.id;
 
         const { termIds } = req.body;
 
@@ -737,7 +755,10 @@ export function registerAdminTermsRoutes(app: Express): void {
     async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
-        // const userId = req.user.id;
+        if (!req.user) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const userId = req.user.id;
 
         // Get comprehensive term analytics - only use existing fields
         const [totalStats] = await db
@@ -860,7 +881,10 @@ export function registerAdminTermsRoutes(app: Express): void {
     async (req: Request, res) => {
       try {
         // User ID not needed for this endpoint
-        // const userId = req.user.id;
+        if (!req.user) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const userId = req.user.id;
 
         const { format = 'csv', category = '' } = req.query;
 
@@ -1031,6 +1055,12 @@ export function registerAdminTermsRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.id;
 
         const { name, shortDefinition, fullDefinition, mainCategories, useAI } = req.body;
@@ -1198,6 +1228,12 @@ export function registerAdminTermsRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.id;
 
         const { termId } = req.params;

@@ -36,11 +36,23 @@ export const createRateLimit = (options: {
       options.keyGenerator ||
       (req => {
         // Use user ID if authenticated, otherwise IP
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user as unknown;
         return user?.id || user?.claims?.sub || req.ip;
       }),
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     handler: (req, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user as unknown;
       const identifier = user?.id || user?.claims?.sub || req.ip;
 

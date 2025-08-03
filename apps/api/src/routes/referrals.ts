@@ -38,6 +38,12 @@ const REFERRAL_CONFIG = {
 router.post('/generate-code', requireAuth, async (req, res) => {
   try {
     const { customCode } = generateCodeSchema.parse(req.body);
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user!.id;
 
     // Check if user already has a referral code
@@ -99,6 +105,12 @@ router.post('/generate-code', requireAuth, async (req, res) => {
  */
 router.get('/stats', requireAuth, async (req, res) => {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user!.id;
 
     // Get user's referral code
@@ -395,6 +407,12 @@ router.get('/leaderboard', async (req, res) => {
  */
 router.post('/claim', requireAuth, async (req, res) => {
   try {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const userId = req.user!.id;
 
     // Get user's available rewards

@@ -69,6 +69,12 @@ export function setupSupportRoutes(app: Express) {
     validateAuth,
     upload.array('attachments', 5),
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const validation = createTicketSchema.safeParse(req.body);
 
@@ -136,6 +142,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/tickets',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const { status, limit = 20, offset = 0 } = req.query;
 
@@ -157,6 +169,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/tickets',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -190,6 +208,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/tickets/:ticketId',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const { ticketId } = req.params;
 
@@ -217,6 +241,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/tickets/:ticketId',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -257,6 +287,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/tickets/:ticketId/messages',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const { ticketId } = req.params;
 
@@ -291,6 +327,12 @@ export function setupSupportRoutes(app: Express) {
     validateAuth,
     upload.array('attachments', 3),
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const { ticketId } = req.params;
       const validation = addMessageSchema.safeParse(req.body);
@@ -364,6 +406,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/tickets/:ticketId/satisfaction',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const { ticketId } = req.params;
       const validation = satisfactionRatingSchema.safeParse(req.body);
@@ -404,6 +452,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/support/stats',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       const { dateFrom } = req.query;
 
@@ -424,6 +478,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/stats',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -450,6 +510,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/tickets/:ticketId/status',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -483,6 +549,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/tickets/:ticketId/assign',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -516,6 +588,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/tickets/:ticketId/messages',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -551,6 +629,12 @@ export function setupSupportRoutes(app: Express) {
     validateAuth,
     upload.array('attachments', 3),
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -628,6 +712,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/canned-responses',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {
@@ -652,6 +742,12 @@ export function setupSupportRoutes(app: Express) {
     '/api/admin/support/canned-responses',
     validateAuth,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
       
       if (!user.isAdmin) {

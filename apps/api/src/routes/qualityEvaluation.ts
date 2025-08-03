@@ -61,6 +61,12 @@ router.post(
   validateRequest(evaluateContentSchema),
   async (req, res, next) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id;
       const evaluationRequest = {
         ...req.body,
@@ -94,6 +100,12 @@ router.post(
   validateRequest(batchEvaluationSchema),
   async (req, res, next) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id;
       const batchRequest = {
         ...req.body,

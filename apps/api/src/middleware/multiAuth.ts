@@ -201,6 +201,12 @@ export async function setupMultiAuth(app: Express) {
 
   // Enhanced logout that works with all providers
   app.get('/api/auth/logout', (req, res) => {
+    if (!req.user) {
+
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    }
+
     const user = req.user;
     const provider = user?.provider;
 
@@ -361,6 +367,15 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
     });
   }
 
+  if (!req.user) {
+
+
+    return res.status(401).json({ error: 'Unauthorized' });
+
+
+  }
+
+
   const user = req.user as unknown;
 
   // For OAuth providers (Google/GitHub), check if user still exists in database
@@ -393,6 +408,15 @@ export function getUserInfo(
   req: Request
 ): { id: string; email: string; name: string; provider: string } | null {
   if (!req.user) {return null;}
+
+  if (!req.user) {
+
+
+    return res.status(401).json({ error: 'Unauthorized' });
+
+
+  }
+
 
   const user = req.user as unknown;
 

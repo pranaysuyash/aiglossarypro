@@ -379,6 +379,12 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get('/api/enhanced/preferences', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       const preferences = await enhancedStorage.getUserPreferences(userId);
       res.json(preferences);
@@ -394,6 +400,12 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.put('/api/enhanced/preferences', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       const preferences = userPreferencesSchema.parse(req.body);
 
@@ -418,6 +430,12 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get('/api/enhanced/recommendations', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 10;
 
@@ -512,6 +530,12 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.post('/api/enhanced/rate', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       const { termId, sectionName, rating, feedback } = req.body;
 
@@ -533,6 +557,12 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get('/api/enhanced/quality-report', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
 
@@ -594,6 +624,12 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get('/api/enhanced/schema-info', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
 
@@ -641,7 +677,7 @@ export function registerEnhancedRoutes(app: Express): void {
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
       const { db } = await import('./db');
-      const { enhancedTerms, termViews } = await import('../shared/enhancedSchema');
+      const { enhancedTerms, termViews } = await import('@aiglossarypro/shared/enhancedSchema');
       const { sql, gte, desc, eq } = await import('drizzle-orm');
 
       // Get trending terms based on recent view growth

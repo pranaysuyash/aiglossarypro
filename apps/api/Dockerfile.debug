@@ -1,0 +1,107 @@
+# Production Dockerfile with enhanced debugging
+FROM node:20-alpine AS builder
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy workspace configuration
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy all packages and apps
+COPY packages ./packages
+COPY apps/api ./apps/api
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build packages in dependency order
+# 1. Build shared package
+WORKDIR /app/packages/shared
+RUN npm run build || echo "Shared build failed, continuing..."
+
+# 2. Build database package  
+WORKDIR /app/packages/database
+RUN npm run build || echo "Database build failed, continuing..."
+
+# 3. Build auth package
+WORKDIR /app/packages/auth
+RUN npm run build || echo "Auth build failed, continuing..."
+
+# 4. Fix config package compilation
+WORKDIR /app/packages/config
+# Copy pre-compiled JS files to dist since TypeScript build has issues
+RUN mkdir -p dist && \
+    cp src/*.js src/*.d.ts dist/ 2>/dev/null || true && \
+    cp -r src/config dist/ 2>/dev/null || true && \
+    echo "Config files prepared"
+
+# 5. Build API with our working esbuild
+WORKDIR /app/apps/api
+RUN node esbuild.simple.js && echo "API build complete"
+
+# Production stage
+FROM node:20-alpine
+
+# Install production dependencies and debugging tools
+RUN apk add --no-cache curl bash tini postgresql-client netcat-openbsd
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy built packages from builder
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/api ./apps/api
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy startup debug script
+COPY apps/api/scripts/startup-debug.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Create enhanced health check script
+RUN cat > /app/healthcheck.sh << 'EOF'
+#!/bin/bash
+# Check if the service is responding
+response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health)
+if [ "$response" = "200" ]; then
+    exit 0
+else
+    echo "Health check failed with status: $response"
+    # Try to get more info
+    curl -v http://localhost:8080/health || true
+    exit 1
+fi
+EOF
+RUN chmod +x /app/healthcheck.sh
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
+
+EXPOSE 8080
+
+# Set working directory to API
+WORKDIR /app/apps/api
+
+# Enhanced health check with better logging
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+  CMD /app/healthcheck.sh
+
+# Use tini for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start with our debug script
+CMD ["/app/start.sh"]

@@ -15,11 +15,15 @@
     "@aiglossarypro/config": "workspace:*",
     "@aiglossarypro/database": "workspace:*",
     "@aiglossarypro/shared": "workspace:*",
+    "bullmq": "^5.56.1",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "googleapis": "^148.0.0",
+    "ioredis": "^5.6.1",
     "nanoid": "^5.0.7",
     "resend": "^4.7.0",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "vite": "^5.4.19"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

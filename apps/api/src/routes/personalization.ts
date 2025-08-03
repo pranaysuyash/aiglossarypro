@@ -107,6 +107,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
 
         // Parse and validate query parameters
@@ -195,6 +201,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const recommendationType = req.params.type;
         const limit = parseInt(req.query.limit as string) || 10;
@@ -274,6 +286,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const _userId = req.user.claims.sub;
 
         const validation = BehaviorEventSchema.safeParse(req.body);
@@ -315,6 +333,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
 
         const validation = RecommendationFeedbackSchema.safeParse(req.body);
@@ -372,6 +396,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
 
         const profile = await personalizationService.getUserPersonalizationProfile(userId);
@@ -400,6 +430,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const _userId = req.user.claims.sub;
         const { depth, timestamp } = req.body;
 
@@ -421,6 +457,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const _userId = req.user.claims.sub;
         const interactionData = req.body;
 
@@ -445,6 +487,12 @@ export function registerPersonalizationRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const _userId = req.user.claims.sub;
         const { timeSpent, maxScrollDepth, interactions, url } = req.body;
 

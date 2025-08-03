@@ -171,6 +171,12 @@ export function registerUserRoutes(app: Express): void {
     parseId(),
     async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
 
@@ -200,6 +206,12 @@ export function registerUserRoutes(app: Express): void {
     parsePagination,
     async (req: AuthenticatedWithPagination, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const { page, limit } = req.pagination;
         // const { status } = req.query; // Currently not used
@@ -233,6 +245,12 @@ export function registerUserRoutes(app: Express): void {
     parseId(),
     async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
 
@@ -262,6 +280,12 @@ export function registerUserRoutes(app: Express): void {
     parseId(),
     async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
         const { progress } = req.body;
@@ -300,6 +324,12 @@ export function registerUserRoutes(app: Express): void {
     parseId(),
     async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
 
@@ -330,7 +360,10 @@ export function registerUserRoutes(app: Express): void {
     parseNumericQuery('days', 30, 1, 365),
     async (req: AuthenticatedRequest & RequestWithPagination & RequestWithParsedQuery, res: Response) => {
       try {
-        // const _userId = req.user.claims.sub; // Currently not used
+        if (!req.user) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const _userId = req.user.claims.sub; // Currently not used
         const { page, limit } = req.pagination;
         // const { type } = req.query; // Currently not used
         // const _days = req.parsed?.days || 30; // Currently not used
@@ -368,6 +401,12 @@ export function registerUserRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const streak = await storage.getUserStreak(userId);
 
@@ -394,6 +433,12 @@ export function registerUserRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const stats = await storage.getUserStats(userId);
 
@@ -547,6 +592,12 @@ export function registerUserRoutes(app: Express): void {
   // Daily usage statistics endpoint
   app.get('/api/user/daily-usage', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user.claims.sub;
       // const today = new Date().toISOString().split('T')[0]; // Currently not used
 
@@ -623,6 +674,12 @@ export function registerUserRoutes(app: Express): void {
     parseId('termId'),
     async (req: AuthenticatedWithParsedId, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const termId = req.parsedId;
         const user = await storage.getUser(userId);
@@ -678,6 +735,12 @@ export function registerUserRoutes(app: Express): void {
     authMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user.claims.sub;
         const user = await storage.getUser(userId);
 

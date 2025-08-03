@@ -144,6 +144,12 @@ router.post(
     try {
       const { termId, sectionName, templateId, model, temperature, maxTokens, regenerate } =
         req.body;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id;
 
       logger.info('AI content generation request', {
@@ -268,6 +274,12 @@ router.post(
   async (req, res) => {
     try {
       const { termId, sectionNames, templateId, model, regenerate } = req.body;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.id;
 
       logger.info('Bulk AI content generation request', {

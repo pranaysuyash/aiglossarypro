@@ -86,6 +86,15 @@ export function rateLimitMiddleware(req: Request, _res: Response, next: NextFunc
     return next();
   }
 
+  if (!req.user) {
+
+
+    return res.status(401).json({ error: 'Unauthorized' });
+
+
+  }
+
+
   const userId = req.user.claims.sub;
   const termId = req.params.id;
 

@@ -11,6 +11,12 @@ export function registerAIRoutes(app: Express): void {
   app.post('/api/ai/generate-definition', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const { term, category, context } = req.body;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
 
       if (!term || typeof term !== 'string') {
@@ -102,6 +108,12 @@ export function registerAIRoutes(app: Express): void {
   app.post('/api/ai/semantic-search', async (req: Request, res: Response) => {
     try {
       const { query, limit = 10 } = req.body;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub || null;
 
       if (!query || typeof query !== 'string') {
@@ -185,6 +197,12 @@ export function registerAIRoutes(app: Express): void {
       const { improvements } = req.body;
 
       // Only allow admin to apply improvements
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 
@@ -232,6 +250,12 @@ export function registerAIRoutes(app: Express): void {
   // Submit feedback for AI-generated content
   app.post('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const { termId, sectionName, feedbackType, comment } = req.body;
 
@@ -276,6 +300,12 @@ export function registerAIRoutes(app: Express): void {
   // Get feedback list (admin only)
   app.get('/api/ai/feedback', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 
@@ -339,6 +369,12 @@ export function registerAIRoutes(app: Express): void {
   // Update feedback status (admin only)
   app.put('/api/ai/feedback/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 
@@ -403,6 +439,12 @@ export function registerAIRoutes(app: Express): void {
   // Get content verification status (admin only)
   app.get('/api/ai/verification', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 
@@ -463,6 +505,12 @@ export function registerAIRoutes(app: Express): void {
   // Update content verification (admin only)
   app.put('/api/ai/verification/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 
@@ -523,6 +571,12 @@ export function registerAIRoutes(app: Express): void {
   // Get AI usage analytics (admin only)
   app.get('/api/ai/analytics', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 
@@ -654,6 +708,12 @@ export function registerAIRoutes(app: Express): void {
   // Get AI service health and status
   app.get('/api/ai/status', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
       const isAdmin = await isUserAdmin(userId || '');
 

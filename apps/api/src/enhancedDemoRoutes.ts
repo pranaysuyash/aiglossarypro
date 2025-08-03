@@ -186,6 +186,9 @@ export function registerEnhancedDemoRoutes(app: Express): void {
    */
   app.get('/api/demo/personalization', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       const userId = req.user.claims.sub;
 
       // Get user preferences
@@ -226,6 +229,9 @@ export function registerEnhancedDemoRoutes(app: Express): void {
    */
   app.get('/api/demo/analytics', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       const userId = req.user.claims.sub;
       const _user = await enhancedStorage.getUser(userId);
 

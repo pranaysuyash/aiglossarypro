@@ -66,6 +66,12 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user;
 
         if (!user) {
@@ -130,6 +136,12 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
    */
   app.get('/api/personalized/profile', multiAuthMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user;
 
       if (!user) {
@@ -173,6 +185,12 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user;
 
         if (!user) {
@@ -207,6 +225,12 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user;
         const { type = 'all', limit = '10' } = req.query;
 
@@ -261,6 +285,12 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user;
         const { preferredCategories, learningStyle, difficultyPreference, contentTypes } = req.body;
 
@@ -311,6 +341,12 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user;
         const { recommendationId, recommendationType, feedback, rating, action } = req.body;
 

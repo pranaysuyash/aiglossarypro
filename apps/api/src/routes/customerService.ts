@@ -98,6 +98,12 @@ router.post(
 
       // If user is authenticated, use their info
       if (req.user) {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user as AuthenticatedRequest['user'];
         ticketData.userId = user.id;
         if (!ticketData.customerEmail) {
@@ -140,6 +146,12 @@ router.get('/tickets/:ticketId', async (req: Request, res: Response): Promise<vo
 
     // Check access permissions
     if (req.user) {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const user = req.user as AuthenticatedRequest['user'];
       const canAccess =
         user.isAdmin || ticket.userId === user.id || ticket.customerEmail === user.email;
@@ -287,6 +299,12 @@ router.post(
 
       // Check permissions
       if (req.user) {
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const user = req.user as AuthenticatedRequest['user'];
         const canAccess =
           user.isAdmin || ticket.userId === user.id || ticket.customerEmail === user.email;

@@ -28,6 +28,12 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/terms/:termId/sections', async (req: Request, res: Response) => {
     try {
       const { termId } = req.params;
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
 
       // Get sections and progress data
@@ -80,6 +86,12 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/sections/:sectionId', async (req: Request, res: Response) => {
     try {
       const { sectionId } = validateParams(sectionParamsSchema)(req);
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims?.sub;
 
       // Get section data and items
@@ -118,6 +130,12 @@ export function registerSectionRoutes(app: Express): void {
     async (req: Request, res: Response) => {
       try {
         const { termId, sectionId } = validateParams(progressParamsSchema)(req);
+        if (!req.user) {
+
+          return res.status(401).json({ error: 'Unauthorized' });
+
+        }
+
         const userId = req.user?.claims.sub;
         const progressUpdate: IProgressUpdate = req.body;
 
@@ -144,6 +162,12 @@ export function registerSectionRoutes(app: Express): void {
   // Get user's overall progress summary
   app.get('/api/progress/summary', authenticateToken, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      }
+
       const userId = req.user?.claims.sub;
       // Get user's progress summary using the new method
       const summary = await storage.getUserProgressSummary(userId);

@@ -194,6 +194,12 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
 // User context middleware (for logging user info)
 export const userContextMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   const sessionUser = ((req as any).session as any)?.user;
+  if (!req.user) {
+
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  }
+
   const authUser = req.user as unknown;
 
   if (sessionUser || authUser) {

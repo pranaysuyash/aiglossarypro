@@ -18,7 +18,6 @@ export async function columnBatchProcessingProcessor(
     sectionName,
     termIds,
     batchConfiguration,
-    costLimits,
     notificationOptions,
     userId,
   } = job.data;

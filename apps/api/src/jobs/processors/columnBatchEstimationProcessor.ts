@@ -12,7 +12,7 @@ import type { ColumnBatchEstimationJobData, ColumnBatchEstimationJobResult } fro
 export async function columnBatchEstimationProcessor(
   job: Job<ColumnBatchEstimationJobData>
 ): Promise<ColumnBatchEstimationJobResult> {
-  const _startTime = Date.now();
+  const startTime = Date.now();
   const {
     sectionName,
     termIds,
@@ -160,6 +160,7 @@ export async function columnBatchEstimationProcessor(
       estimatedCost: result.estimatedCost,
       estimatedTime: result.estimatedProcessingTime,
       confidence: result.confidence,
+      duration: Date.now() - startTime,
     });
 
     return result;

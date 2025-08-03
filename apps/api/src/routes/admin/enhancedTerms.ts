@@ -20,15 +20,20 @@ router.get('/enhanced-terms', async (req, res) => {
     const limitNum = parseInt(limit as string);
     const offset = (pageNum - 1) * limitNum;
 
-    let query = db.select().from(enhancedTerms);
-
+    const conditions = [];
     if (search) {
-      query = query.where(
+      conditions.push(
         sql`${enhancedTerms.name} ILIKE ${`%${search}%`} OR ${enhancedTerms.shortDefinition} ILIKE ${`%${search}%`}`
       );
     }
 
-    const terms = await query.orderBy(enhancedTerms.name).limit(limitNum).offset(offset);
+    const terms = await db
+      .select()
+      .from(enhancedTerms)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(enhancedTerms.name)
+      .limit(limitNum)
+      .offset(offset);
 
     res.json(terms);
   } catch (error) {

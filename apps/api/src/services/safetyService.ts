@@ -81,7 +81,7 @@ class SafetyService {
     this.operationQueue = [];
 
     // Create critical alert
-    const alert: SafetyAlert = {
+    const alert = {
       id: `emergency-${Date.now()}`,
       type: 'emergency',
       priority: 'critical',
@@ -89,7 +89,7 @@ class SafetyService {
       timestamp: new Date(),
       acknowledged: false,
       autoResolved: false,
-    };
+    } as SafetyAlert;
 
     this.alerts.push(alert);
 
@@ -100,7 +100,7 @@ class SafetyService {
       title: 'Emergency Stop Activated',
       message: `Emergency stop activated: ${reason}`,
       data: { activeOperations: activeOps.length, queueSize: this.operationQueue.length },
-    });
+    } as any);
   }
 
   async deactivateEmergencyStop(userId?: string): Promise<void> {
@@ -121,7 +121,7 @@ class SafetyService {
       title: 'Emergency Stop Deactivated',
       message: 'System operations can resume normally',
       data: { userId },
-    });
+    } as any);
   }
 
   // Cost Monitoring
@@ -222,7 +222,7 @@ class SafetyService {
         type: 'quality',
         priority: 'medium',
         message: `Low quality detected: ${qualityScore.toFixed(1)} (threshold: ${this.limits.minQualityThreshold})`,
-      });
+      } as any);
     }
 
     logger.info('Quality tracked', {
@@ -242,7 +242,7 @@ class SafetyService {
         type: 'failure_rate',
         priority: 'high',
         message: `High failure rate detected: ${(this.metrics.failureRate * 100).toFixed(1)}%`,
-      });
+      } as any);
     }
 
     logger.warn('Operation failure tracked', {
@@ -274,7 +274,7 @@ class SafetyService {
         title: `Safety Alert: ${alert.type.toUpperCase()}`,
         message: alert.message,
         data: { alertId: alert.id, metrics: this.metrics },
-      });
+      } as any);
     }
   }
 
@@ -347,7 +347,7 @@ class SafetyService {
       title: 'Safety Limits Updated',
       message: 'Safety configuration has been modified',
       data: { updatedLimits: newLimits },
-    });
+    } as any);
   }
 
   // Reset daily metrics (should be called by cron job)

@@ -93,7 +93,7 @@ router.get('/system', requireAdmin, async (_req: Request, res: Response) => {
 });
 
 // Real-time pool monitoring via SSE (Server-Sent Events)
-router.get('/pool/stream', adminAuth, (req: Request, res: Response) => {
+router.get('/pool/stream', requireAdmin, (req: Request, res: Response) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',

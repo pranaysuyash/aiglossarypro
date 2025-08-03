@@ -20,7 +20,6 @@ export async function columnBatchMonitoringProcessor(
       costWarningThreshold: 0.8, // 80%
       errorRateThreshold: 0.2, // 20%
     },
-    userId,
   } = job.data;
 
   logger.info(

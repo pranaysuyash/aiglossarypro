@@ -117,7 +117,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
       }
 
       // Replace req.query with validated and transformed data
-      req.query = result.data;
+      req.query = result.data as any;
       next();
     } catch (error) {
       res.status(500).json({

@@ -17,7 +17,6 @@ export async function columnBatchCleanupProcessor(
     maxAge = 30, // 30 days default
     maxOperations = 1000, // Keep last 1000 operations
     cleanupTypes = ['completed', 'failed', 'cancelled'],
-    userId,
   } = job.data;
 
   logger.info(`Starting column batch cleanup job ${job.id}`);

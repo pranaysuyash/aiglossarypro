@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { authenticateToken, requireAdmin } from '../middleware/adminAuth';
 import { validateRequest } from '../middleware/validateRequest';

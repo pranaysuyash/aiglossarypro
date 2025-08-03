@@ -86,7 +86,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
 
     // No compression needed or supported
     return originalJson.call(this, body);
-  } as unknown;
+  } as any;
 
   // Override res.send for other content types
   res.send = function (this: Response, body: any) {
@@ -132,7 +132,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
     }
 
     return originalSend.call(this, body);
-  } as unknown;
+  } as any;
 
   next();
 }

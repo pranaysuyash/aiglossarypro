@@ -276,7 +276,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       totalCostToday: costSummary.today,
       averageCompletionTime: await this.calculateAverageCompletionTime(),
       systemHealthScore: this.calculateSystemHealthScore(),
-      queueDepth: totalQueueJobs,
+      queueDepth: totalQueueJobs as number,
       processingCapacityUtilization: ((processingCapacity as number) / maxCapacity) * 100,
     };
 

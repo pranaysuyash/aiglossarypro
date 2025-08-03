@@ -715,7 +715,7 @@ export class BatchSafetyControlsService extends EventEmitter {
    * Start periodic health checks
    */
   private startHealthChecks(): void {
-    this.healthCheckInterval = setInterval(async () => {
+    this._healthCheckInterval = setInterval(async () => {
       try {
         const healthCheck = await this.performHealthCheck();
 

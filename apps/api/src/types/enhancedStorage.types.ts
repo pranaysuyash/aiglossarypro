@@ -8,7 +8,6 @@ import type {
   TermSection,
   SearchFacets,
   InteractiveElement,
-  Category,
   Achievement,
   LearningStreak,
   UserProgressStats,

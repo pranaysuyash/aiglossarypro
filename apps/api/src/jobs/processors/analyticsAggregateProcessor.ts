@@ -137,7 +137,7 @@ async function aggregateSearchAnalytics(
   }
 
   result.aggregatedData = searchData;
-  result.recordsProcessed = searchData.totalSearches;
+  result.recordsProcessed = searchData.totalSearches as number;
 
   await job.updateProgress({
     progress: 60,
@@ -178,7 +178,7 @@ async function aggregateUserEngagement(
   }
 
   result.aggregatedData = engagementData;
-  result.recordsProcessed = engagementData.activeUsers;
+  result.recordsProcessed = engagementData.activeUsers as number;
 
   await job.updateProgress({
     progress: 60,

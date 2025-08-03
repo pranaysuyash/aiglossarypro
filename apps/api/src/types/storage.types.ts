@@ -5,7 +5,6 @@
 
 import type {
   // ApiResponse,
-  SearchFilters as BaseSearchFilters,
   ICategory,
   ISubcategory,
   ITerm,

@@ -176,7 +176,7 @@ export async function aiContentGenerationProcessor(
 
     // Update each section individually
     for (const [sectionId, sectionData] of Object.entries(result.generatedSections)) {
-      await enhancedStorage.updateTermSection(termId, sectionId, sectionData);
+      await enhancedStorage.updateTermSection(termId, sectionId, sectionData as Partial<TermSection>);
     }
 
     result.duration = Date.now() - startTime;

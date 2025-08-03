@@ -331,7 +331,7 @@ class AdaptiveContentService {
     };
   }
 
-  private async analyzeContentPreferences(_userId: string, interactions: UserInteraction[]) {
+  private async analyzeContentPreferences(_userId: string, _interactions: UserInteraction[]) {
     // Analyze interaction patterns to determine content preferences
     // const viewInteractions = interactions.filter(i => i.interactionType === 'view');
     // const shareInteractions = interactions.filter(i => i.interactionType === 'share');

@@ -667,4 +667,11 @@ export const jobQueue = {
   async addCacheWarmJob(data: any, options?: JobOptions): Promise<string> {
     return jobQueueManager.addJob(JobType.CACHE_WARM, data, options);
   },
+
+  /**
+   * Add an Excel import job
+   */
+  async addExcelImportJob(data: any, options?: JobOptions): Promise<string> {
+    return jobQueueManager.addJob(JobType.EXCEL_IMPORT, data, options);
+  },
 };

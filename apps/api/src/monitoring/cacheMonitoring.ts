@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'node:events';
+import type { Request, Response, NextFunction } from 'express';
 import { desc, gte } from 'drizzle-orm';
 import { cacheMetrics } from '@aiglossarypro/shared/schema';
 
@@ -385,12 +386,12 @@ export const cacheMonitor = new CacheMonitoringService();
 // Export monitoring integration functions
 export function setupCacheMonitoring(app: any): void {
   // Add monitoring middleware
-  app.use('/api', (_req: Request, res: Request, next: Request) => {
+  app.use('/api', (_req: Request, res: Response, next: NextFunction) => {
     // Add cache performance headers
     const stats = getCacheStats();
     res.setHeader('X-Cache-Hit-Rate', `${(stats.hitRate * 100).toFixed(1)}%`);
     res.setHeader('X-Cache-Response-Time', `${stats.averageResponseTime?.toFixed(1)}ms` || 'N/A');
-    (next as any)();
+    next();
   });
 
   // Set up alert handlers

@@ -186,7 +186,7 @@ async function precomputeTermRelationships(
   });
 
   // Get all terms if no specific IDs provided
-  const terms = termIds || (await enhancedStorage.getAllTerms()).map((term: any) => term.id);
+  const terms = termIds || (await enhancedStorage.getAllTerms()).data.map((term: any) => term.id);
 
   let processedTerms = 0;
   const relationshipData: Record<string, unknown> = {};

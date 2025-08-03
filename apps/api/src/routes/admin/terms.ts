@@ -1,6 +1,5 @@
 import { and, asc, count, desc, eq, like, or, sql } from 'drizzle-orm';
-import type { Express } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request } from 'express'
 import { enhancedTerms } from '@aiglossarypro/shared';
 // import { aiService } from '../../aiService'; // Commented out until AI service is implemented
 import { db } from '@aiglossarypro/database';
@@ -125,7 +124,7 @@ export function registerAdminTermsRoutes(app: Express): void {
         if (!req.user) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const {
           search = '',
@@ -181,8 +180,8 @@ export function registerAdminTermsRoutes(app: Express): void {
         }
 
         // Pagination
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
+        const pageNum = parseInt(page as string);
+        const limitNum = parseInt(limit as string);
         const offset = (pageNum - 1) * limitNum;
 
         // Sort configuration - only use fields that exist in enhancedTerms
@@ -374,7 +373,7 @@ export function registerAdminTermsRoutes(app: Express): void {
 
         }
 
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const { changes } = req.body;
 
@@ -519,7 +518,7 @@ export function registerAdminTermsRoutes(app: Express): void {
 
         }
 
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const { termIds, verified } = req.body;
 
@@ -572,7 +571,7 @@ export function registerAdminTermsRoutes(app: Express): void {
         if (!req.user) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const { termIds } = req.body;
 
@@ -758,7 +757,7 @@ export function registerAdminTermsRoutes(app: Express): void {
         if (!req.user) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         // Get comprehensive term analytics - only use existing fields
         const [totalStats] = await db
@@ -884,7 +883,7 @@ export function registerAdminTermsRoutes(app: Express): void {
         if (!req.user) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const { format = 'csv', category = '' } = req.query;
 
@@ -1061,7 +1060,7 @@ export function registerAdminTermsRoutes(app: Express): void {
 
         }
 
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const { name, shortDefinition, fullDefinition, mainCategories, useAI } = req.body;
 
@@ -1234,7 +1233,7 @@ export function registerAdminTermsRoutes(app: Express): void {
 
         }
 
-        const userId = req.user.id;
+        const _userId = req.user.id;
 
         const { termId } = req.params;
 

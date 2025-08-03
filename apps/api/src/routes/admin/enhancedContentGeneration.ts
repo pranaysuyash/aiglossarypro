@@ -1,6 +1,5 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import { type Request, type Response, Router } from 'express'
-import type { Request, Response } from 'express';
 import { aiUsageAnalytics } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
@@ -647,7 +646,7 @@ router.get(
   requireFirebaseAdmin,
   async (req: Request, res: Response) => {
     try {
-      const { timeRange = 'week', model, section } = req.query;
+      const { timeRange = 'week', model } = req.query;
 
       // Calculate date range
       const now = new Date();

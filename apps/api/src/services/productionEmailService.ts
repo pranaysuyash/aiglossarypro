@@ -133,7 +133,9 @@ export class ProductionEmailService {
 
       return true;
     } catch (error) {
-      logger.error('Resend email failed:', error);
+      logger.error('Resend email failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -163,7 +165,9 @@ export class ProductionEmailService {
 
       return true;
     } catch (error) {
-      logger.error('SMTP email failed:', error);
+      logger.error('SMTP email failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }

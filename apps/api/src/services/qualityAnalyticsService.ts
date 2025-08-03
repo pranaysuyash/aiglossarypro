@@ -125,7 +125,7 @@ export interface QualityTrendAnalysis {
  * Service for quality analytics and reporting
  */
 export class QualityAnalyticsService {
-  private readonly QUALITY_THRESHOLDS = {
+  private readonly _QUALITY_THRESHOLDS = {
     excellent: 8.5,
     good: 7.0,
     acceptable: 5.5,
@@ -180,10 +180,10 @@ export class QualityAnalyticsService {
           start: startDate,
           end: endDate,
         },
-        summary,
+        summary: summary as any,
         topPerformers,
         needsImprovement,
-        trends,
+        trends: trends as any,
         modelPerformance,
         commonIssues,
         recommendations,
@@ -194,7 +194,7 @@ export class QualityAnalyticsService {
 
       logger.info('Quality report generated successfully', {
         reportId: report.reportId,
-        termsEvaluated: summary.totalTermsEvaluated,
+        termsEvaluated: (summary as any).totalTermsEvaluated,
       });
 
       return report;
@@ -420,8 +420,6 @@ export class QualityAnalyticsService {
     try {
       // Get metrics from the last hour and 24 hours
       const now = new Date();
-      const _oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-      const _oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       // This would query real-time data
       return {

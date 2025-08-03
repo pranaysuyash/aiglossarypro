@@ -51,8 +51,8 @@ export default function enhancedTermsRoutes(app: Express) {
         hasContent: sections.length > 0,
         completionStatus: {
           totalSections: 42,
-          completedSections: sections.filter(s => s.isCompleted).length,
-          percentage: Math.round((sections.filter(s => s.isCompleted).length / 42) * 100),
+          completedSections: sections.filter(s => (s as any).isCompleted).length,
+          percentage: Math.round((sections.filter(s => (s as any).isCompleted).length / 42) * 100),
         },
       };
       
@@ -68,7 +68,9 @@ export default function enhancedTermsRoutes(app: Express) {
           })
           .where(eq(enhancedTerms.id, id));
       } catch (error) {
-        logger.error('Failed to update view count:', error);
+        logger.error('Failed to update view count:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
 
       const response = {
@@ -80,7 +82,9 @@ export default function enhancedTermsRoutes(app: Express) {
       res.json(response);
 
     } catch (error) {
-      logger.error('Error fetching enhanced term:', error);
+      logger.error('Error fetching enhanced term:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch term',
@@ -120,7 +124,9 @@ export default function enhancedTermsRoutes(app: Express) {
       res.redirect(`/api/enhanced/terms/${term.id}`);
 
     } catch (error) {
-      logger.error('Error fetching enhanced term by slug:', error);
+      logger.error('Error fetching enhanced term by slug:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch term',
@@ -147,7 +153,7 @@ export default function enhancedTermsRoutes(app: Express) {
       const offset = (pageNum - 1) * limitNum;
 
       // Get terms with pagination
-      const terms = await enhancedStorage.getEnhancedTerms({
+      const terms = await (enhancedStorage as any).getEnhancedTerms({
         limit: limitNum,
         offset,
         search: search as string,
@@ -166,7 +172,9 @@ export default function enhancedTermsRoutes(app: Express) {
       });
 
     } catch (error) {
-      logger.error('Error fetching enhanced terms:', error);
+      logger.error('Error fetching enhanced terms:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch terms',

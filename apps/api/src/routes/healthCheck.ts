@@ -4,8 +4,7 @@
  */
 
 import type { Express, Request, Response } from 'express';
-import { analyticsService } from '@aiglossarypro/config';
-import { isSentryEnabled } from '@aiglossarypro/config/sentry';
+import { analyticsService, isSentryEnabled } from '@aiglossarypro/config';
 import { enhancedStorage } from '../enhancedStorage';
 import { productionEmailService } from '../services/productionEmailService';
 import { log as logger } from '../utils/logger';
@@ -109,7 +108,9 @@ export function registerHealthCheckRoutes(app: Express): void {
 
       res.status(status === 'healthy' ? 200 : status === 'degraded' ? 200 : 503).json(healthCheck);
     } catch (error) {
-      logger.error('Detailed health check failed:', error);
+      logger.error('Detailed health check failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         status: 'error',
         timestamp: new Date().toISOString(),

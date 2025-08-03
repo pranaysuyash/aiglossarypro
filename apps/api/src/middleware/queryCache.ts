@@ -5,6 +5,7 @@
  * and improve response times. Uses LRU cache with TTL support.
  */
 
+import type { Request, Response, NextFunction } from 'express';
 import { metricsCollector } from '../cache/CacheMetrics';
 import { TIME_CONSTANTS } from '../utils/constants';
 
@@ -374,7 +375,7 @@ export const CacheWarming = {
   async warmFrequentTermQueries() {
     const { db } = await import('../db');
     const { terms, categories } = await import('@aiglossarypro/shared/schema');
-    const { desc, eq, sql } = await import('drizzle-orm');
+    const { desc, eq } = await import('drizzle-orm');
 
     logger.info('🔥 Warming frequent term queries...');
 
@@ -432,7 +433,7 @@ export const CacheWarming = {
 };
 
 // Cache statistics middleware
-export function cacheStatsMiddleware(_req: Request, res: Request, next: Request) {
+export function cacheStatsMiddleware(_req: Request, res: Response, next: NextFunction) {
   // Add cache stats to response headers in development
   if (process.env.NODE_ENV === 'development') {
     const stats = queryCache.getStats();

@@ -25,7 +25,7 @@ export function registerLocationRoutes(app: Express): void {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as any;
       
       // Ensure we have the required fields
       if (!data.country_code || !data.country_name) {

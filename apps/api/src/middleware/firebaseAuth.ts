@@ -65,10 +65,10 @@ export async function authenticateFirebaseToken(
     }
 
     // Attach user to request
-    (req as AuthenticatedRequest).user = {
+    (req as unknown as AuthenticatedRequest).user = {
       ...user!,
       name: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'Unknown'
-    };
+    } as any;
     (req as any).firebaseUser = decodedToken;
 
     next();
@@ -91,7 +91,7 @@ export async function requireFirebaseAdmin(
 ): Promise<void> {
   try {
     const firebaseUser = (req as any).firebaseUser;
-    const user = (req as AuthenticatedRequest).user;
+    const user = (req as unknown as AuthenticatedRequest).user;
 
     if (!firebaseUser || !user) {
       res.status(401).json({
@@ -159,10 +159,10 @@ export async function optionalFirebaseAuth(
       const user = await storage.getUserByEmail(decodedToken.email!);
 
       if (user) {
-        (req as AuthenticatedRequest).user = {
+        (req as unknown as AuthenticatedRequest).user = {
           ...user,
           name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown'
-        };
+        } as any;
         (req as any).firebaseUser = decodedToken;
       }
     }

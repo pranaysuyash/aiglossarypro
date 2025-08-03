@@ -7,7 +7,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sql } from 'drizzle-orm';
 import { type Request, type Response, Router } from 'express'
-import type { Request, Response } from 'express';
 import multer from 'multer';
 import type { ApiResponse } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
@@ -176,7 +175,7 @@ mediaRouter.post(
       const { altText, caption, termId } = req.body;
       if (!req.user) {
 
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(401).json({ error: 'Unauthorized' } as ApiResponse<any>);
 
       }
 
@@ -402,9 +401,9 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
     const file = fileInfo.rows[0] as unknown;
 
     // Security: Sanitize headers to prevent header injection
-    const safeOriginalName = (file.original_name || 'download').replace(/["\\r\\n]/g, '');
+    const safeOriginalName = ((file as any).original_name || 'download').replace(/["\\r\\n]/g, '');
 
-    res.setHeader('Content-Type', file.mime_type);
+    res.setHeader('Content-Type', (file as any).mime_type);
     res.setHeader('Content-Disposition', `inline; filename="${safeOriginalName}"`);
     res.sendFile(filePath);
   } catch (error) {

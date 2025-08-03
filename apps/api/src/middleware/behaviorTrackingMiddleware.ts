@@ -31,7 +31,7 @@ export const behaviorTrackingMiddleware = (
 
   // Generate or get session ID
   const sessionId =
-    req.session?.id || (req.headers['x-session-id'] as string) || generateSessionId();
+    (req as any).session?.id || (req.headers['x-session-id'] as string) || generateSessionId();
 
   // Hash IP address for privacy
   const ipAddress = hashIP(req.ip || req.socket.remoteAddress || '');
@@ -115,7 +115,7 @@ export const enhancedBehaviorTracking = (options: {
     // Add client-side tracking script injection for enhanced tracking
     if (options.trackScrollDepth || options.trackTimeSpent || options.trackInteractions) {
       const originalSend = res.send;
-      res.send = function (data: Response) {
+      res.send = function (data: any) {
         if (typeof data === 'string' && data.includes('</body>')) {
           const trackingScript = generateTrackingScript(options);
           data = data.replace('</body>', `${trackingScript}</body>`);

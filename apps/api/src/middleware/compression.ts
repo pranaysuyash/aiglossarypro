@@ -27,7 +27,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
   const originalSend = res.send;
 
   // Override res.json to add compression
-  res.json = function (this: Response, body: Response) {
+  res.json = function (this: Response, body: any) {
     const jsonString = JSON.stringify(body);
     const sizeInBytes = Buffer.byteLength(jsonString, 'utf8');
 
@@ -89,7 +89,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
   } as unknown;
 
   // Override res.send for other content types
-  res.send = function (this: Response, body: Response) {
+  res.send = function (this: Response, body: any) {
     if (typeof body === 'string' && body.length > 1024) {
       const acceptEncoding = req.headers['accept-encoding'] || '';
       const sizeInBytes = Buffer.byteLength(body, 'utf8');

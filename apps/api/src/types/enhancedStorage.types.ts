@@ -16,9 +16,9 @@ import type {
   CategoryProgress,
 } from './storage.types';
 
-import type {
-  ICategory,
-} from '@aiglossarypro/shared/types';
+// import type {
+//   ICategory,
+// } from '@aiglossarypro/shared/types';
 
 // ===== ENHANCED TERM TYPES =====
 
@@ -679,7 +679,10 @@ export interface AdminActivity {
 
 // ===== CATEGORY WITH STATS =====
 
-export interface CategoryWithStats extends Category {
+export interface CategoryWithStats {
+  id: string;
+  name: string;
+  description: string;
   termCount: number;
   completedTerms: number;
   averageCompletionRate: number;

@@ -4,7 +4,7 @@
  */
 
 import type {
-  ApiResponse,
+  // ApiResponse,
   SearchFilters as BaseSearchFilters,
   ICategory,
   ISubcategory,
@@ -168,7 +168,7 @@ export interface SearchResult {
   suggestions?: string[];
 }
 
-export interface SearchFilters extends BaseSearchFilters {
+export interface SearchFilters {
   query?: string;
   categories?: string[];
   subcategories?: string[];

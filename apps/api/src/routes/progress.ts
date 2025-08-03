@@ -4,7 +4,6 @@ import { enhancedTerms, users, userTermHistory } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { validate } from '../middleware/validationMiddleware';
-import { progressSchemas } from '../schemas/engagementValidation';
 import ProgressTrackingService from '../services/progressTrackingService';
 import type { AuthenticatedRequest } from '@aiglossarypro/shared';
 import { log as logger } from '../utils/logger';
@@ -74,7 +73,7 @@ export function registerProgressRoutes(app: Express): void {
     }), { logErrors: true }),
     async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -103,17 +102,19 @@ export function registerProgressRoutes(app: Express): void {
     })),
     async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const limit = req.query.limit as number;
+      const limit = req.query.limit as unknown as number;
       const bookmarks = await ProgressTrackingService.getUserBookmarks(userId, limit);
 
       res.json(bookmarks);
     } catch (error) {
-      logger.error('Error fetching bookmarks:', error);
+      logger.error('Error fetching bookmarks:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch bookmarks' });
     }
   });
@@ -121,7 +122,7 @@ export function registerProgressRoutes(app: Express): void {
   // Get bookmark count
   app.get('/api/progress/bookmark-count', async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -135,7 +136,9 @@ export function registerProgressRoutes(app: Express): void {
         percentageUsed: limits.free > 0 ? Math.round((count / limits.free) * 100) : 0,
       });
     } catch (error) {
-      logger.error('Error fetching bookmark count:', error);
+      logger.error('Error fetching bookmark count:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch bookmark count' });
     }
   });
@@ -148,13 +151,13 @@ export function registerProgressRoutes(app: Express): void {
     })),
     async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const limit = req.query.limit as number;
-      const offset = req.query.offset as number;
+      const limit = req.query.limit as unknown as number;
+      const offset = req.query.offset as unknown as number;
 
       const history = await db
         .select({
@@ -181,7 +184,9 @@ export function registerProgressRoutes(app: Express): void {
 
       res.json(history);
     } catch (error) {
-      logger.error('Error fetching term history:', error);
+      logger.error('Error fetching term history:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch term history' });
     }
   });
@@ -189,7 +194,7 @@ export function registerProgressRoutes(app: Express): void {
   // Get user achievements
   app.get('/api/progress/achievements', async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -197,7 +202,9 @@ export function registerProgressRoutes(app: Express): void {
       const stats = await ProgressTrackingService.getUserProgressStats(userId);
       res.json(stats.achievements);
     } catch (error) {
-      logger.error('Error fetching achievements:', error);
+      logger.error('Error fetching achievements:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch achievements' });
     }
   });
@@ -205,7 +212,7 @@ export function registerProgressRoutes(app: Express): void {
   // Get upgrade prompt triggers
   app.get('/api/progress/upgrade-triggers', async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -213,7 +220,9 @@ export function registerProgressRoutes(app: Express): void {
       const stats = await ProgressTrackingService.getUserProgressStats(userId);
       res.json(stats.upgradePromptTriggers);
     } catch (error) {
-      logger.error('Error fetching upgrade triggers:', error);
+      logger.error('Error fetching upgrade triggers:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch upgrade triggers' });
     }
   });
@@ -225,17 +234,19 @@ export function registerProgressRoutes(app: Express): void {
     })),
     async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const days = req.query.days as number;
+      const days = req.query.days as unknown as number;
       const stats = await ProgressTrackingService.getUserProgressStats(userId);
 
       res.json(stats.dailyStats.slice(-days));
     } catch (error) {
-      logger.error('Error fetching daily stats:', error);
+      logger.error('Error fetching daily stats:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch daily stats' });
     }
   });
@@ -243,7 +254,7 @@ export function registerProgressRoutes(app: Express): void {
   // Check if user should see upgrade prompt
   app.get('/api/progress/should-show-upgrade', async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -271,7 +282,9 @@ export function registerProgressRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error checking upgrade prompt status:', error);
+      logger.error('Error checking upgrade prompt status:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to check upgrade prompt status' });
     }
   });
@@ -279,7 +292,7 @@ export function registerProgressRoutes(app: Express): void {
   // Get learning summary for dashboard
   app.get('/api/progress/summary', async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as unknown as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -303,7 +316,9 @@ export function registerProgressRoutes(app: Express): void {
 
       res.json(summary);
     } catch (error) {
-      logger.error('Error fetching progress summary:', error);
+      logger.error('Error fetching progress summary:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({ error: 'Failed to fetch progress summary' });
     }
   });

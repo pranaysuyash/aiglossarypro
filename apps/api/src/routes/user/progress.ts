@@ -2,12 +2,11 @@ import type { Express } from 'express';
 import { enhancedStorage } from '../../enhancedStorage';
 import { multiAuthMiddleware } from '../../middleware/multiAuth';
 import type { AuthenticatedRequest } from '../../types/express';
-import { getLastNDaysRange } from '../../utils/dateHelpers';
 import { log } from '../../utils/logger';
 
 // Debug logging for module loading
 console.log('[progress.ts] Module loading - enhancedStorage:', !!enhancedStorage);
-console.log('[progress.ts] enhancedStorage methods:', enhancedStorage ? Object.getOwnPropertyNames(Object.getPrototypeOf(enhancedStorage)).filter(m => typeof enhancedStorage[m] === 'function').slice(0, 5) : 'N/A');
+console.log('[progress.ts] enhancedStorage methods:', enhancedStorage ? Object.getOwnPropertyNames(Object.getPrototypeOf(enhancedStorage)).filter(m => typeof (enhancedStorage as any)[m] === 'function').slice(0, 5) : 'N/A');
 
 export function registerUserProgressRoutes(app: Express): void {
   console.log('[registerUserProgressRoutes] Function called');
@@ -32,10 +31,10 @@ export function registerUserProgressRoutes(app: Express): void {
       
       // Set the context for enhancedStorage
       console.log('[api/user/progress/stats] Setting enhancedStorage context');
-      enhancedStorage.setContext({
+      (enhancedStorage as any).setContext({
         user: (req as AuthenticatedRequest).user,
         requestId: req.headers['x-request-id'] as string || 'unknown'
-      });
+      } as any);
 
       try {
         // Use our new Phase 2D getUserProgressStats method
@@ -65,8 +64,8 @@ export function registerUserProgressRoutes(app: Express): void {
         } catch (statsError) {
           console.error('[api/user/progress/stats] getUserProgressStats ERROR:', statsError);
           console.error('[api/user/progress/stats] Error type:', statsError?.constructor?.name);
-          console.error('[api/user/progress/stats] Error message:', statsError?.message);
-          console.error('[api/user/progress/stats] Error stack:', statsError?.stack);
+          console.error('[api/user/progress/stats] Error message:', (statsError as any)?.message);
+          console.error('[api/user/progress/stats] Error stack:', (statsError as any)?.stack);
           
           log.error('Error getting user progress stats:', {
             error: statsError instanceof Error ? statsError.message : statsError,
@@ -104,7 +103,7 @@ export function registerUserProgressRoutes(app: Express): void {
           totalSectionsCompleted: userStats.completedSections,
           totalTimeSpent: userStats.totalTimeSpent,
           streakDays: userStats.streakDays,
-          completedTerms: Math.floor(userStats.completedSections / 3), // Estimate completed terms
+          completedTerms: Math.floor((userStats.completedSections || 0) / 3), // Estimate completed terms
           favoriteTerms: userStats.favoriteTerms,
           difficultyBreakdown: {
             beginner: Math.floor(userStats.totalTermsViewed * 0.4),
@@ -158,13 +157,13 @@ export function registerUserProgressRoutes(app: Express): void {
             {
               id: 'daily-streak',
               type: 'daily_streak',
-              value: userStats.streakDays || 0,
-              currentStreak: userStats.streakDays || 0,
+              value: (userStats.streakDays || 0),
+              currentStreak: (userStats.streakDays || 0),
               bestStreak: learningStreak.longestStreak || 0,
               progress: userStats.streakDays || 0,
-              nextMilestone: Math.ceil((userStats.streakDays || 0) / 10) * 10 + 10,
+              nextMilestone: Math.ceil(((userStats.streakDays || 0) as number) / 10) * 10 + 10,
               unlockedAt: new Date(),
-              isActive: userStats.streakDays > 0,
+              isActive: (userStats.streakDays || 0) > 0,
               metadata: {}
             },
             // Terms viewed achievement
@@ -188,7 +187,7 @@ export function registerUserProgressRoutes(app: Express): void {
               currentStreak: 0,
               bestStreak: 0,
               progress: userStats.favoriteTerms || 0,
-              nextMilestone: Math.ceil((userStats.favoriteTerms || 0) / 10) * 10 + 10,
+              nextMilestone: Math.ceil(((userStats.favoriteTerms || 0) as number) / 10) * 10 + 10,
               unlockedAt: new Date(),
               isActive: true,
               metadata: {}
@@ -197,16 +196,16 @@ export function registerUserProgressRoutes(app: Express): void {
             {
               id: 'categories-explored',
               type: 'categories_explored',
-              value: Object.keys(userStats.categoryProgress || {}).length,
+              value: Object.keys(userStats.categoryProgress || {}).length as number,
               currentStreak: 0,
               bestStreak: 0,
               progress: Object.keys(userStats.categoryProgress || {}).length,
-              nextMilestone: Math.ceil(Object.keys(userStats.categoryProgress || {}).length / 5) * 5 + 5,
+              nextMilestone: Math.ceil((Object.keys(userStats.categoryProgress || {}).length as number) / 5) * 5 + 5,
               unlockedAt: new Date(),
               isActive: true,
               metadata: {}
             }
-          ].filter(achievement => achievement.value > 0), // Only show achievements with progress
+          ].filter(achievement => (achievement.value as number) > 0), // Only show achievements with progress
         };
 
         log.info(`Successfully retrieved progress stats for user: ${userId}`, {
@@ -315,10 +314,10 @@ export function registerUserProgressRoutes(app: Express): void {
       }
       
       // Set the context for enhancedStorage
-      enhancedStorage.setContext({
+      (enhancedStorage as any).setContext({
         user: (req as AuthenticatedRequest).user,
         requestId: req.headers['x-request-id'] as string || 'unknown'
-      });
+      } as any);
 
       try {
         // Use our new Phase 2D getUserSectionProgress method
@@ -352,7 +351,7 @@ export function registerUserProgressRoutes(app: Express): void {
           status: progress.status,
           completionPercentage: progress.completionPercentage,
           timeSpent: progress.timeSpentMinutes,
-          lastAccessed: progress.lastAccessed.toISOString(),
+          lastAccessed: (progress.lastAccessed || new Date()).toISOString(),
           completedAt: progress.completedAt?.toISOString(),
         }));
 
@@ -410,10 +409,10 @@ export function registerUserProgressRoutes(app: Express): void {
       }
       
       // Set the context for enhancedStorage
-      enhancedStorage.setContext({
+      (enhancedStorage as any).setContext({
         user: (req as AuthenticatedRequest).user,
         requestId: req.headers['x-request-id'] as string || 'unknown'
-      });
+      } as any);
 
       try {
         // Use our Phase 2D methods to generate intelligent recommendations
@@ -432,16 +431,16 @@ export function registerUserProgressRoutes(app: Express): void {
 
         // 1. Recommend terms in categories where user is active but not complete
         const activeCategories = categoryProgress
-          .filter(cat => cat.completionPercentage > 0 && cat.completionPercentage < 80)
-          .sort((a, b) => b.completionPercentage - a.completionPercentage)
+          .filter(cat => (cat.completionPercentage || 0) > 0 && (cat.completionPercentage || 0) < 80)
+          .sort((a, b) => (b.completionPercentage || 0) - (a.completionPercentage || 0))
           .slice(0, 2);
 
         for (const category of activeCategories) {
           recommendations.push({
             id: `cat-rec-${category.categoryId}`,
             termName: `Advanced ${category.categoryName}`,
-            reason: `Continue your progress in ${category.categoryName} (${category.completionPercentage}% complete)`,
-            difficulty: category.completionPercentage > 50 ? 'advanced' : 'intermediate',
+            reason: `Continue your progress in ${category.categoryName} (${category.completionPercentage || 0}% complete)`,
+            difficulty: (category.completionPercentage || 0) > 50 ? 'advanced' : 'intermediate',
             estimatedTime: '25 minutes',
             category: category.categoryName,
           });
@@ -457,7 +456,7 @@ export function registerUserProgressRoutes(app: Express): void {
             termName: `${section.sectionTitle} (Continue)`,
             reason: `Resume ${section.sectionTitle} - ${section.completionPercentage}% complete`,
             difficulty: 'current',
-            estimatedTime: `${Math.max(5, 20 - section.timeSpentMinutes)} minutes`,
+            estimatedTime: `${Math.max(5, 20 - (section.timeSpentMinutes || 0))} minutes`,
             termId: section.termId,
             sectionId: section.sectionId,
           });
@@ -465,7 +464,7 @@ export function registerUserProgressRoutes(app: Express): void {
 
         // 3. Recommend popular terms in user's favorite categories
         const userTopCategories = Object.entries(userStats.categoryProgress || {})
-          .sort(([, a], [, b]) => b.completionPercentage - a.completionPercentage)
+          .sort(([, a], [, b]) => (b as any).completionPercentage - (a as any).completionPercentage)
           .slice(0, 2);
 
         for (const [categoryName] of userTopCategories) {
@@ -480,7 +479,7 @@ export function registerUserProgressRoutes(app: Express): void {
         }
 
         // 4. If user has high streak, recommend challenging content
-        if (userStats.streakDays >= 7) {
+        if ((userStats.streakDays || 0) >= 7) {
           recommendations.push({
             id: `challenge-rec-streak`,
             termName: 'Advanced AI Ethics',

@@ -91,20 +91,15 @@ const voteOnArticleSchema = z.object({
 // Create support ticket (public endpoint for guest users)
 router.post(
   '/tickets',
-  validateRequest({ body: createTicketSchema }),
+  validateRequest(createTicketSchema),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { initialMessage, ...ticketData } = req.body;
 
       // If user is authenticated, use their info
       if (req.user) {
-        if (!req.user) {
-
-          return res.status(401).json({ error: 'Unauthorized' });
-
-        }
-
-        const user = req.user as AuthenticatedRequest['user'];
+        // User is already authenticated at this point
+        const user = req.user as unknown as AuthenticatedRequest['user'];
         ticketData.userId = user.id;
         if (!ticketData.customerEmail) {
           ticketData.customerEmail = user.email || '';
@@ -122,7 +117,9 @@ router.post(
         message: 'Support ticket created successfully',
       });
     } catch (error) {
-      logger.error('Error creating support ticket:', error);
+      logger.error('Error creating support ticket:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create support ticket',
@@ -138,21 +135,17 @@ router.get('/tickets/:ticketId', async (req: Request, res: Response): Promise<vo
     const ticket = await SupportTicketService.getTicketById(ticketId, true);
 
     if (!ticket) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Ticket not found',
       });
+      return;
     }
 
     // Check access permissions
     if (req.user) {
-      if (!req.user) {
-
-        return res.status(401).json({ error: 'Unauthorized' });
-
-      }
-
-      const user = req.user as AuthenticatedRequest['user'];
+      // User auth already checked
+      const user = req.user as unknown as AuthenticatedRequest['user'];
       const canAccess =
         user.isAdmin || ticket.userId === user.id || ticket.customerEmail === user.email;
 
@@ -170,7 +163,9 @@ router.get('/tickets/:ticketId', async (req: Request, res: Response): Promise<vo
       data: ticket,
     });
   } catch (error) {
-    logger.error('Error fetching ticket:', error);
+    logger.error('Error fetching ticket:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch ticket',
@@ -182,13 +177,14 @@ router.get('/tickets/:ticketId', async (req: Request, res: Response): Promise<vo
 router.get(
   '/tickets/user/:userId',
   requireAuth,
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
       const { page = 1, limit = 10 } = req.query;
+      const user = (req as any).user;
 
       // Users can only access their own tickets unless they're admin
-      if (!req.user.isAdmin && userId !== req.user.id) {
+      if (!user.isAdmin && userId !== user.id) {
         res.status(403).json({
           success: false,
           error: 'Access denied',
@@ -207,7 +203,9 @@ router.get(
         data: result,
       });
     } catch (error) {
-      logger.error('Error fetching user tickets:', error);
+      logger.error('Error fetching user tickets:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch user tickets',
@@ -230,7 +228,9 @@ router.get('/tickets/email/:email', async (req: Request, res: Response): Promise
       data: result,
     });
   } catch (error) {
-    logger.error('Error fetching tickets by email:', error);
+    logger.error('Error fetching tickets by email:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch tickets',
@@ -242,10 +242,11 @@ router.get('/tickets/email/:email', async (req: Request, res: Response): Promise
 router.patch(
   '/tickets/:ticketId/status',
   requireAuth,
-  validateRequest({ body: updateTicketStatusSchema }),
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  validateRequest(updateTicketStatusSchema),
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!req.user.isAdmin) {
+      const user = (req as any).user;
+      if (!user.isAdmin) {
         res.status(403).json({
           success: false,
           error: 'Admin access required',
@@ -259,7 +260,7 @@ router.patch(
       const ticket = await SupportTicketService.updateTicketStatus(
         ticketId,
         status,
-        req.user.id,
+        user.id,
         internalNote
       );
 
@@ -269,7 +270,9 @@ router.patch(
         message: 'Ticket status updated successfully',
       });
     } catch (error) {
-      logger.error('Error updating ticket status:', error);
+      logger.error('Error updating ticket status:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to update ticket status',
@@ -281,7 +284,7 @@ router.patch(
 // Add message to ticket
 router.post(
   '/tickets/:ticketId/messages',
-  validateRequest({ body: addMessageSchema }),
+  validateRequest(addMessageSchema),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { ticketId } = req.params;
@@ -300,12 +303,11 @@ router.post(
       // Check permissions
       if (req.user) {
         if (!req.user) {
-
-          return res.status(401).json({ error: 'Unauthorized' });
-
+          res.status(401).json({ error: 'Unauthorized' });
+          return;
         }
 
-        const user = req.user as AuthenticatedRequest['user'];
+        const user = req.user as unknown as AuthenticatedRequest['user'];
         const canAccess =
           user.isAdmin || ticket.userId === user.id || ticket.customerEmail === user.email;
 
@@ -334,7 +336,9 @@ router.post(
         message: 'Message added successfully',
       });
     } catch (error) {
-      logger.error('Error adding message:', error);
+      logger.error('Error adding message:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to add message',
@@ -347,10 +351,11 @@ router.post(
 router.get(
   '/tickets',
   requireAuth,
-  validateRequest({ query: searchTicketsSchema }),
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  validateRequest(searchTicketsSchema),
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!req.user.isAdmin) {
+      const user = (req as any).user;
+      if (!user.isAdmin) {
         res.status(403).json({
           success: false,
           error: 'Admin access required',
@@ -360,14 +365,16 @@ router.get(
 
       const { query, page, limit, ...filters } = req.query;
 
-      const result = await SupportTicketService.searchTickets(query || '', filters, page, limit);
+      const result = await SupportTicketService.searchTickets((query as string) || '', filters, Number(page), Number(limit));
 
       res.json({
         success: true,
         data: result,
       });
     } catch (error) {
-      logger.error('Error searching tickets:', error);
+      logger.error('Error searching tickets:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to search tickets',
@@ -384,12 +391,13 @@ router.get(
 router.post(
   '/refunds',
   requireAuth,
-  validateRequest({ body: insertRefundRequestSchema }),
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  validateRequest(insertRefundRequestSchema),
+  async (req: Request, res: Response): Promise<void> => {
     try {
+      const user = (req as any).user;
       const refundData = {
         ...req.body,
-        userId: req.user.id,
+        userId: user.id,
       };
 
       const refundRequest = await RefundService.createRefundRequest(refundData);
@@ -400,7 +408,9 @@ router.post(
         message: 'Refund request created successfully',
       });
     } catch (error) {
-      logger.error('Error creating refund request:', error);
+      logger.error('Error creating refund request:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create refund request',
@@ -413,10 +423,11 @@ router.post(
 router.patch(
   '/refunds/:refundId',
   requireAuth,
-  validateRequest({ body: updateRefundStatusSchema }),
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  validateRequest(updateRefundStatusSchema),
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!req.user.isAdmin) {
+      const user = (req as any).user;
+      if (!user.isAdmin) {
         res.status(403).json({
           success: false,
           error: 'Admin access required',
@@ -440,7 +451,9 @@ router.patch(
         message: 'Refund status updated successfully',
       });
     } catch (error) {
-      logger.error('Error updating refund status:', error);
+      logger.error('Error updating refund status:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to update refund status',
@@ -453,12 +466,13 @@ router.patch(
 router.get(
   '/refunds/user/:userId',
   requireAuth,
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
+      const user = (req as any).user;
 
       // Users can only access their own refunds unless they're admin
-      if (!req.user.isAdmin && userId !== req.user.id) {
+      if (!user.isAdmin && userId !== user.id) {
         res.status(403).json({
           success: false,
           error: 'Access denied',
@@ -473,7 +487,9 @@ router.get(
         data: refunds,
       });
     } catch (error) {
-      logger.error('Error fetching user refunds:', error);
+      logger.error('Error fetching user refunds:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch refunds',
@@ -502,7 +518,9 @@ router.get('/knowledge-base/search', async (req: Request, res: Response): Promis
       data: articles,
     });
   } catch (error) {
-    logger.error('Error searching knowledge base:', error);
+    logger.error('Error searching knowledge base:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to search knowledge base',
@@ -528,7 +546,7 @@ router.get('/knowledge-base/:slug', async (req: Request, res: Response): Promise
     // Only show published articles to non-admin users
     if (
       !article.isPublished &&
-      (!req.user || !(req.user as AuthenticatedRequest['user']).isAdmin)
+      (!req.user || !(req.user as unknown as AuthenticatedRequest['user']).isAdmin)
     ) {
       res.status(404).json({
         success: false,
@@ -542,7 +560,9 @@ router.get('/knowledge-base/:slug', async (req: Request, res: Response): Promise
       data: article,
     });
   } catch (error) {
-    logger.error('Error fetching knowledge base article:', error);
+    logger.error('Error fetching knowledge base article:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch article',
@@ -553,7 +573,7 @@ router.get('/knowledge-base/:slug', async (req: Request, res: Response): Promise
 // Vote on knowledge base article helpfulness
 router.post(
   '/knowledge-base/:articleId/vote',
-  validateRequest({ body: voteOnArticleSchema }),
+  validateRequest(voteOnArticleSchema),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { articleId } = req.params;
@@ -566,7 +586,9 @@ router.post(
         message: 'Vote recorded successfully',
       });
     } catch (error) {
-      logger.error('Error recording article vote:', error);
+      logger.error('Error recording article vote:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to record vote',
@@ -579,10 +601,11 @@ router.post(
 router.post(
   '/knowledge-base',
   requireAuth,
-  validateRequest({ body: insertKnowledgeBaseArticleSchema }),
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  validateRequest(insertKnowledgeBaseArticleSchema),
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!req.user.isAdmin) {
+      const user = (req as any).user;
+      if (!user.isAdmin) {
         res.status(403).json({
           success: false,
           error: 'Admin access required',
@@ -592,7 +615,7 @@ router.post(
 
       const articleData = {
         ...req.body,
-        authorId: req.user.id,
+        authorId: user.id,
       };
 
       const article = await KnowledgeBaseService.createArticle(articleData);
@@ -603,7 +626,9 @@ router.post(
         message: 'Knowledge base article created successfully',
       });
     } catch (error) {
-      logger.error('Error creating knowledge base article:', error);
+      logger.error('Error creating knowledge base article:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create article',
@@ -619,13 +644,13 @@ router.post(
 // Submit customer feedback
 router.post(
   '/feedback',
-  validateRequest({ body: insertCustomerFeedbackSchema }),
+  validateRequest(insertCustomerFeedbackSchema),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const feedbackData = req.body;
 
       if (req.user) {
-        feedbackData.userId = (req.user as AuthenticatedRequest['user']).id;
+        feedbackData.userId = (req.user as unknown as AuthenticatedRequest['user']).id;
       }
 
       const feedback = await CustomerFeedbackService.submitFeedback(feedbackData);
@@ -636,7 +661,9 @@ router.post(
         message: 'Feedback submitted successfully',
       });
     } catch (error) {
-      logger.error('Error submitting feedback:', error);
+      logger.error('Error submitting feedback:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to submit feedback',
@@ -649,9 +676,10 @@ router.post(
 router.get(
   '/feedback/ticket/:ticketId',
   requireAuth,
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!req.user.isAdmin) {
+      const user = (req as any).user;
+      if (!user.isAdmin) {
         res.status(403).json({
           success: false,
           error: 'Admin access required',
@@ -667,7 +695,9 @@ router.get(
         data: feedback,
       });
     } catch (error) {
-      logger.error('Error fetching ticket feedback:', error);
+      logger.error('Error fetching ticket feedback:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch feedback',
@@ -684,9 +714,10 @@ router.get(
 router.get(
   '/metrics/daily',
   requireAuth,
-  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!req.user.isAdmin) {
+      const user = (req as any).user;
+      if (!user.isAdmin) {
         res.status(403).json({
           success: false,
           error: 'Admin access required',
@@ -704,7 +735,9 @@ router.get(
         data: metrics,
       });
     } catch (error) {
-      logger.error('Error fetching daily metrics:', error);
+      logger.error('Error fetching daily metrics:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch metrics',

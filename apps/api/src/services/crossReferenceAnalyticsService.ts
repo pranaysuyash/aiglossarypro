@@ -144,17 +144,17 @@ class CrossReferenceAnalyticsService {
 
     const results = await db.execute(flowQuery);
 
-    return results.rows.map((row: Response) => ({
-      sourceTermId: row.source_term_id,
-      sourceTermName: row.source_term_name,
-      targetTermId: row.target_term_id,
-      targetTermName: row.target_term_name,
-      flowCount: Number(row.flow_count),
-      averageTimeGap: Number(row.avg_time_gap) || 0,
-      sessionCount: Number(row.session_count),
+    return results.rows.map((row: any) => ({
+      sourceTermId: (row as any).source_term_id,
+      sourceTermName: (row as any).source_term_name,
+      targetTermId: (row as any).target_term_id,
+      targetTermName: (row as any).target_term_name,
+      flowCount: Number((row as any).flow_count),
+      averageTimeGap: Number((row as any).avg_time_gap) || 0,
+      sessionCount: Number((row as any).session_count),
       completionRate: 0.8, // Would need more sophisticated calculation
       backflowRate: 0.3, // Would need reverse flow analysis
-      categoryBridge: row.source_category !== row.target_category,
+      categoryBridge: (row as any).source_category !== (row as any).target_category,
       difficultyProgression: 'unknown' as const, // Would need difficulty analysis
     }));
   }
@@ -198,20 +198,20 @@ class CrossReferenceAnalyticsService {
 
     const results = await db.execute(pathwayQuery);
 
-    return results.rows.map((row: Response, index: number) => ({
+    return results.rows.map((row: any, index: number) => ({
       pathwayId: `pathway_${index + 1}`,
-      termSequence: row.pathway_ids,
-      termNames: row.pathway,
-      frequency: Number(row.frequency),
-      averageCompletionTime: Number(row.avg_completion_time) || 0,
+      termSequence: (row as any).pathway_ids,
+      termNames: (row as any).pathway,
+      frequency: Number((row as any).frequency),
+      averageCompletionTime: Number((row as any).avg_completion_time) || 0,
       completionRate: 0.75, // Would calculate from actual completion data
       learningEffectiveness: this.calculateLearningEffectiveness(
-        Number(row.frequency),
-        Number(row.avg_completion_time)
+        Number((row as any).frequency),
+        Number((row as any).avg_completion_time)
       ),
-      pathwayType: this.classifyPathwayType(row.pathway),
+      pathwayType: this.classifyPathwayType((row as any).pathway),
       recommendationScore: this.calculateRecommendationScore(
-        Number(row.frequency),
+        Number((row as any).frequency),
         0.75 // completion rate
       ),
     }));
@@ -342,7 +342,7 @@ class CrossReferenceAnalyticsService {
     return results;
   }
 
-  private async calculateIncomingReferences(_termId: string) {
+  private async _calculateIncomingReferences(_termId: string) {
     // This would analyze which terms users viewed before viewing this term
     // For now, return mock data structure
     return Array.from({ length: Math.floor(Math.random() * 20) }, (_, i) => ({
@@ -372,7 +372,7 @@ class CrossReferenceAnalyticsService {
     return results;
   }
 
-  private async calculateOutgoingReferences(_termId: string) {
+  private async _calculateOutgoingReferences(_termId: string) {
     // This would analyze which terms users viewed after viewing this term
     // For now, return mock data structure
     return Array.from({ length: Math.floor(Math.random() * 15) }, (_, i) => ({
@@ -400,7 +400,7 @@ class CrossReferenceAnalyticsService {
     return results;
   }
 
-  private async calculateReferencePathways(_termId: string) {
+  private async _calculateReferencePathways(_termId: string) {
     // This would analyze common navigation pathways involving this term
     return Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
       pathway: [`Term A${i}`, `Current Term`, `Term B${i}`],

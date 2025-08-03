@@ -13,6 +13,15 @@
  * 7. All error states and edge cases
  */
 
+// Define Issue interface at class level for proper export
+interface Issue {
+  type: string;
+  file: string;
+  description: string;
+  severity?: string;
+  recommendation?: string;
+}
+
 import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -64,6 +73,15 @@ interface TestConfig {
   recordVideo?: boolean;
 }
 
+// Define Issue interface at class level for proper export
+interface Issue {
+  type: string;
+  file: string;
+  description: string;
+  severity?: string;
+  recommendation?: string;
+}
+
 class ComprehensiveVisualAuditor {
   private browser: Browser | null = null;
   private viteProcess: any = null;
@@ -71,7 +89,7 @@ class ComprehensiveVisualAuditor {
   private screenshotDir: string;
   private videoDir: string;
   private reportDir: string;
-  private issues: unknown[] = [];
+  private issues: Issue[] = [];
 
   constructor() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -987,14 +1005,6 @@ class ComprehensiveVisualAuditor {
       interactionScreenshots = await fs.readdir(interactionsDir);
     } catch (_e) {
       // Interactions directory might not exist
-    }
-
-    interface Issue {
-      type: string;
-      file: string;
-      description: string;
-      severity?: string;
-      recommendation?: string;
     }
 
     const analysisResults = {

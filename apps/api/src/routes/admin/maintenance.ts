@@ -1,5 +1,4 @@
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { ApiResponse } from '@aiglossarypro/shared';
 import { enhancedStorage as storage } from '../../enhancedStorage';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
@@ -27,19 +26,19 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { operation } = req.body;
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
@@ -58,10 +57,11 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
             result = await storage.clearCache();
             break;
           default:
-            return res.status(400).json({
+            res.status(400).json({
               success: false,
               message: `Invalid maintenance operation. Valid operations: ${Object.values(MAINTENANCE_OPERATIONS).join(', ')}`,
             });
+            return;
         }
 
         const response: ApiResponse<any> = {
@@ -92,17 +92,17 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
@@ -138,34 +138,35 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { confirm } = req.body;
 
         if (confirm !== 'CLEAR_ALL_DATA') {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: "Invalid confirmation. Please send { confirm: 'CLEAR_ALL_DATA' } to proceed.",
           });
+          return;
         }
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
         const result = await storage.clearAllData();
 
         logger.warn('Admin cleared all data', {
-          userId: authReq.user?.claims?.sub || authReq.user?.id,
-          userEmail: authReq.user?.claims?.email || authReq.user?.email,
+          userId: user?.claims?.sub || user?.id,
+          userEmail: user?.claims?.email || user?.email,
           tablesCleared: result.tablesCleared,
         });
 
@@ -196,17 +197,17 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
@@ -239,17 +240,17 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 

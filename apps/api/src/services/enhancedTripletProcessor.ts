@@ -355,7 +355,7 @@ export class EnhancedTripletProcessor {
     try {
       // Get terms to process
       const allTermsResult = await enhancedStorage.getAllTerms();
-      if (!allTermsResult.success || !allTermsResult.data) {
+      if (!allTermsResult.data || allTermsResult.data.length === 0) {
         return { success: false, message: 'Failed to fetch terms' };
       }
 
@@ -506,14 +506,16 @@ export class EnhancedTripletProcessor {
                 processingPhase: 'generated',
               };
 
-              this.contentQualityMap.set(`${term.id}-${column.id}`, qualityInfo);
+              this.contentQualityMap.set(`${(term as any).id}-${column.id}`, qualityInfo);
             }
           } catch (error) {
-            logger.error(`Error generating content for term ${term.id}:`, error);
+            logger.error(`Error generating content for term ${(term as any).id}:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
             this.currentProcessing!.generationErrors++;
             this.currentProcessing?.errors.push({
-              termId: term.id,
-              termName: term.name,
+              termId: (term as any).id,
+              termName: (term as any).name,
               phase: 'generation',
               error: error instanceof Error ? error.message : 'Unknown error',
               timestamp: new Date(),
@@ -546,7 +548,7 @@ export class EnhancedTripletProcessor {
     logger.info(`Starting evaluation phase for generated content`);
 
     const generatedTerms = terms.filter(term =>
-      this.contentQualityMap.has(`${term.id}-${column.id}`)
+      this.contentQualityMap.has(`${(term as any).id}-${column.id}`)
     );
 
     for (let i = 0; i < generatedTerms.length; i += options.batchSize) {
@@ -555,7 +557,7 @@ export class EnhancedTripletProcessor {
       await Promise.all(
         batch.map(async term => {
           try {
-            const qualityKey = `${term.id}-${column.id}`;
+            const qualityKey = `${(term as any).id}-${column.id}`;
             const qualityInfo = this.contentQualityMap.get(qualityKey);
 
             if (qualityInfo) {
@@ -582,10 +584,12 @@ export class EnhancedTripletProcessor {
               }
             }
           } catch (error) {
-            logger.error(`Error evaluating content for term ${term.id}:`, error);
+            logger.error(`Error evaluating content for term ${(term as any).id}:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
             this.currentProcessing?.errors.push({
-              termId: term.id,
-              termName: term.name,
+              termId: (term as any).id,
+              termName: (term as any).name,
               phase: 'evaluation',
               error: error instanceof Error ? error.message : 'Unknown error',
               timestamp: new Date(),
@@ -624,7 +628,7 @@ export class EnhancedTripletProcessor {
     logger.info(`Starting improvement phase for low-quality content`);
 
     const termsNeedingImprovement = terms.filter(term => {
-      const qualityInfo = this.contentQualityMap.get(`${term.id}-${column.id}`);
+      const qualityInfo = this.contentQualityMap.get(`${(term as any).id}-${column.id}`);
       return qualityInfo?.needsImprovement;
     });
 
@@ -634,7 +638,7 @@ export class EnhancedTripletProcessor {
       await Promise.all(
         batch.map(async term => {
           try {
-            const qualityKey = `${term.id}-${column.id}`;
+            const qualityKey = `${(term as any).id}-${column.id}`;
             const qualityInfo = this.contentQualityMap.get(qualityKey);
 
             if (qualityInfo) {
@@ -653,10 +657,12 @@ export class EnhancedTripletProcessor {
               }
             }
           } catch (error) {
-            logger.error(`Error improving content for term ${term.id}:`, error);
+            logger.error(`Error improving content for term ${(term as any).id}:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
             this.currentProcessing?.errors.push({
-              termId: term.id,
-              termName: term.name,
+              termId: (term as any).id,
+              termName: (term as any).name,
               phase: 'improvement',
               error: error instanceof Error ? error.message : 'Unknown error',
               timestamp: new Date(),
@@ -722,7 +728,7 @@ export class EnhancedTripletProcessor {
       // Log analytics
       await this.logUsageAnalytics({
         operation: 'generate_content',
-        termId: term.id,
+        termId: (term as any).id,
         model: column.recommendedModel,
         inputTokens: completion.usage?.prompt_tokens || 0,
         outputTokens: completion.usage?.completion_tokens || 0,
@@ -733,7 +739,9 @@ export class EnhancedTripletProcessor {
 
       return content;
     } catch (error) {
-      logger.error(`Error generating content for term ${term.id}:`, error);
+      logger.error(`Error generating content for term ${(term as any).id}:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -783,7 +791,9 @@ export class EnhancedTripletProcessor {
         feedback: evaluation.feedback,
       };
     } catch (error) {
-      logger.error(`Error evaluating content for term ${term.id}:`, error);
+      logger.error(`Error evaluating content for term ${(term as any).id}:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -829,7 +839,9 @@ export class EnhancedTripletProcessor {
 
       return improvedContent;
     } catch (error) {
-      logger.error(`Error improving content for term ${term.id}:`, error);
+      logger.error(`Error improving content for term ${(term as any).id}:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -839,7 +851,7 @@ export class EnhancedTripletProcessor {
    */
   private buildPrompt(template: string, term: any, _column: ColumnDefinitionWithTriplets): string {
     return template
-      .replace('{TERM_NAME}', term.name)
+      .replace('{TERM_NAME}', term.name || '')
       .replace('{TERM_CONTEXT}', term.fullDefinition || term.shortDescription || '');
   }
 
@@ -852,7 +864,7 @@ export class EnhancedTripletProcessor {
     _column: ColumnDefinitionWithTriplets,
     content: string
   ): string {
-    return template.replace('{TERM_NAME}', term.name).replace('{CONTENT}', content);
+    return template.replace('{TERM_NAME}', term.name || '').replace('{CONTENT}', content);
   }
 
   /**
@@ -952,7 +964,9 @@ export class EnhancedTripletProcessor {
         success: data.success,
       });
     } catch (error) {
-      logger.error('Error logging usage analytics:', error);
+      logger.error('Error logging usage analytics:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

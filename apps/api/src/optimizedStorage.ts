@@ -2753,13 +2753,7 @@ export class OptimizedStorage implements IStorage {
     return this.submitFeedback(data);
   }
 
-  async getFeedback(filters: {
-    status?: string;
-    feedbackType?: string;
-    severity?: string;
-    termId?: string;
-    userId?: string;
-  } = {}, pagination: {
+  async getFeedback(filters: FeedbackFilters = {}, pagination: {
     page?: number;
     limit?: number;
   } = {}): Promise<PaginatedFeedback> {

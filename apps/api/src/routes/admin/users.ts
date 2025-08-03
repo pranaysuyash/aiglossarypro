@@ -1,5 +1,4 @@
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { ApiResponse } from '@aiglossarypro/shared';
 import { DEFAULT_LIMITS } from '../../constants';
 import { enhancedStorage as storage } from '../../enhancedStorage';
@@ -18,20 +17,20 @@ export function registerAdminUserRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { page = 1, limit = DEFAULT_LIMITS.PAGE_SIZE } = validateQuery(paginationSchema)(req);
         const { search } = req.query;
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
@@ -42,10 +41,10 @@ export function registerAdminUserRoutes(app: Express): void {
         if (search) {
           const searchTerm = String(search).toLowerCase();
           filteredUsers = users.data.filter(
-            (user: any) =>
-              user.email?.toLowerCase().includes(searchTerm) ||
-              user.firstName?.toLowerCase().includes(searchTerm) ||
-              user.lastName?.toLowerCase().includes(searchTerm)
+            (userData: any) =>
+              userData.email?.toLowerCase().includes(searchTerm) ||
+              userData.firstName?.toLowerCase().includes(searchTerm) ||
+              userData.lastName?.toLowerCase().includes(searchTerm)
           );
         }
 
@@ -84,34 +83,35 @@ export function registerAdminUserRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { userId } = req.params;
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
-        const user = await storage.getUserById(userId);
+        const foundUser = await storage.getUserById(userId);
 
-        if (!user) {
-          return res.status(404).json({
+        if (!foundUser) {
+          res.status(404).json({
             success: false,
             message: 'User not found',
           });
+          return;
         }
 
         const response: ApiResponse<any> = {
           success: true,
-          data: user,
+          data: foundUser,
         };
 
         res.json(response);
@@ -135,20 +135,20 @@ export function registerAdminUserRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { userId } = req.params;
         const updateData = req.body;
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
@@ -181,19 +181,19 @@ export function registerAdminUserRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { userId } = req.params;
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 
@@ -225,19 +225,19 @@ export function registerAdminUserRoutes(app: Express): void {
     requireFirebaseAdmin,
     async (req: Request, res: Response) => {
       try {
+        const user = (req as any).user;
         const { userId } = req.params;
 
         // Set user context for enhanced storage
-        const authReq = req as unknown;
         storage.setContext({
           user: {
-            id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
-            email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
-            isAdmin: authReq.user?.isAdmin || false,
-            first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
-            last_name: authReq.user?.claims?.last_name || authReq.user?.lastName,
+            id: user?.claims?.sub || user?.id || 'unknown',
+            email: user?.claims?.email || user?.email || 'unknown',
+            isAdmin: user?.isAdmin || false,
+            first_name: user?.claims?.first_name || user?.firstName,
+            last_name: user?.claims?.last_name || user?.lastName,
           },
-          requestId: authReq.requestId,
+          requestId: (req as any).requestId,
           timestamp: new Date(),
         });
 

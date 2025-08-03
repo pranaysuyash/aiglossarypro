@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import OpenAI from 'openai';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
 import { log as logger } from '../../utils/logger';
@@ -7,9 +7,32 @@ const router = Router();
 
 // Use proper Firebase authentication for admin routes
 
+// Template interface
+interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  sectionType: string;
+  complexity: string;
+  generativePrompt: string;
+  evaluativePrompt: string;
+  improvementPrompt: string;
+  metadata: {
+    estimatedTokens: number;
+    recommendedModel: string;
+    version: string;
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy: string;
+    isDefault: boolean;
+    usageCount: number;
+  };
+}
+
 // In-memory template storage for demo purposes
 // In production, this would be stored in the database
-const promptTemplates: unknown[] = [
+const promptTemplates: PromptTemplate[] = [
   {
     id: 'template-1',
     name: 'Definition & Overview Template',
@@ -164,7 +187,7 @@ let templateIdCounter = 4;
 /**
  * Get all prompt templates
  */
-router.get('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.get('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { category, sectionType, complexity } = req.query;
 
@@ -187,42 +210,41 @@ router.get('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res
 
     res.json({ success: true, data: filteredTemplates });
   } catch (error) {
-    logger.error('Error getting templates:', {
+    logger.error('Error getting templates', {
       error: error instanceof Error ? error.message : String(error),
     });
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
 /**
  * Get a specific template by ID
  */
-router.get('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.get('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const template = promptTemplates.find(t => t.id === id);
 
     if (!template) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+      res.status(404).json({ success: false, error: 'Template not found' });
+      return;
     }
 
     res.json({ success: true, data: template });
   } catch (error) {
-    logger.error('Error getting template:', {
+    logger.error('Error getting template', {
       error: error instanceof Error ? error.message : String(error),
     });
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
 /**
  * Create a new template
  */
-router.post('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.post('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const {
       name,
@@ -238,10 +260,11 @@ router.post('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, re
 
     // Validation
     if (!name || !sectionType || !generativePrompt) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'name, sectionType, and generativePrompt are required',
       });
+      return;
     }
 
     const newTemplate = {
@@ -271,25 +294,25 @@ router.post('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, re
     logger.info(`Created new template: ${newTemplate.id} - ${name}`);
     res.json({ success: true, data: newTemplate });
   } catch (error) {
-    logger.error('Error creating template:', {
+    logger.error('Error creating template', {
       error: error instanceof Error ? error.message : String(error),
     });
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
 /**
  * Update an existing template
  */
-router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const templateIndex = promptTemplates.findIndex(t => t.id === id);
 
     if (templateIndex === -1) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+      res.status(404).json({ success: false, error: 'Template not found' });
+      return;
     }
 
     const existingTemplate = promptTemplates[templateIndex];
@@ -306,10 +329,11 @@ router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, 
       const invalidFields = updateFields.filter(field => !allowedFields.includes(field));
 
       if (invalidFields.length > 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: `Cannot modify ${invalidFields.join(', ')} on default templates`,
         });
+        return;
       }
     }
 
@@ -330,33 +354,36 @@ router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, 
     logger.info(`Updated template: ${id}`);
     res.json({ success: true, data: updatedTemplate });
   } catch (error) {
-    logger.error('Error updating template:', error);
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.error('Error updating template', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
 /**
  * Delete a template
  */
-router.delete('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.delete('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const templateIndex = promptTemplates.findIndex(t => t.id === id);
 
     if (templateIndex === -1) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+      res.status(404).json({ success: false, error: 'Template not found' });
+      return;
     }
 
     const template = promptTemplates[templateIndex];
 
     // Prevent deletion of default templates
     if (template.metadata.isDefault) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Cannot delete default templates',
       });
+      return;
     }
 
     promptTemplates.splice(templateIndex, 1);
@@ -364,37 +391,41 @@ router.delete('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (re
     logger.info(`Deleted template: ${id}`);
     res.json({ success: true, message: 'Template deleted successfully' });
   } catch (error) {
-    logger.error('Error deleting template:', error);
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.error('Error deleting template', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
 /**
  * Test a template with a sample term
  */
-router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { templateId, termName } = req.body;
 
     if (!templateId || !termName) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'templateId and termName are required',
       });
+      return;
     }
 
     const template = promptTemplates.find(t => t.id === templateId);
     if (!template) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+      res.status(404).json({ success: false, error: 'Template not found' });
+      return;
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         error: 'OpenAI API key not configured',
       });
+      return;
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -463,7 +494,9 @@ router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req
             evaluationFeedback = evaluation.feedback;
           }
         } catch (evalError) {
-          logger.warn('Error in evaluation phase of template test:', evalError);
+          logger.warn('Error in evaluation phase of template test', {
+            error: evalError instanceof Error ? evalError.message : String(evalError),
+          });
         }
       }
 
@@ -492,9 +525,11 @@ router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req
             max_tokens: template.metadata.estimatedTokens * 2,
           });
 
-          improvedContent = improvementCompletion.choices[0]?.message?.content;
+          improvedContent = improvementCompletion.choices[0]?.message?.content || undefined;
         } catch (improvementError) {
-          logger.warn('Error in improvement phase of template test:', improvementError);
+          logger.warn('Error in improvement phase of template test', {
+            error: improvementError instanceof Error ? improvementError.message : String(improvementError),
+          });
         }
       }
 
@@ -523,17 +558,21 @@ router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req
         },
       });
     } catch (aiError) {
-      logger.error('Error in AI processing during template test:', aiError);
+      logger.error('Error in AI processing during template test', {
+        error: aiError instanceof Error ? aiError.message : String(aiError),
+      });
       res.json({
         success: false,
         error: aiError instanceof Error ? aiError.message : 'AI processing failed',
       });
+      return;
     }
   } catch (error) {
-    logger.error('Error testing template:', error);
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.error('Error testing template', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
@@ -574,10 +613,11 @@ router.get(
 
       res.json({ success: true, data: stats });
     } catch (error) {
-      logger.error('Error getting template statistics:', error);
-      res
-        .status(500)
-        .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+      logger.error('Error getting template statistics', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+      return;
     }
   }
 );
@@ -585,14 +625,15 @@ router.get(
 /**
  * Duplicate a template
  */
-router.post('/:id/duplicate', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.post('/:id/duplicate', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
 
     const originalTemplate = promptTemplates.find(t => t.id === id);
     if (!originalTemplate) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+      res.status(404).json({ success: false, error: 'Template not found' });
+      return;
     }
 
     const duplicatedTemplate = {
@@ -615,10 +656,11 @@ router.post('/:id/duplicate', authenticateFirebaseToken, requireFirebaseAdmin, a
     logger.info(`Duplicated template: ${id} -> ${duplicatedTemplate.id}`);
     res.json({ success: true, data: duplicatedTemplate });
   } catch (error) {
-    logger.error('Error duplicating template:', error);
-    res
-      .status(500)
-      .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.error('Error duplicating template', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    return;
   }
 });
 
@@ -631,7 +673,9 @@ function calculateCost(model: string, promptTokens: number, completionTokens: nu
   };
 
   const modelCosts = costs[model];
-  if (!modelCosts) {return 0;}
+  if (!modelCosts) {
+    return 0;
+  }
 
   return (promptTokens / 1000) * modelCosts.input + (completionTokens / 1000) * modelCosts.output;
 }

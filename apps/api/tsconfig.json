@@ -49,7 +49,7 @@
     "src/routes/firebaseAuthDebug.ts",
     "src/middleware/performance.ts",
     "src/services/cdnMonitoring.ts",
-    "src/s3MonitoringService.ts"
+    
   ],
   "references": [
     { "path": "../../packages/shared" },

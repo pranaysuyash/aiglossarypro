@@ -858,7 +858,8 @@ export class EnhancedStorage implements IEnhancedStorage {
           timestamp: new Date(),
           component: 'database',
           error: status.error,
-          severity: 'high' as const
+          severity: 'high' as const,
+          resolved: false
         }] : [],
         performance: {
           responseTime: 0,
@@ -1429,7 +1430,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       } catch (enhancedError) {
         logger.warn(
           '[EnhancedStorage] Enhanced storage pending content unavailable:',
-          enhancedError
+          enhancedError instanceof Error ? enhancedError.message : String(enhancedError)
         );
       }
 
@@ -1445,7 +1446,7 @@ export class EnhancedStorage implements IEnhancedStorage {
               ...pendingFeedback.map((feedback: any) => ({
                 id: feedback.id,
                 type: 'feedback' as const,
-                title: `Feedback for ${feedback.termName || 'Unknown Term'}`,
+                title: `Feedback for ${(feedback as any).termName || 'Unknown Term'}`,
                 content: { message: feedback.comment || feedback.message || '' },
                 submittedBy: feedback.userEmail || feedback.userId || 'Anonymous',
                 submittedAt: feedback.createdAt || new Date(),
@@ -1469,7 +1470,7 @@ export class EnhancedStorage implements IEnhancedStorage {
               ...pendingSuggestions.map((suggestion: PendingContent) => ({
                 id: suggestion.id,
                 type: 'term_suggestion' as const,
-                title: `New Term: ${suggestion.termName}`,
+                title: `New Term: ${(suggestion as any).termName}`,
                 content: { definition: suggestion.definition || '' },
                 submittedBy: suggestion.userEmail || suggestion.userId || 'Anonymous',
                 submittedAt: suggestion.createdAt || new Date(),
@@ -1492,7 +1493,7 @@ export class EnhancedStorage implements IEnhancedStorage {
               ...pendingAiContent.map((aiContent: PendingContent) => ({
                 id: aiContent.id,
                 type: 'ai_generated' as const,
-                title: `AI Content: ${aiContent.title || aiContent.termName}`,
+                title: `AI Content: ${(aiContent as any).title || (aiContent as any).termName}`,
                 content: typeof aiContent.content === 'object' ? aiContent.content : { generatedText: aiContent.content || '' },
                 submittedBy: `AI Model: ${aiContent.model || 'Unknown'}`,
                 submittedAt: aiContent.createdAt || new Date(),
@@ -1524,7 +1525,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           });
         }
       } catch (baseError) {
-        logger.warn('[EnhancedStorage] Base storage pending content unavailable:', baseError);
+        logger.warn(
+          '[EnhancedStorage] Base storage pending content unavailable:',
+          baseError instanceof Error ? baseError.message : String(baseError)
+        );
       }
 
       // Final fallback: Generate mock pending content for development/testing

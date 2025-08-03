@@ -58,6 +58,7 @@ import type {
   LearningStreak,
   Achievement,
   Term,
+  PaginatedResult,
 } from './types/storage.types';
 import type {
   IStorage as IStorageTypeSafe,
@@ -1037,7 +1038,7 @@ export class OptimizedStorage implements IStorage {
         // Add ordering, limit, and offset
         try {
           const result = await query.orderBy(categories.name).limit(limit).offset(offset);
-          return result;
+          return result as ICategory[];
         } catch (queryError) {
           logger.error('[OptimizedStorage] getCategoriesOptimized query failed:', queryError);
 
@@ -1068,7 +1069,7 @@ export class OptimizedStorage implements IStorage {
                 .limit(limit)
                 .offset(offset);
               logger.info('[OptimizedStorage] Using fallback query without joins');
-              return fallbackResult;
+              return fallbackResult as ICategory[];
             } catch (fallbackError) {
               logger.error('[OptimizedStorage] Fallback query also failed:', fallbackError);
               return [];
@@ -1385,12 +1386,23 @@ export class OptimizedStorage implements IStorage {
             definition: terms.definition,
             shortDefinition: terms.shortDefinition,
             categoryId: terms.categoryId,
+            viewCount: terms.viewCount,
+            category: categories.name,
           })
           .from(terms)
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
           .orderBy(terms.viewCount)
           .limit(limit);
 
-        return result;
+        return result.map(r => ({
+          id: r.id,
+          name: r.name,
+          definition: r.definition,
+          shortDefinition: r.shortDefinition || undefined,
+          category: r.category || 'Uncategorized',
+          categoryId: r.categoryId || undefined,
+          viewCount: r.viewCount || 0,
+        }));
       },
       15 * 60 * 1000 // 15 minutes cache
     );
@@ -1412,13 +1424,16 @@ export class OptimizedStorage implements IStorage {
           .where(and(eq(userProgress.userId, userId), sql`${userProgress.learnedAt} IS NOT NULL`));
 
         return {
-          totalTermsStarted: Number(totalProgress[0]?.count) || 0,
-          completedTerms: Number(completedProgress[0]?.count) || 0,
+          totalTermsViewed: Number(totalProgress[0]?.count) || 0,
+          totalTermsCompleted: Number(completedProgress[0]?.count) || 0,
           totalTimeSpent: 0, // Time tracking not implemented yet
-          completionRate:
-            totalProgress[0]?.count > 0
-              ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100
-              : 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          favoriteCategories: [],
+          recentActivity: [],
+          completedSections: 0,
+          favoriteTerms: [],
+          achievements: [],
         };
       },
       5 * 60 * 1000 // 5 minutes cache
@@ -1535,7 +1550,7 @@ export class OptimizedStorage implements IStorage {
   }
 
   async getRecentPurchases(limit = 10): Promise<RecentPurchase[]> {
-    return await db
+    const results = await db
       .select({
         id: purchases.id,
         userId: purchases.userId,
@@ -1550,19 +1565,51 @@ export class OptimizedStorage implements IStorage {
       .leftJoin(users, eq(purchases.userId, users.id))
       .orderBy(desc(purchases.createdAt))
       .limit(limit);
+
+    return results.map(r => ({
+      orderId: r.orderId,
+      email: r.userEmail || '',
+      productName: 'AI Glossary Pro', // Default product name
+      amount: r.amount || 0,
+      currency: r.currency || 'USD',
+      purchaseDate: r.createdAt || new Date(),
+      status: r.status || 'completed',
+      refunded: r.status === 'refunded',
+    }));
   }
 
   async getRevenueByPeriod(period: string): Promise<RevenuePeriodData> {
     // Simplified implementation - can be enhanced
-    // const _now = new Date(); // Commented out as it's not used
-    const periods = {
-      day: [],
-      week: [],
-      month: [],
-      year: [],
-    };
+    const now = new Date();
+    const startDate = new Date();
+    
+    // Calculate start date based on period
+    switch (period) {
+      case 'day':
+        startDate.setDate(now.getDate() - 1);
+        break;
+      case 'week':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+    }
 
-    return periods[period as keyof typeof periods] || [];
+    return {
+      period,
+      startDate,
+      endDate: now,
+      totalRevenue: 0,
+      totalPurchases: 0,
+      averageOrderValue: 0,
+      topProducts: [],
+      revenueByDay: [],
+      refundRate: 0,
+    };
   }
 
   async getTopCountriesByRevenue(limit = 10): Promise<CountryRevenue[]> {
@@ -1580,7 +1627,11 @@ export class OptimizedStorage implements IStorage {
 
     return result.map(row => ({
       country: row.country || 'Unknown',
+      countryCode: row.country || 'XX', // TODO: Map to actual country codes
       revenue: Number(row.revenue),
+      purchases: 0, // TODO: Add count aggregation
+      averageOrderValue: 0, // TODO: Calculate average
+      percentage: 0, // TODO: Calculate percentage of total
     }));
   }
 
@@ -1596,10 +1647,29 @@ export class OptimizedStorage implements IStorage {
     const purchasedCount = Number(purchasedUsers[0]?.count) || 0;
 
     return {
-      visitors: totalUsers * 10, // Estimate
-      signups: totalUsers,
-      purchased: purchasedCount,
-      conversionRate: totalUsers > 0 ? (purchasedCount / totalUsers) * 100 : 0,
+      stages: [
+        {
+          name: 'Visitors',
+          users: totalUsers * 10, // Estimate
+          conversionRate: 100,
+          averageTimeInStage: 0, // TODO: Calculate actual time
+        },
+        {
+          name: 'Signups',
+          users: totalUsers,
+          conversionRate: totalUsers > 0 ? (totalUsers / (totalUsers * 10)) * 100 : 0,
+          averageTimeInStage: 0, // TODO: Calculate actual time
+        },
+        {
+          name: 'Purchased',
+          users: purchasedCount,
+          conversionRate: totalUsers > 0 ? (purchasedCount / totalUsers) * 100 : 0,
+          averageTimeInStage: 0, // TODO: Calculate actual time
+        },
+      ],
+      overallConversionRate: totalUsers > 0 ? (purchasedCount / (totalUsers * 10)) * 100 : 0,
+      averageTimeToConversion: 0, // TODO: Calculate actual time
+      dropoffAnalysis: [],
     };
   }
 
@@ -1613,8 +1683,12 @@ export class OptimizedStorage implements IStorage {
       .where(eq(purchases.status, 'refunded'));
 
     return {
-      count: Number(refunds[0]?.count) || 0,
-      totalAmount: Number(refunds[0]?.total) || 0,
+      totalRefunds: Number(refunds[0]?.count) || 0,
+      refundAmount: Number(refunds[0]?.total) || 0,
+      refundRate: 0, // TODO: Calculate rate
+      averageRefundTime: 0, // TODO: Calculate average time
+      refundReasons: [],
+      refundTrend: [],
     };
   }
 
@@ -1632,18 +1706,45 @@ export class OptimizedStorage implements IStorage {
       .from(purchases)
       .leftJoin(users, eq(purchases.userId, users.id));
 
+    let results;
     if (startDate && endDate) {
-      return await baseQuery
+      results = await baseQuery
         .where(and(gte(purchases.createdAt, startDate), lte(purchases.createdAt, endDate)))
         .orderBy(desc(purchases.createdAt));
+    } else {
+      results = await baseQuery.orderBy(desc(purchases.createdAt));
     }
 
-    return await baseQuery.orderBy(desc(purchases.createdAt));
+    return results.map(r => ({
+      orderId: r.orderId,
+      purchaseDate: r.createdAt || new Date(),
+      email: r.userEmail || '',
+      customerName: undefined, // TODO: Add user name fields
+      productId: 'ai-glossary-pro',
+      productName: 'AI Glossary Pro',
+      amount: r.amount || 0,
+      currency: r.currency || 'USD',
+      status: r.status || 'completed',
+      refunded: r.status === 'refunded',
+      refundDate: r.status === 'refunded' ? r.createdAt : undefined,
+      metadata: r.purchaseData as Record<string, string>,
+    }));
   }
 
   async getRecentWebhookActivity(limit = 20): Promise<WebhookActivity[]> {
     // For now, return recent purchases as webhook activity
-    return await this.getRecentPurchases(limit);
+    const purchases = await this.getRecentPurchases(limit);
+    return purchases.map(purchase => ({
+      id: purchase.orderId,
+      timestamp: purchase.purchaseDate,
+      eventType: 'purchase.completed',
+      userId: undefined, // TODO: Add user ID mapping
+      eventData: {
+        orderId: purchase.orderId,
+        amount: purchase.amount,
+        currency: purchase.currency,
+      },
+    }));
   }
 
   async getPurchaseByOrderId(orderId: string): Promise<PurchaseDetails | null> {

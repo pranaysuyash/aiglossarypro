@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Request, Response, NextFunction } from 'express';
 import { ANALYTICS_CONSTANTS } from '../utils/constants';
 
 // Valid timeframe options
@@ -31,10 +32,10 @@ const ExportTypeSchema = z.enum(['summary', 'detailed', 'categories', 'users'], 
 });
 
 // Pagination schema
-const _PaginationSchema = z.object({
-  page: z.coerce.number().int().min(1).max(10000).default(1),
-  limit: z.coerce.number().int().min(1).max(1000).default(20),
-});
+// const PaginationSchema = z.object({
+//   page: z.coerce.number().int().min(1).max(10000).default(1),
+//   limit: z.coerce.number().int().min(1).max(1000).default(20),
+// });
 
 // General analytics query schema
 export const GeneralAnalyticsQuerySchema = z.object({
@@ -100,7 +101,7 @@ export function timeframeToDays(timeframe: TimeframeType): number {
  * Middleware factory for validating query parameters
  */
 export function validateQuery<T>(schema: z.ZodSchema<T>) {
-  return (req: Request, res: Request, next: Request) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = schema.safeParse(req.query);
 

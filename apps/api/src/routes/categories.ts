@@ -1,5 +1,4 @@
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { ApiResponse, ICategory, ITerm, PaginatedResponse } from '@aiglossarypro/shared';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log } from '../utils/logger';
@@ -87,7 +86,7 @@ export function registerCategoryRoutes(app: Express): void {
   app.get('/api/categories/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { includeTerms = false } = req.query;
+      // const { includeTerms = false } = req.query;
 
       let category = null;
 
@@ -152,7 +151,7 @@ export function registerCategoryRoutes(app: Express): void {
       const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Use optimized database query with field selection
-      let result = { data: [], total: 0 };
+      let result: { data: ITerm[], total: number } = { data: [], total: 0 };
 
       try {
         result = await storage.getTermsByCategory(id, {

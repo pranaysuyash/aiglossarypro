@@ -103,12 +103,12 @@ export interface EmergencyControls {
  * and system protection for batch operations.
  */
 export class BatchSafetyControlsService extends EventEmitter {
-  private safetyLimits: SafetyLimits;
+  private safetyLimits!: SafetyLimits;
   private violations: Map<string, SafetyViolation> = new Map();
   private userLimitStatus: Map<string, UserLimitStatus> = new Map();
   private requestCounts: Map<string, Array<{ timestamp: Date; count: number }>> = new Map();
-  private emergencyControls: EmergencyControls;
-  private healthCheckInterval?: NodeJS.Timeout;
+  private emergencyControls!: EmergencyControls;
+  private _healthCheckInterval?: NodeJS.Timeout;
 
   constructor() {
     super();
@@ -321,7 +321,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       }
     }
 
-    logger.critical(`Emergency stop activated by ${activatedBy}: ${reason}`);
+    logger.error(`[CRITICAL] Emergency stop activated by ${activatedBy}: ${reason}`);
     this.emit('emergency:activated', {
       reason,
       activatedBy,
@@ -558,7 +558,7 @@ export class BatchSafetyControlsService extends EventEmitter {
         break;
     }
 
-    logger.warn(`Safety violation triggered:`, violation);
+    logger.warn(`Safety violation triggered:`, violation as unknown as Record<string, unknown>);
     this.emit('violation:triggered', violation);
   }
 

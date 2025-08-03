@@ -4,8 +4,7 @@
  */
 
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import {
   type InsertLearningPath,
   type InsertLearningPathStep,
@@ -32,7 +31,7 @@ import {
 import logger from '../utils/logger';
 
 // Types
-interface AuthenticatedRequest extends Request {
+interface AuthenticatedRequest {
   user?: {
     id: string;
     isAdmin?: boolean;
@@ -49,10 +48,10 @@ interface LearningPathStep {
   content?: Record<string, unknown>;
 }
 
-interface StepOrder {
-  stepId: string;
-  order: number;
-}
+// interface StepOrder {
+//   stepId: string;
+//   order: number;
+// }
 
 export function registerLearningPathsRoutes(app: Express): void {
   /**

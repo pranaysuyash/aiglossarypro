@@ -159,7 +159,7 @@ export class BatchProgressTrackingService extends EventEmitter {
     operationId: string,
     monitoringOptions?: {
       snapshotInterval?: number;
-      alertThresholds?: Partial<typeof this.alertThresholds>;
+      alertThresholds?: any;
       reportMilestones?: number[];
     }
   ): Promise<void> {
@@ -246,7 +246,7 @@ export class BatchProgressTrackingService extends EventEmitter {
 
     // Calculate active operations data
     const activeOpsData = activeOperations.map(op => {
-      const _currentProgress = this.getCurrentProgress(op.id);
+      // const currentProgress = this.getCurrentProgress(op.id);
       const health = this.calculateOperationHealth(op.id);
 
       return {
@@ -277,7 +277,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       averageCompletionTime: await this.calculateAverageCompletionTime(),
       systemHealthScore: this.calculateSystemHealthScore(),
       queueDepth: totalQueueJobs,
-      processingCapacityUtilization: (processingCapacity / maxCapacity) * 100,
+      processingCapacityUtilization: ((processingCapacity as number) / maxCapacity) * 100,
     };
 
     // Get alerts
@@ -342,7 +342,7 @@ export class BatchProgressTrackingService extends EventEmitter {
         hourlyBreakdown,
         performanceTrends,
       },
-      qualityMetrics: operation.result?.qualityMetrics,
+      qualityMetrics: operation.result?.qualityMetrics as any,
     };
   }
 

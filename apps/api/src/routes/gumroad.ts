@@ -1,10 +1,9 @@
 import crypto from 'node:crypto';
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../middleware/firebaseAuth';
 import { UserService } from '../services/userService';
 import { ENVIRONMENT_CONSTANTS, HTTP_STATUS, PRICING_CONSTANTS } from '../utils/constants';
-import { sendSystemNotificationEmail } from '../utils/email';
+// import { sendSystemNotificationEmail } from '../utils/email';
 import { log } from '../utils/logger';
 import { captureAPIError } from '../utils/sentry';
 
@@ -92,7 +91,7 @@ export function registerGumroadRoutes(app: Express): void {
         try {
           const { sendPremiumWelcomeEmail } = await import('../utils/email');
           await sendPremiumWelcomeEmail({
-            userName: result.userName,
+            userName: (result as any).userName || 'User',
             userEmail: email,
             purchaseDate: new Date().toLocaleDateString(),
             orderId: order_id,

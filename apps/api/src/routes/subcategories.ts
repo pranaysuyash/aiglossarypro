@@ -1,5 +1,4 @@
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { ApiResponse, PaginatedResponse } from '@aiglossarypro/shared';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log } from '../utils/logger';
@@ -17,7 +16,7 @@ export function registerSubcategoryRoutes(app: Express): void {
         search,
         categoryId,
         fields = 'id,name,categoryId,termCount',
-        includeStats = false,
+        // includeStats = false,
       } = req.query;
 
       const pageNum = parseInt(page as string);
@@ -74,7 +73,7 @@ export function registerSubcategoryRoutes(app: Express): void {
   app.get('/api/subcategories/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { includeTerms = false } = req.query;
+      // const { includeTerms = false } = req.query;
 
       const subcategory = await storage.getSubcategoryById(id);
 

@@ -9,7 +9,6 @@ import {
   type InsertTicketMessage,
   knowledgeBaseArticles,
   purchases,
-  ResponseTemplate,
   refundRequests,
   responseTemplates,
   supportTickets,

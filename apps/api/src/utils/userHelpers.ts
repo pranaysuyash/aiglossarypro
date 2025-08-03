@@ -61,7 +61,9 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
         ? (user.created_at as Date)
         : undefined),
     lastLoginAt:
-      user.lastLoginAt ||
+      (user.lastLoginAt && (typeof user.lastLoginAt === 'string' || user.lastLoginAt instanceof Date)
+        ? user.lastLoginAt
+        : undefined) ||
       (user.last_login_at &&
       (typeof user.last_login_at === 'string' || user.last_login_at instanceof Date)
         ? user.last_login_at

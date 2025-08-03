@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import logger from './utils/logger';
 // Import appropriate auth based on configuration
-import { features } from '@aiglossarypro/config';
+// import { features } from '@aiglossarypro/config';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from './middleware/firebaseAuth';
 import { multiAuthMiddleware } from './middleware/multiAuth';
 import { getS3Client, initS3Client, listFiles } from './s3Service';

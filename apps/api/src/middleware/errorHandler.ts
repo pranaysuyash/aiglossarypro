@@ -6,7 +6,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
 
 import logger from '../utils/logger';
 // Error types for better categorization
@@ -210,17 +209,20 @@ export const handleExternalAPIError = async (
   let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium';
 
   // Categorize by HTTP status or error type
-  if (error.status >= 500) {
+  const err: any = error as any;
+  if (err?.status >= 500) {
     severity = 'high';
-  } else if (error.status === 429) {
+  } else if (err?.status === 429) {
     // Rate limit
     severity = 'medium';
-  } else if (error.status >= 400) {
+  } else if (err?.status >= 400) {
     severity = 'low';
   }
 
-  const enhancedError = new Error(`${service}: ${error.message}`);
-  enhancedError.stack = error.stack;
+  const emsg = (error as any)?.message ?? String(error);
+  const estack = (error as any)?.stack;
+  const enhancedError = new Error(`${service}: ${emsg}`);
+  enhancedError.stack = estack;
 
   return await errorLogger.logError(enhancedError, req, ErrorCategory.EXTERNAL_API, severity);
 };

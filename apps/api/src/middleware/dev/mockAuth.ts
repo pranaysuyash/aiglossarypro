@@ -12,7 +12,6 @@
  */
 
 import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
 
 import logger from '../../utils/logger';
 // SECURITY: All mock authentication functions are disabled

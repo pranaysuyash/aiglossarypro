@@ -1440,7 +1440,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get pending feedback if available
         if ('getPendingFeedback' in this.baseStorage) {
-          const pendingFeedback = await this.baseStorage.getPendingFeedback();
+          const pendingFeedback = await (this.baseStorage as any).getPendingFeedback();
           if (Array.isArray(pendingFeedback)) {
             pendingContent.push(
               ...pendingFeedback.map((feedback: any) => ({
@@ -1464,21 +1464,21 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get pending term suggestions if available
         if ('getPendingTermSuggestions' in this.baseStorage) {
-          const pendingSuggestions = await this.baseStorage.getPendingTermSuggestions();
+          const pendingSuggestions = await (this.baseStorage as any).getPendingTermSuggestions();
           if (Array.isArray(pendingSuggestions)) {
             pendingContent.push(
               ...pendingSuggestions.map((suggestion: PendingContent) => ({
                 id: suggestion.id,
                 type: 'term_suggestion' as const,
-                title: `New Term: ${(suggestion as any).termName}`,
-                content: { definition: suggestion.definition || '' },
-                submittedBy: suggestion.userEmail || suggestion.userId || 'Anonymous',
-                submittedAt: suggestion.createdAt || new Date(),
+                title: `New Term: ${(suggestion.content as any).termName || 'Unknown'}`,
+                content: { definition: (suggestion.content as any).definition || '' },
+                submittedBy: suggestion.submittedBy || 'Anonymous',
+                submittedAt: suggestion.submittedAt || new Date(),
                 status: 'pending' as const,
                 priority: 'medium' as const,
                 metadata: {
-                  category: suggestion.category,
-                  difficulty: suggestion.difficulty,
+                  category: (suggestion.content as any).category,
+                  difficulty: (suggestion.content as any).difficulty,
                 },
               }))
             );
@@ -1487,24 +1487,24 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get pending AI-generated content if available
         if ('getPendingAiContent' in this.baseStorage) {
-          const pendingAiContent = await this.baseStorage.getPendingAiContent();
+          const pendingAiContent = await (this.baseStorage as any).getPendingAiContent();
           if (Array.isArray(pendingAiContent)) {
             pendingContent.push(
               ...pendingAiContent.map((aiContent: PendingContent) => ({
                 id: aiContent.id,
                 type: 'ai_generated' as const,
-                title: `AI Content: ${(aiContent as any).title || (aiContent as any).termName}`,
+                title: `AI Content: ${(aiContent.content as any).title || (aiContent.content as any).termName || 'Generated Content'}`,
                 content: typeof aiContent.content === 'object' ? aiContent.content : { generatedText: aiContent.content || '' },
-                submittedBy: `AI Model: ${aiContent.model || 'Unknown'}`,
-                submittedAt: aiContent.createdAt || new Date(),
+                submittedBy: `AI Model: ${(aiContent.content as any).model || 'Unknown'}`,
+                submittedAt: aiContent.submittedAt || new Date(),
                 status: 'pending' as const,
-                priority: (aiContent.confidenceLevel === 'low' ? 'high' : 'medium') as
+                priority: ((aiContent.content as any).confidenceLevel === 'low' ? 'high' : 'medium') as
                   | 'low'
                   | 'medium'
                   | 'high',
                 metadata: {
-                  model: aiContent.model,
-                  confidenceLevel: aiContent.confidenceLevel,
+                  model: (aiContent.content as any).model,
+                  confidenceLevel: (aiContent.content as any).confidenceLevel,
                   termId: aiContent.termId,
                 },
               }))
@@ -3307,7 +3307,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get view count from analytics if available
         if ('getUserViewCount' in this.baseStorage) {
-          const viewCount = await this.baseStorage.getUserViewCount(userId);
+          const viewCount = await (this.baseStorage as any).getUserViewCount(userId);
           if (typeof viewCount === 'number') {
             defaultStats.totalTermsViewed = viewCount;
           }
@@ -3315,7 +3315,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Get category progress from user analytics if available
         if ('getUserCategoryStats' in this.baseStorage) {
-          const categoryStats = await this.baseStorage.getUserCategoryStats(userId);
+          const categoryStats = await (this.baseStorage as any).getUserCategoryStats(userId);
           if (categoryStats && typeof categoryStats === 'object') {
             defaultStats.categoryProgress = categoryStats;
           }

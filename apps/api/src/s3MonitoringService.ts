@@ -315,10 +315,10 @@ class S3MonitoringService {
 
     // Performance metrics
     const completedOps = recentLogs.filter(log => log.duration && log.status !== 'started');
-    const _averageDuration =
-      completedOps.length > 0
-        ? completedOps.reduce((sum, log) => sum + (log.duration || 0), 0) / completedOps.length
-        : 0;
+    // const averageDuration =
+    //   completedOps.length > 0
+    //     ? completedOps.reduce((sum, log) => sum + (log.duration || 0), 0) / completedOps.length
+    //     : 0;
 
     const sortedByDuration = [...completedOps].sort(
       (a, b) => (b.duration || 0) - (a.duration || 0)

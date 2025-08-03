@@ -179,7 +179,7 @@ export class AIRecommendationService {
 
     // Bonus for in-progress paths with high completion
     currentPaths.forEach(path => {
-      const completion = Number(path.completion_percentage) || 0;
+      const completion = Number((path as any).completion_percentage) || 0;
       if (completion > 50) {score += completion / 10;}
     });
 

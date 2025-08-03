@@ -1,6 +1,5 @@
 import crypto from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
 import { personalizationService } from '../services/personalizationService';
 import { log as logger } from '../utils/logger';
 

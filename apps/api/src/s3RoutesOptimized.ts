@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Router } from 'express';
-import expressWs from 'express-ws';
+// import expressWs from 'express-ws';
 import multer from 'multer';
 import { WebSocket } from 'ws';
 import { multiAuthMiddleware } from './middleware/multiAuth';
@@ -9,7 +9,7 @@ import { getOptimizedS3Client, type UploadProgress } from './s3ServiceOptimized'
 
 import logger from './utils/logger';
 const router = Router();
-const _wsRouter = expressWs(router as any).getWss;
+// const wsRouter = expressWs(router as any).getWss;
 
 // Configure multer for file uploads with enhanced validation
 const upload = multer({

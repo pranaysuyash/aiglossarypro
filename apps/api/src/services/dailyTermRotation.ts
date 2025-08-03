@@ -169,12 +169,16 @@ export class DailyTermRotationService {
         viewCount: term.viewCount || 0,
         createdAt: term.createdAt,
         updatedAt: term.updatedAt,
-        // Additional metadata for scoring
         difficultyLevel: term.difficultyLevel || 'intermediate',
         hasImplementation: term.hasImplementation || false,
         hasInteractiveElements: term.hasInteractiveElements || false,
         hasCodeExamples: term.hasCodeExamples || false,
-      }));
+        // Add required ITerm fields
+        tags: [],
+        verificationStatus: 'verified' as const,
+        applicationDomains: [],
+        techniques: []
+      })) as ITerm[];
     } catch (error) {
       logger.error('Error fetching eligible terms', { error });
       return [];

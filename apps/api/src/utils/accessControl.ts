@@ -77,7 +77,7 @@ export function isInTrialPeriod(
  */
 export function hasUserAccess(
   user: UserWithAccessControl,
-  config: AccessControlConfig = defaultAccessConfig
+  _config: AccessControlConfig = defaultAccessConfig
 ): boolean {
   if (!user) {return false;}
 

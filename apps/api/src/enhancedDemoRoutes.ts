@@ -232,11 +232,11 @@ export function registerEnhancedDemoRoutes(app: Express): void {
       if (!req.user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-      const userId = req.user.claims.sub;
-      const _user = await enhancedStorage.getUser(userId);
-
       // For demo purposes, allow all authenticated users to see analytics
-      // In production, you'd check for admin role
+      // In production, you'd check for admin role by fetching the user:
+      // const userId = req.user.claims.sub;
+      // const user = await enhancedStorage.getUser(userId);
+      // if (!user.isAdmin) return res.status(403).json({ error: 'Admin access required' });
 
       const overview = await enhancedStorage.getAnalyticsOverview();
       const processingStats = await enhancedStorage.getProcessingStats();

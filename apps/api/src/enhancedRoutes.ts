@@ -168,10 +168,11 @@ export function registerEnhancedRoutes(app: Express): void {
    */
   app.get('/api/enhanced/terms', async (req: Request, res: Response) => {
     try {
-      const { page = '1', limit = '20', search } = req.query;
+      const { page = '1', limit = '20' } = req.query;
       const pageNum = parseInt(page as string, 10);
       const limitNum = Math.min(parseInt(limit as string, 10), 100); // Cap at 100
-      const offset = (pageNum - 1) * limitNum;
+      // const offset = (pageNum - 1) * limitNum; // TODO: Use when implementing actual query
+      // const search = req.query.search; // TODO: Use for filtering when implemented
 
       // For now, return empty array as placeholder
       // TODO: Implement proper enhanced terms listing in enhancedStorage
@@ -460,6 +461,9 @@ export function registerEnhancedRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
+        if (!req.user) {
+          return res.status(401).json({ message: 'Unauthorized' });
+        }
         const userId = req.user.claims.sub;
         const isAdmin = await isUserAdmin(userId);
 
@@ -487,6 +491,9 @@ export function registerEnhancedRoutes(app: Express): void {
     multiAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
+        if (!req.user) {
+          return res.status(401).json({ message: 'Unauthorized' });
+        }
         const userId = req.user.claims.sub;
         const isAdmin = await isUserAdmin(userId);
 

@@ -57,8 +57,8 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     limit = 10,
     category,
     sort = 'relevance',
-    fuzzy = false,
-    threshold = 0.3,
+    // fuzzy = false, // TODO: Implement fuzzy search
+    // threshold = 0.3, // TODO: Use similarity threshold when fuzzy search is implemented
   } = options;
 
   try {
@@ -100,7 +100,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
 
     // Apply WHERE conditions
     if (conditions.length > 0) {
-      searchQuery = searchQuery.where(and(...conditions)) as unknown;
+      searchQuery = searchQuery.where(and(...conditions)) as typeof searchQuery;
     }
 
     // Apply sorting
@@ -126,7 +126,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
       .leftJoin(categories, eq(terms.categoryId, categories.id));
 
     if (conditions.length > 0) {
-      (countQuery as any).where(and(...conditions));
+      countQuery = countQuery.where(and(...conditions));
     }
 
     // Execute queries

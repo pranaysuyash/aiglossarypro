@@ -275,10 +275,9 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<{
           limit,
           totalPages,
           searchTime,
-          query,
           hasMore,
-          strategy: queryAnalysis.strategy,
-          isGeneric: queryAnalysis.isGeneric,
+          queryStrategy: queryAnalysis.strategy,
+          query,
         };
       },
       30 * 1000 // 30 seconds cache

@@ -62,7 +62,7 @@ export class ProductionEmailService {
         });
         logger.info('SMTP fallback service initialized');
       } catch (error) {
-        logger.error('Failed to initialize SMTP fallback:', error);
+        logger.error('Failed to initialize SMTP fallback:', error as Record<string, unknown>);
       }
     }
 
@@ -75,7 +75,7 @@ export class ProductionEmailService {
    * Send email using Resend (preferred) or SMTP fallback
    */
   async sendEmail(options: EmailOptions): Promise<boolean> {
-    const { to, subject, html, text, replyTo, attachments } = options;
+    const { to, subject, html } = options;
 
     // Check if email is enabled
     if (process.env.EMAIL_ENABLED !== 'true') {

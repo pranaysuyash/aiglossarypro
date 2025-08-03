@@ -253,7 +253,7 @@ class AdaptiveContentService {
     }
   ): Promise<void> {
     // Get current user profile
-    const _profile = await this.getUserProfile(userId);
+    // const profile = await this.getUserProfile(userId);
 
     // Apply feedback adjustments
     const adjustments = this.calculateFeedbackAdjustments(feedback);
@@ -296,7 +296,7 @@ class AdaptiveContentService {
 
     interactions.forEach(interaction => {
       const metadata = interaction.metadata as unknown;
-      const sessionId = metadata?.sessionId as string;
+      const sessionId = (metadata as any)?.sessionId as string;
       if (sessionId) {
         if (!sessions.has(sessionId)) {
           sessions.set(sessionId, []);
@@ -333,9 +333,9 @@ class AdaptiveContentService {
 
   private async analyzeContentPreferences(_userId: string, interactions: UserInteraction[]) {
     // Analyze interaction patterns to determine content preferences
-    const _viewInteractions = interactions.filter(i => i.interactionType === 'view');
-    const _shareInteractions = interactions.filter(i => i.interactionType === 'share');
-    const _favoriteInteractions = interactions.filter(i => i.interactionType === 'favorite');
+    // const viewInteractions = interactions.filter(i => i.interactionType === 'view');
+    // const shareInteractions = interactions.filter(i => i.interactionType === 'share');
+    // const favoriteInteractions = interactions.filter(i => i.interactionType === 'favorite');
 
     // Mock analysis - in practice, would analyze content types and engagement
     return {
@@ -432,7 +432,7 @@ class AdaptiveContentService {
 
   private analyzeProgressionPatterns(interactions: UserInteraction[]) {
     const viewInteractions = interactions.filter(i => i.interactionType === 'view');
-    const _uniqueTerms = new Set(viewInteractions.map(i => i.termId));
+    // const uniqueTerms = new Set(viewInteractions.map(i => i.termId));
     const sessionCount = new Set(interactions.map(i => (i.metadata as any)?.sessionId)).size;
 
     return {

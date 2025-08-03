@@ -77,23 +77,9 @@ export interface DatabaseOperationResult {
   message: string;
 }
 
-export interface AdminStats extends ContentMetrics {
-  totalUsers: number;
-  activeUsers: {
-    daily: number;
-    weekly: number;
-    monthly: number;
-  };
-  recentActivity: Array<{
-    type: string;
-    count: number;
-    timestamp: Date;
-  }>;
-  systemHealth: {
-    status: 'healthy' | 'degraded' | 'down';
-    lastChecked: Date;
-  };
-}
+// Use the canonical AdminStats from shared to avoid divergence
+import type { AdminStats as SharedAdminStats } from '@aiglossarypro/shared';
+export type AdminStats = SharedAdminStats;
 
 export interface OptimizedFavoritesResult {
   data: ITerm[];

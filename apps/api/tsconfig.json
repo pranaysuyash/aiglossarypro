@@ -46,8 +46,6 @@
     "src/index-minimal.ts",
     "src/index-original.ts",
     "src/test-minimal.ts",
-    "src/monitoring/**",
-    "src/routes/monitoring/**",
     "src/routes/firebaseAuthDebug.ts",
     "src/middleware/performance.ts",
     "src/services/cdnMonitoring.ts",

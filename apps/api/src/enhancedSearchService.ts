@@ -14,8 +14,9 @@ export interface SearchOptions {
   limit?: number;
   category?: string;
   sort?: 'relevance' | 'name' | 'popularity' | 'recent';
-  fuzzy?: boolean; // Enable fuzzy/similarity search
-  threshold?: number; // Similarity threshold for fuzzy search (0.0 - 1.0)
+  // fuzzy and threshold reserved for future fuzzy search implementation
+  // fuzzy?: boolean;
+  // threshold?: number;
 }
 
 export interface SearchResult {
@@ -100,7 +101,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
 
     // Apply WHERE conditions
     if (conditions.length > 0) {
-      searchQuery = searchQuery.where(and(...conditions)) as typeof searchQuery;
+      searchQuery = (searchQuery as any).where(and(...(conditions as any)));
     }
 
     // Apply sorting
@@ -120,13 +121,13 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     }
 
     // Get total count for pagination
-    const countQuery = db
+    let countQuery = db
       .select({ count: sql<number>`count(*)` })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id));
 
     if (conditions.length > 0) {
-      countQuery = countQuery.where(and(...conditions));
+      countQuery = (countQuery as any).where(and(...(conditions as any)));
     }
 
     // Execute queries

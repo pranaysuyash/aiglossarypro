@@ -10,7 +10,7 @@ import {
   users,
 } from '@aiglossarypro/shared';
 import { purchases } from '@aiglossarypro/shared';
-import type { InsertPurchase, Purchase, UpsertUser, User } from '@aiglossarypro/shared';
+import type { InsertPurchase, Purchase, UpsertUser, User, UserActivity } from '@aiglossarypro/shared';
 import { endOfDay, format, formatDistanceToNow, startOfDay, subDays } from 'date-fns';
 import { and, desc, eq, gte, ilike, isNull, lte, not, sql } from 'drizzle-orm';
 import { db } from '@aiglossarypro/database';
@@ -20,13 +20,9 @@ import type {
   Term,
   EnhancedTerm,
   TermSection,
-  CategoryWithStats,
   UserProgressStats,
   LearningStreak,
   SearchResult,
-  UserSettings,
-  AnalyticsOverview,
-  UserDataExport,
   PendingContent,
   GeneralFeedback,
   TermFeedback,
@@ -38,29 +34,31 @@ import type {
   SectionProgress,
   CategoryProgress,
   Achievement,
-  OptimizedTerm,
   PaginationOptions,
   BulkUpdateResult,
   BulkDeleteResult,
   MaintenanceResult,
   ContentMetrics,
-  RecentActivity,
-  WebhookActivity,
-  PurchaseExport,
-  PurchaseDetails,
-  ConversionFunnel,
-  RefundAnalytics,
-  CountryRevenue,
-  RevenuePeriodData,
-  RecentPurchase,
-  UserAccessUpdate,
 } from './types/storage.types';
 
 import type {
   EnhancedTermWithSections,
   TermSectionWithMetadata,
   TermAnalytics,
-  UserPreferences,
+  CategoryWithStats,
+  UserSettings,
+  AnalyticsOverview,
+  UserDataExport,
+  OptimizedTerm,
+  RecentActivity,
+  WebhookActivity,
+  PurchaseExport,
+  ConversionFunnel,
+  RefundAnalytics,
+  CountryRevenue,
+  RevenuePeriodData,
+  RecentPurchase,
+  UserAccessUpdate,
 } from './types/enhancedStorage.types';
 
 // Interface for storage operations
@@ -237,7 +235,7 @@ export interface IStorage {
   createTerm?(termData: Partial<Term>): Promise<Term>;
   updateTerm?(termId: string, updates: Partial<Term>): Promise<Term>;
   getTermProgress?(userId: string, termId: string): Promise<UserProgressStats | null>;
-  updateTermProgress?(userId: string, termId: string, progressData: Response): Promise<void>;
+  updateTermProgress?(userId: string, termId: string, progressData: { completed?: boolean }): Promise<void>;
   removeTermProgress?(userId: string, termId: string): Promise<void>;
   getUserStats?(userId: string): Promise<UserProgressStats>;
 }
@@ -306,7 +304,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getCategoryById(id: string): Promise<unknown> {
+  async getCategoryById(id: string): Promise<CategoryWithStats | null> {
     // Get the category
     const [category] = await db.select().from(categories).where(eq(categories.id, id));
 
@@ -337,6 +335,10 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...category,
+      termCount: termsInCategory.length,
+      completedTerms: 0, // TODO: Implement completion tracking
+      averageCompletionRate: 0, // TODO: Calculate from user progress
+      totalViews: termsInCategory.reduce((sum, term) => sum + (term.viewCount || 0), 0),
       subcategories: subcats,
       terms: termsInCategory,
     };
@@ -433,13 +435,13 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...term,
-      updatedAt: formattedDate,
+      formattedDate, // Add formatted date as a separate field
       subcategories: termSubcats.map((sc: any) => sc.name),
       relatedTerms,
-    } as Term;
+    } as unknown as Term;
   }
 
-  async getRecentlyViewedTerms(userId: string): Promise<RecentActivity[]> {
+  async getRecentlyViewedTerms(userId: string): Promise<UserActivity[]> {
     // Get recently viewed terms with relative time
     const recentViews = await db
       .select({
@@ -455,20 +457,21 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(termViews.viewedAt))
       .limit(10);
 
-    // Format the dates and return as RecentActivity
+    // Format the dates and return as UserActivity
     return recentViews.map((view: any) => ({
       id: `view-${view.termId}-${view.viewedAt?.getTime() || Date.now()}`,
-      type: 'view' as const,
       userId,
-      termId: view.termId,
-      termName: view.name,
-      timestamp: view.viewedAt || new Date(),
+      action: 'view' as const,
+      entityType: 'term' as const,
+      entityId: view.termId,
       metadata: {
+        termName: view.name,
         category: view.category,
         relativeTime: view.viewedAt
           ? formatDistanceToNow(new Date(view.viewedAt), { addSuffix: true })
           : 'Never',
       },
+      createdAt: view.viewedAt || new Date(),
     }));
   }
 
@@ -549,7 +552,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     return {
-      terms: resultWithSubcats,
+      terms: resultWithSubcats as Term[],
       total: resultWithSubcats.length,
       page: 1,
       limit: 20,
@@ -648,7 +651,7 @@ export class DatabaseStorage implements IStorage {
   // Progress operations
   async getUserProgress(userId: string): Promise<UserProgressStats> {
     // Get total terms count
-    const [{ count: totalTerms }] = await db
+    const [{ count: _totalTerms }] = await db
       .select({
         count: sql<number>`count(${terms.id})`,
       })
@@ -1204,12 +1207,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Settings
-  async getUserSettings(userId: string): Promise<unknown> {
+  async getUserSettings(userId: string): Promise<UserSettings> {
     // Get user settings or create default
     const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
 
     if (settings) {
-      return settings;
+      return settings as UserSettings;
     }
 
     // Create default settings
@@ -1227,7 +1230,7 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
 
-    return newSettings;
+    return newSettings as UserSettings;
   }
 
   async updateUserSettings(userId: string, settings: any): Promise<void> {
@@ -1427,7 +1430,7 @@ export class DatabaseStorage implements IStorage {
     const progressStats = await this.getUserProgress(userId);
 
     // Get learned terms
-    const learned = await db
+    const _learned = await db
       .select({
         termId: userProgress.termId,
         learnedAt: userProgress.learnedAt,
@@ -1465,14 +1468,14 @@ export class DatabaseStorage implements IStorage {
       exportDate: new Date(),
       userData: {
         userId: user.id,
-        email: user.email,
+        email: user.email || '',
         name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         createdAt: user.createdAt || new Date(),
         lastLogin: user.updatedAt || user.createdAt || new Date(),
         subscription: user.subscriptionTier
           ? {
               tier: (user.subscriptionTier as 'free' | 'pro' | 'enterprise') || 'free',
-              status: user.lifetimeAccess ? 'active' : 'inactive',
+              status: (user.lifetimeAccess ? 'active' : 'inactive') as 'active' | 'inactive' | 'cancelled',
               startDate: user.purchaseDate || new Date(),
             }
           : undefined,
@@ -2128,7 +2131,7 @@ export class DatabaseStorage implements IStorage {
         userId: r.userId || undefined,
         ...(r.purchaseData as Record<string, string>),
       },
-    }));
+    })) as PurchaseExport[];
   }
 
   async getRecentWebhookActivity(limit: number = 10): Promise<WebhookActivity[]> {
@@ -2381,7 +2384,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Section-Based Methods Implementation
-  async getTermSections(termId: string): Promise<TermSectionWithMetadata[]> {
+  async getTermSections(_termId: string): Promise<TermSectionWithMetadata[]> {
     try {
       // For now, return empty array since sections table might not exist
       // In a real implementation, you would query the sections table
@@ -2459,7 +2462,7 @@ export class DatabaseStorage implements IStorage {
     return null;
   }
 
-  async updateUserProgress(userId: string, updates: Response): Promise<void> {
+  async updateUserProgress(userId: string, updates: Partial<UserProgressStats>): Promise<void> {
     // This is a placeholder - you would need to implement progress updates
     logger.info('Progress update placeholder:', { userId, updates });
   }
@@ -2635,17 +2638,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Missing User Progress Methods
-  async getTermProgress(userId: string, termId: string): Promise<unknown> {
+  async getTermProgress(userId: string, termId: string): Promise<UserProgressStats | null> {
     const progress = await db
       .select()
       .from(userProgress)
       .where(and(eq(userProgress.userId, userId), eq(userProgress.termId, termId)))
       .limit(1);
 
-    return progress[0] || null;
+    if (!progress[0]) {
+      return null;
+    }
+
+    // Get full user progress stats
+    return this.getUserProgress(userId);
   }
 
-  async updateTermProgress(userId: string, termId: string, progressData: Response): Promise<void> {
+  async updateTermProgress(userId: string, termId: string, progressData: { completed?: boolean }): Promise<void> {
     await db
       .insert(userProgress)
       .values({
@@ -2724,7 +2732,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(userProgress.userId, userId), eq(userProgress.termId, termId)));
   }
 
-  async getUserStats(userId: string): Promise<unknown> {
+  async getUserStats(userId: string): Promise<UserProgressStats> {
     const totalProgress = await db
       .select({ count: sql<number>`count(*)` })
       .from(userProgress)
@@ -2735,15 +2743,8 @@ export class DatabaseStorage implements IStorage {
       .from(userProgress)
       .where(and(eq(userProgress.userId, userId), sql`${userProgress.learnedAt} IS NOT NULL`));
 
-    return {
-      totalTermsStarted: Number(totalProgress[0]?.count) || 0,
-      completedTerms: Number(completedProgress[0]?.count) || 0,
-      totalTimeSpent: 0, // Time tracking not implemented yet
-      completionRate:
-        totalProgress[0]?.count > 0
-          ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100
-          : 0,
-    };
+    // Get user progress stats in the correct format
+    return this.getUserProgress(userId);
   }
 
   // Missing methods for tests
@@ -2772,10 +2773,22 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getTerm(id: string): Promise<unknown> {
+  async getTerm(id: string): Promise<Term | null> {
     const [term] = await db.select().from(terms).where(eq(terms.id, id));
 
-    return term || null;
+    if (!term) {
+      return null;
+    }
+
+    // Get category name
+    const category = term.categoryId
+      ? await db.select().from(categories).where(eq(categories.id, term.categoryId)).limit(1)
+      : null;
+
+    return {
+      ...term,
+      category: category?.[0]?.name || null,
+    } as Term;
   }
 
   async getTermsByCategory(
@@ -2804,7 +2817,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async createTerm(termData: any): Promise<unknown> {
+  async createTerm(termData: Partial<Term>): Promise<Term> {
     // Validate required fields
     if (!termData.name || !termData.definition) {
       throw new Error('Term name and definition are required');
@@ -2823,7 +2836,15 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
 
-    return newTerm;
+    // Get category name if categoryId is provided
+    const category = newTerm.categoryId
+      ? await db.select().from(categories).where(eq(categories.id, newTerm.categoryId)).limit(1)
+      : null;
+
+    return {
+      ...newTerm,
+      category: category?.[0]?.name || null,
+    } as Term;
   }
 
   // AI/Search operations
@@ -2873,7 +2894,7 @@ export class DatabaseStorage implements IStorage {
         viewCount: terms.viewCount,
         createdAt: terms.createdAt,
         updatedAt: terms.updatedAt,
-        verificationStatus: terms.verificationStatus,
+        // verificationStatus: terms.verificationStatus, // Field doesn't exist
         category: categories.name,
       })
       .from(terms)
@@ -2915,7 +2936,7 @@ export class DatabaseStorage implements IStorage {
         viewCount: terms.viewCount,
         createdAt: terms.createdAt,
         updatedAt: terms.updatedAt,
-        verificationStatus: terms.verificationStatus,
+        // verificationStatus: terms.verificationStatus, // Field doesn't exist
         category: categories.name,
       })
       .from(terms)
@@ -2991,7 +3012,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db
         .update(terms)
         .set({
-          verificationStatus: status as any,
+          // verificationStatus: status as any, // Field doesn't exist
           updatedAt: new Date(),
         })
         .where(sql`${terms.id} IN (${ids})`);
@@ -3160,13 +3181,11 @@ export class DatabaseStorage implements IStorage {
   async getFeedback(filters?: FeedbackFilters, pagination?: PaginationOptions): Promise<PaginatedFeedback> {
     // This is a placeholder implementation
     return {
-      items: [],
+      data: [],
       total: 0,
       page: pagination?.page || 1,
-      pageSize: pagination?.limit || 20,
-      totalPages: 0,
-      hasNextPage: false,
-      hasPreviousPage: false,
+      limit: pagination?.limit || 20,
+      hasMore: false,
     };
   }
 
@@ -3186,7 +3205,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateFeedbackStatus(id: string, status: FeedbackStatus, notes?: string): Promise<FeedbackResult> {
+  async updateFeedbackStatus(id: string, status: FeedbackStatus, _notes?: string): Promise<FeedbackResult> {
     // This is a placeholder implementation
     return {
       success: true,
@@ -3229,7 +3248,7 @@ export class DatabaseStorage implements IStorage {
         viewCount: terms.viewCount,
         createdAt: terms.createdAt,
         updatedAt: terms.updatedAt,
-        verificationStatus: terms.verificationStatus,
+        // verificationStatus: terms.verificationStatus, // Field doesn't exist
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))

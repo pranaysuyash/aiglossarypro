@@ -4,7 +4,7 @@
  */
 
 import type { Express, Request, Response } from 'express';
-import { analyticsService } from '@aiglossarypro/config/analytics';
+import { analyticsService } from '@aiglossarypro/config';
 import { isSentryEnabled } from '@aiglossarypro/config/sentry';
 import { enhancedStorage } from '../enhancedStorage';
 import { productionEmailService } from '../services/productionEmailService';

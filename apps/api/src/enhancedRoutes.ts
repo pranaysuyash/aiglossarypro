@@ -88,8 +88,8 @@ export function registerEnhancedRoutes(app: Express): void {
           return res.status(401).json({ success: false, message: 'Authentication required' });
         }
 
-        const userId = req.user.claims.sub;
-        const isAdmin = await isUserAdmin(userId);
+        const userId = req.user?.claims?.sub;
+        const isAdmin = await isUserAdmin(userId!);
 
         // Check admin permissions
         if (!isAdmin) {
@@ -142,7 +142,7 @@ export function registerEnhancedRoutes(app: Express): void {
           return res.status(401).json({ success: false, message: 'Authentication required' });
         }
 
-        const userId = req.user.claims.sub;
+        const userId = req.user?.claims?.sub;
         const isAdmin = await isUserAdmin(userId);
 
         if (!isAdmin) {
@@ -208,7 +208,7 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/terms/:identifier', async (req: Request, res: Response) => {
     try {
       const identifier = req.params.identifier;
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       const term = await enhancedStorage.getEnhancedTermWithSections(identifier, userId);
 
@@ -236,7 +236,7 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/terms/:id/sections/:displayType', async (req: Request, res: Response) => {
     try {
       const { id, displayType } = req.params;
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       const sections = await enhancedStorage.getTermSectionsByType(id, displayType, userId);
       res.json(sections);
@@ -257,7 +257,7 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/search', async (req: Request, res: Response) => {
     try {
       const queryParams = searchQuerySchema.parse(req.query);
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       const results = await enhancedStorage.enhancedSearch(queryParams, userId);
       res.json(results);
@@ -281,7 +281,7 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/filter', async (req: Request, res: Response) => {
     try {
       const filterParams = filterQuerySchema.parse(req.query);
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       const results = await enhancedStorage.advancedFilter(filterParams, userId);
       res.json(results);
@@ -360,7 +360,7 @@ export function registerEnhancedRoutes(app: Express): void {
     try {
       const elementId = req.params.id;
       const { state } = req.body;
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       await enhancedStorage.updateInteractiveElementState(elementId, state, userId);
       res.json({ success: true });
@@ -464,8 +464,8 @@ export function registerEnhancedRoutes(app: Express): void {
         if (!req.user) {
           return res.status(401).json({ message: 'Unauthorized' });
         }
-        const userId = req.user.claims.sub;
-        const isAdmin = await isUserAdmin(userId);
+        const userId = req.user?.claims?.sub;
+        const isAdmin = await isUserAdmin(userId!);
 
         // Check admin permissions
         if (!isAdmin) {
@@ -494,7 +494,7 @@ export function registerEnhancedRoutes(app: Express): void {
         if (!req.user) {
           return res.status(401).json({ message: 'Unauthorized' });
         }
-        const userId = req.user.claims.sub;
+        const userId = req.user?.claims?.sub;
         const isAdmin = await isUserAdmin(userId);
 
         if (!isAdmin) {
@@ -517,7 +517,7 @@ export function registerEnhancedRoutes(app: Express): void {
   app.post('/api/enhanced/analytics/interaction', async (req: Request, res: Response) => {
     try {
       const { termId, sectionName, interactionType, data } = req.body;
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       await enhancedStorage.recordInteraction(termId, sectionName, interactionType, data, userId);
       res.json({ success: true });
@@ -611,7 +611,7 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/terms/:id/learning-path', async (req: Request, res: Response) => {
     try {
       const termId = req.params.id;
-      const userId = req.isAuthenticated?.() ? req.user?.claims.sub : null;
+      const userId = req.isAuthenticated?.() ? (req.user?.claims?.sub ?? null) : null;
 
       const learningPath = await enhancedStorage.getLearningPath(termId, userId);
       res.json(learningPath);

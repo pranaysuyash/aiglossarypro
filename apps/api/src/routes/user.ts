@@ -463,13 +463,13 @@ export function registerUserRoutes(app: Express): void {
   app.get('/api/user/access-status', async (req: Request, res: Response) => {
     try {
       // Try to extract user info from JWT token if available
-      const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token;
+      const token = req.headers.authorization?.replace('Bearer ', '') || (req as any).cookies?.auth_token;
       let userInfo = null;
 
       if (token) {
         try {
           const { verifyToken } = await import('../auth/simpleAuth');
-          const decoded = verifyToken(token);
+          const decoded = verifyToken(token as string);
           if (decoded) {
             userInfo = {
               id: decoded.sub,

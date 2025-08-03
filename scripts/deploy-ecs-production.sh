@@ -7,7 +7,7 @@ echo "==========================================="
 # Configuration
 REGION="${AWS_REGION:-us-east-1}"
 CLUSTER_NAME="aiglossarypro"
-SERVICE_NAME="aiglossarypro-api"
+SERVICE_NAME="aiglossarypro-api-production"
 TASK_FAMILY="aiglossarypro-api"
 ECR_REPO="927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api"
 ACCOUNT_ID="927289246324"
@@ -69,7 +69,7 @@ cat > task-definition-prod.json << EOF
         {"name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aiglossarypro/jwt"},
         {"name": "OPENAI_API_KEY", "valueFrom": "arn:aws:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aiglossarypro/openai"},
         {"name": "SESSION_SECRET", "valueFrom": "arn:aws:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aiglossarypro/session"},
-        {"name": "FIREBASE_PRIVATE_KEY_BASE64", "valueFrom": "arn:aws:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aiglossarypro/firebase-private-key"}
+        {"name": "FIREBASE_PRIVATE_KEY_BASE64", "valueFrom": "arn:aws:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aiglossarypro/firebase-private-key-guP8N3"}
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

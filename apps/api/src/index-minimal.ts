@@ -28,7 +28,7 @@ const server = app.listen(port, host, async () => {
     
     try {
       // Dynamic imports to avoid early initialization
-      const { initDatabase } = await import('@aiglossarypro/database');
+      const { pool } = await import('@aiglossarypro/database');
       const { validateEnvironment, printValidationResult } = await import('@aiglossarypro/config');
       const { log } = await import('./utils/logger');
       
@@ -36,10 +36,14 @@ const server = app.listen(port, host, async () => {
       const envValidation = validateEnvironment();
       printValidationResult(envValidation);
       
-      // Initialize database
+      // Test database connection
       if (process.env.DATABASE_URL) {
-        await initDatabase();
-        log.info('✅ Database initialized');
+        try {
+          await pool.query('SELECT 1');
+          log.info('✅ Database connection verified');
+        } catch (error) {
+          log.error('Database connection failed:', error);
+        }
       }
       
       // Register routes

@@ -29,11 +29,11 @@
         {"name": "FIREBASE_CLIENT_EMAIL", "value": "firebase-adminsdk-fbsvc@aiglossarypro.iam.gserviceaccount.com"}
       ],
       "secrets": [
-        {"name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database-HqtDrG"},
-        {"name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt-JGrrVJ"},
-        {"name": "OPENAI_API_KEY", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/openai-0ltiKK"},
-        {"name": "SESSION_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/session-g7vUMO"},
-        {"name": "FIREBASE_PRIVATE_KEY_BASE64", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-private-key-guP8N3"}
+        {"name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database"},
+        {"name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt"},
+        {"name": "OPENAI_API_KEY", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/openai"},
+        {"name": "SESSION_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/session"},
+        {"name": "FIREBASE_PRIVATE_KEY_BASE64", "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-private-key"}
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

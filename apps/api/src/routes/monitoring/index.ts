@@ -1,12 +1,12 @@
 import { Request, Response, Router } from 'express';
 import { checkDatabaseHealth, getPoolMetrics } from '@aiglossarypro/database';
 import logger from '../../utils/logger';
-import { adminAuth } from '../../middleware/adminAuth';
+import { requireAdmin } from '../../middleware/adminAuth';
 
 const router = Router();
 
 // Pool metrics endpoint (admin only)
-router.get('/pool', adminAuth, async (req: Request, res: Response) => {
+router.get('/pool', requireAdmin, async (_req: Request, res: Response) => {
   try {
     const metrics = getPoolMetrics();
     res.json({
@@ -24,7 +24,7 @@ router.get('/pool', adminAuth, async (req: Request, res: Response) => {
 });
 
 // Database health endpoint (admin only) 
-router.get('/database', adminAuth, async (req: Request, res: Response) => {
+router.get('/database', requireAdmin, async (_req: Request, res: Response) => {
   try {
     const health = await checkDatabaseHealth();
     const statusCode = health.status === 'healthy' ? 200 : 
@@ -45,7 +45,7 @@ router.get('/database', adminAuth, async (req: Request, res: Response) => {
 });
 
 // Combined system metrics
-router.get('/system', adminAuth, async (req: Request, res: Response) => {
+router.get('/system', requireAdmin, async (_req: Request, res: Response) => {
   try {
     const [poolMetrics, dbHealth] = await Promise.all([
       getPoolMetrics(),

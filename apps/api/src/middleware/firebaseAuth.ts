@@ -65,7 +65,10 @@ export async function authenticateFirebaseToken(
     }
 
     // Attach user to request
-    (req as AuthenticatedRequest).user = user!;
+    (req as AuthenticatedRequest).user = {
+      ...user!,
+      name: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || 'Unknown'
+    };
     (req as any).firebaseUser = decodedToken;
 
     next();
@@ -156,7 +159,10 @@ export async function optionalFirebaseAuth(
       const user = await storage.getUserByEmail(decodedToken.email!);
 
       if (user) {
-        (req as AuthenticatedRequest).user = user;
+        (req as AuthenticatedRequest).user = {
+          ...user,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown'
+        };
         (req as any).firebaseUser = decodedToken;
       }
     }

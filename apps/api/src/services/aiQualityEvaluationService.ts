@@ -119,7 +119,7 @@ export interface QualityAnalyticsResult {
 export class AIQualityEvaluationService {
   private openai: OpenAI;
   private readonly DEFAULT_MODEL = 'gpt-4.1-mini';
-  private readonly EVALUATION_MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'o1-mini', 'gpt-4o-mini'];
+  private readonly _EVALUATION_MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'o1-mini', 'gpt-4o-mini'];
 
   private readonly MODEL_COSTS = {
     'gpt-4.1': { input: 0.025, output: 0.1 },
@@ -698,7 +698,7 @@ Return as JSON:
   /**
    * Generate mock trends for analytics
    */
-  private generateMockTrends(request: QualityAnalyticsRequest): Request[] {
+  private generateMockTrends(request: QualityAnalyticsRequest): any[] {
     const trends = [];
     const days = 30;
     const baseDate = request.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

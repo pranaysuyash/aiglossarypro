@@ -237,7 +237,7 @@ export class NotificationService {
       result.messageId = `email_${Date.now()}`;
     } catch (error) {
       result.error = error instanceof Error ? error.message : 'Unknown email error';
-      logger.error('Failed to send email notification:', error);
+      logger.error('Failed to send email notification:', error as Record<string, unknown>);
     }
 
     return result;
@@ -275,7 +275,7 @@ export class NotificationService {
       result.messageId = `webhook_${Date.now()}`;
     } catch (error) {
       result.error = error instanceof Error ? error.message : 'Unknown webhook error';
-      logger.error('Failed to send webhook notification:', error);
+      logger.error('Failed to send webhook notification:', error as Record<string, unknown>);
     }
 
     return result;
@@ -304,7 +304,7 @@ export class NotificationService {
       result.messageId = `slack_${Date.now()}`;
     } catch (error) {
       result.error = error instanceof Error ? error.message : 'Unknown Slack error';
-      logger.error('Failed to send Slack notification:', error);
+      logger.error('Failed to send Slack notification:', error as Record<string, unknown>);
     }
 
     return result;
@@ -475,7 +475,7 @@ Time: ${notification.timestamp.toLocaleString()}
         success: historyEntry.success,
       });
     } catch (error) {
-      logger.error('Failed to store notification history:', error);
+      logger.error('Failed to store notification history:', error as Record<string, unknown>);
     }
   }
 

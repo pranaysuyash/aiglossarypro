@@ -1,6 +1,5 @@
 import type { Job } from 'bullmq';
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import { jobQueueManager } from '../../jobs/queue';
 import { JobType } from '../../jobs/types';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';

@@ -7,7 +7,12 @@ import { eq, sql } from 'drizzle-orm';
 import { type Express, type Request, type Response, Router } from 'express';
 // TODO: Move sampleTermsSeoUtils to shared package
 // import { sampleTermsSeoUtils } // TODO: Move from client - src/utils/sampleTermsSitemap;
-const sampleTermsSeoUtils = { getSitemapPaths: () => [] }; // Temporary placeholder
+const sampleTermsSeoUtils = { 
+  getSitemapPaths: () => [],
+  generateSitemap: (_baseUrl: string) => [],
+  generateXmlSitemap: (_baseUrl: string) => '<?xml version="1.0" encoding="UTF-8"?>',
+  getSampleTermsCount: () => 0
+}; // Temporary placeholder
 import { categories, terms } from '@aiglossarypro/shared/schema';
 import type { ApiResponse } from '@aiglossarypro/shared';
 import { db } from '@aiglossarypro/database';
@@ -153,7 +158,7 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     // Add sample term pages
     const sampleTerms = sampleTermsSeoUtils.generateSitemap(baseUrl);
-    sampleTerms.forEach(sampleTerm => {
+    sampleTerms.forEach((sampleTerm: any) => {
       // Skip the main /sample page as it's already added above
       if (!sampleTerm.url.endsWith('/sample')) {
         sitemap += `
@@ -307,7 +312,7 @@ seoRouter.get('/meta/term/:id', async (req: Request, res: Response<ApiResponse<S
 
     res.json({
       success: true,
-      data: seoData,
+      data: seoData as SeoMetadata,
     });
   } catch (error) {
     logger.error('SEO meta generation error:', {

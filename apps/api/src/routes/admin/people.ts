@@ -4,9 +4,9 @@ import { z } from 'zod';
 import {
   companies,
   entityLinks,
-  type InsertPerson,
+  // type InsertPerson,
   insertPersonSchema,
-  type Person,
+  // type Person,
   people,
 } from '@aiglossarypro/shared';
 import { requireFeature } from '@aiglossarypro/shared/featureFlags';
@@ -583,7 +583,7 @@ router.post('/:id/link-terms', async (req, res) => {
       linkType: link.linkType,
       relevanceScore: link.relevanceScore,
       description: link.description,
-      createdBy: req.user.uid, // Assuming user info is in req.user
+      createdBy: req.user?.id || 'admin', // Assuming user info is in req.user
       verificationStatus: 'verified' as const, // Admin-created links are automatically verified
     }));
 

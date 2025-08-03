@@ -92,7 +92,7 @@ import { errorHandler, gracefulShutdown, notFoundHandler } from './middleware/er
 import loggingMiddleware from './middleware/loggingMiddleware';
 import { setupMultiAuth } from './middleware/multiAuth';
 
-import { responseLoggingMiddleware } from './middleware/responseLogging';
+// import { responseLoggingMiddleware } from './middleware/responseLogging';
 import {
   apiRateLimit,
   corsMiddleware,
@@ -107,10 +107,11 @@ import { registerSimpleAuthRoutes } from './routes/simpleAuth';
 import { registerLocationRoutes } from './routes/location';
 import { initS3Client } from './s3Service';
 import { setupSwagger } from './swagger/setup';
-import { serveStatic, setupVite } from './vite';
+import { serveStatic } from './vite';
 
 const app = express();
-const wsInstance = expressWs(app);
+// const wsInstance = expressWs(app);
+expressWs(app);
 
 // Export app for testing
 export { app };

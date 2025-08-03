@@ -4,8 +4,7 @@
  */
 
 import os from 'node:os';
-import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { analyticsService } from '../services/analyticsService';
 import { ErrorCategory, errorLogger } from './errorHandler';
 
@@ -14,7 +13,7 @@ import logger from '../utils/logger';
 declare global {
   namespace Express {
     interface Request {
-      startTime: number;
+      startTime?: number;
       userIp?: string;
       sessionId?: string;
     }
@@ -119,7 +118,7 @@ export function searchTrackingMiddleware() {
     if (req.path.includes('/search') || (req.path.includes('/api/terms') && req.query.q)) {
       const originalJson = res.json;
 
-      res.json = function (this: Response, data: Response) {
+      res.json = function (this: Response, data: any) {
         const responseTime = Date.now() - (req.startTime || Date.now());
         const query = (req.query.q as string) || req.body.query || '';
 

@@ -5,6 +5,7 @@ import type { IUser } from '@aiglossarypro/shared';
 
 type UserWithAccessControl = Partial<IUser> & {
   role?: string;
+  isAdmin?: boolean;
   lifetimeAccess?: boolean;
   lifetime_access?: boolean;
   subscriptionTier?: string;
@@ -12,6 +13,7 @@ type UserWithAccessControl = Partial<IUser> & {
   purchase_date?: Date | string;
   lastViewReset?: Date | string;
   dailyViews?: number;
+  createdAt?: Date | string;
   created_at?: Date | string;
 };
 

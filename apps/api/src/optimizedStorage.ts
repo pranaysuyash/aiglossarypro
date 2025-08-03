@@ -1568,7 +1568,7 @@ export class OptimizedStorage implements IStorage {
 
     return results.map(r => ({
       orderId: r.orderId,
-      email: r.userEmail || '',
+      email: '', // TODO: Get email from user table via join
       productName: 'AI Glossary Pro', // Default product name
       amount: r.amount || 0,
       currency: r.currency || 'USD',
@@ -1718,8 +1718,8 @@ export class OptimizedStorage implements IStorage {
     return results.map(r => ({
       orderId: r.orderId,
       purchaseDate: r.createdAt || new Date(),
-      email: r.userEmail || '',
-      customerName: undefined, // TODO: Add user name fields
+      email: '', // TODO: Get email from user table via join
+      customerName: '', // TODO: Add user name fields
       productId: 'ai-glossary-pro',
       productName: 'AI Glossary Pro',
       amount: r.amount || 0,
@@ -1727,7 +1727,8 @@ export class OptimizedStorage implements IStorage {
       status: r.status || 'completed',
       refunded: r.status === 'refunded',
       refundDate: r.status === 'refunded' ? r.createdAt : undefined,
-      metadata: r.purchaseData as Record<string, string>,
+      paymentMethod: 'unknown',
+      metadata: r.purchaseData as Record<string, string> || {},
     }));
   }
 
@@ -1738,12 +1739,11 @@ export class OptimizedStorage implements IStorage {
       id: purchase.orderId,
       timestamp: purchase.purchaseDate,
       eventType: 'purchase.completed',
-      userId: undefined, // TODO: Add user ID mapping
-      eventData: {
-        orderId: purchase.orderId,
-        amount: purchase.amount,
-        currency: purchase.currency,
-      },
+      status: 'success' as const,
+      orderId: purchase.orderId,
+      amount: purchase.amount,
+      currency: purchase.currency,
+      customerEmail: purchase.email,
     }));
   }
 
@@ -1754,7 +1754,25 @@ export class OptimizedStorage implements IStorage {
       .where(eq(purchases.gumroadOrderId, orderId))
       .limit(1);
 
-    return result[0];
+    const purchase = result[0];
+    if (!purchase) return null;
+    
+    return {
+      orderId: purchase.gumroadOrderId,
+      email: '', // TODO: Get email from user table via join
+      amount: purchase.amount || 0,
+      currency: purchase.currency || 'USD',
+      status: purchase.status || 'completed',
+      purchaseDate: purchase.createdAt || new Date(),
+      productId: 'ai-glossary-pro',
+      productName: 'AI Glossary Pro',
+      userId: purchase.userId,
+      customerName: '',
+      paymentMethod: 'unknown',
+      webhookEvents: [],
+      accessGranted: purchase.userId ? true : false,
+      metadata: purchase.purchaseData as Record<string, string> || {}
+    };
   }
 
   async updateUserAccess(orderId: string, updates: UserAccessUpdate): Promise<void> {
@@ -1763,7 +1781,7 @@ export class OptimizedStorage implements IStorage {
       await db
         .update(users)
         .set({
-          lifetimeAccess: updates.grantAccess,
+          lifetimeAccess: updates.accessGranted || false,
           updatedAt: new Date(),
         })
         .where(eq(users.id, purchase.userId));
@@ -1789,7 +1807,19 @@ export class OptimizedStorage implements IStorage {
   }
 
   async createPurchase(purchaseData: PurchaseData): Promise<Purchase> {
-    const [purchase] = await db.insert(purchases).values(purchaseData).returning();
+    const purchaseRecord = {
+      gumroadOrderId: purchaseData.orderId,
+      // TODO: Link email via user relationship
+      userId: purchaseData.userId || null,
+      amount: purchaseData.amount,
+      currency: purchaseData.currency,
+      status: purchaseData.status,
+      purchaseData: purchaseData.metadata || {},
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const [purchase] = await db.insert(purchases).values(purchaseRecord).returning();
     return purchase;
   }
 
@@ -1799,7 +1829,12 @@ export class OptimizedStorage implements IStorage {
       .from(userSettings)
       .where(eq(userSettings.userId, userId))
       .limit(1);
-    return result[0]?.preferences || {};
+    const userSettingsData = result[0]?.preferences || {};
+    return {
+      userId,
+      ...userSettingsData,
+      lastUpdated: result[0]?.updatedAt || new Date()
+    };
   }
 
   async updateUserSettings(userId: string, settings: Partial<UserSettings>): Promise<void> {
@@ -1826,10 +1861,34 @@ export class OptimizedStorage implements IStorage {
     const settings = await this.getUserSettings(userId);
 
     return {
-      user,
-      favorites,
-      progress,
-      settings,
+      exportDate: new Date(),
+      userData: {
+        userId: user?.id || '',
+        email: user?.email || '',
+        name: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Unknown',
+        createdAt: user?.createdAt || new Date(),
+        lastLogin: user?.lastLoginAt || new Date()
+      },
+      termsData: {
+        favoriteTerms: favorites.map(f => ({ termId: f.id, termName: f.name, addedAt: new Date() })),
+        totalFavorites: favorites.length
+      },
+      progressData: {
+        totalTermsViewed: progress.totalTermsViewed,
+        totalTermsCompleted: progress.totalTermsCompleted,
+        totalTimeSpent: progress.totalTimeSpent,
+        currentStreak: progress.currentStreak,
+        longestStreak: progress.longestStreak,
+        lastActivity: progress.lastActivity || new Date()
+      },
+      preferencesData: settings || { userId, lastUpdated: new Date() },
+      analyticsData: {
+        totalTimeSpent: progress.totalTimeSpent,
+        averageSessionDuration: 0, // TODO: Calculate from actual sessions
+        totalSessions: 0, // TODO: Calculate from actual sessions
+        learningVelocity: 0, // TODO: Calculate from progress data
+        topCategories: progress.favoriteCategories?.map(cat => cat.categoryName) || []
+      }
     };
   }
 
@@ -1856,7 +1915,7 @@ export class OptimizedStorage implements IStorage {
       return {
         currentStreak: 0,
         longestStreak: 0,
-        lastActivity: null,
+        lastActivityDate: new Date(),
         streakHistory: [],
       };
     }

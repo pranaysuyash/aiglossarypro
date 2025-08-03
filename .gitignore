@@ -89,8 +89,11 @@ coverage/
 node_modules/
 jspm_packages/
 
-# TypeScript cache
+# TypeScript cache and generated files
 *.tsbuildinfo
+*.d.ts
+!src/types/*.d.ts
+!@types/**/*.d.ts
 
 # Optional npm cache directory
 .npm
@@ -131,6 +134,7 @@ public
 # Storybook build outputs
 .out
 .storybook-out
+*.stories.d.ts
 
 # Temporary folders
 tmp/
@@ -172,6 +176,7 @@ cache/
 test-results/
 playwright-report/
 coverage/
+*.test.d.ts
 
 # Large data files and processed outputs
 *.json.gz
@@ -380,6 +385,12 @@ target/
 *.dll
 *.so
 *.dylib
+
+# Vite and build configuration cache files
+vite.config.d.ts
+vitest.config.d.ts
+vitest.*.config.d.ts
+*.config.d.ts
 
 # Log files
 *.log

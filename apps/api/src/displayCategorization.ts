@@ -322,8 +322,18 @@ export class ContentOrganizer {
     return sidebarData;
   }
 
-  static organizeForMain(sections: Map<string, any>): unknown[] {
-    const mainSections: unknown[] = [];
+  static organizeForMain(sections: Map<string, any>): Array<{
+    name: string;
+    data: any;
+    config: any;
+    priority: number;
+  }> {
+    const mainSections: Array<{
+      name: string;
+      data: any;
+      config: any;
+      priority: number;
+    }> = [];
 
     DEFAULT_LAYOUT.mainContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
@@ -343,8 +353,18 @@ export class ContentOrganizer {
     return mainSections.sort((a, b) => b.priority - a.priority);
   }
 
-  static organizeForModal(sections: Map<string, any>): unknown[] {
-    const modalSections: unknown[] = [];
+  static organizeForModal(sections: Map<string, any>): Array<{
+    name: string;
+    data: any;
+    config: any;
+    priority: number;
+  }> {
+    const modalSections: Array<{
+      name: string;
+      data: any;
+      config: any;
+      priority: number;
+    }> = [];
 
     DEFAULT_LAYOUT.modalContent.forEach(sectionName => {
       if (sections.has(sectionName)) {

@@ -74,7 +74,16 @@ async function analyzeQuery(query: string): Promise<{
 /**
  * High-performance adaptive search with intelligent strategy selection
  */
-export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<unknown> {
+export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<{
+  results: SearchResult[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  searchTime: number;
+  hasMore: boolean;
+  queryStrategy: string;
+}> {
   const startTime = Date.now();
 
   const {
@@ -241,19 +250,15 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<un
         }
 
         // Transform results
-        const searchResults = results.map((result: any) => ({
+        const searchResults: SearchResult[] = results.map((result: any) => ({
           id: result.id,
           name: result.name,
           definition: result.definition || undefined,
           shortDefinition: result.shortDefinition || undefined,
           characteristics: result.characteristics || undefined,
           references: result.references || undefined,
-          category: result.categoryId
-            ? {
-                id: result.categoryId,
-                name: result.categoryName,
-              }
-            : undefined,
+          categoryId: result.categoryId || undefined,
+          categoryName: result.categoryName || undefined,
           viewCount: result.viewCount || 0,
           relevanceScore: Number(result.relevanceScore) || 0,
           createdAt: result.createdAt || new Date(),

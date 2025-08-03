@@ -1,5 +1,4 @@
 import * as crypto from 'node:crypto';
-import { createReadStream } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { log as logger } from './utils/logger';
@@ -84,16 +83,6 @@ export class CheckpointManager {
     }, this.options.autoSaveInterval);
   }
 
-  private async generateFileHash(filePath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const hash = crypto.createHash('md5');
-      const stream = createReadStream(filePath);
-
-      stream.on('data', (data: Buffer) => hash.update(data));
-      stream.on('end', () => resolve(hash.digest('hex')));
-      stream.on('error', reject);
-    });
-  }
 
   /**
    * Initialize a new processing checkpoint
@@ -308,7 +297,7 @@ export class CheckpointManager {
 
     for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
       const row = rows[rowIdx];
-      const term = row[0] || '';
+      const term = String(row[0] || '');
       if (!term) {continue;}
 
       for (let colIdx = 1; colIdx < headers.length; colIdx++) {
@@ -322,7 +311,7 @@ export class CheckpointManager {
           colIdx,
           excelRow,
           term,
-          section: headers[colIdx],
+          section: String(headers[colIdx]),
         });
       }
     }

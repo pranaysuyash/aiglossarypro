@@ -91,7 +91,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_API_BASE_URL: https://aiglossarypro.com/api
+          VITE_API_BASE_URL: http://aiglossarypro-api-alb-1884179415.us-east-1.elb.amazonaws.com/api
           VITE_FIREBASE_PROJECT_ID: aiglossarypro
           VITE_FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@aiglossarypro.iam.gserviceaccount.com
           VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}

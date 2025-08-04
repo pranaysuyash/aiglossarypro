@@ -20,24 +20,17 @@ COPY . .
 RUN pnpm install --frozen-lockfile && \
     pnpm -r run build
 
-# Debug: Check what we have before deploy
-RUN echo "=== BEFORE DEPLOY ===" && \
-    ls -la /repo/apps/api/dist/ && \
-    echo "Database package:" && \
-    ls -la /repo/packages/database/dist/
-
-# Try pnpm deploy approach first
+# Create a self-contained folder for the API using pnpm deploy
+# The --prod flag skips devDependencies and --legacy flag handles workspaces without inject-workspace-packages
 RUN pnpm deploy --filter=./apps/api --prod /tmp/api
 
 # Debug: Check what pnpm deploy created
-RUN echo "=== AFTER DEPLOY ===" && \
-    find /tmp/api -name "*.js" | head -20 && \
-    echo "=== API structure ===" && \
+RUN echo "=== DEPLOY STRUCTURE ===" && \
     ls -la /tmp/api/ && \
-    echo "=== node_modules structure ===" && \
-    ls -la /tmp/api/node_modules/ || echo "No node_modules" && \
-    echo "=== Looking for database package ===" && \
-    find /tmp/api -name "*database*" -type d
+    echo "=== node_modules ===" && \
+    ls -la /tmp/api/node_modules/@aiglossarypro/ 2>/dev/null || echo "No @aiglossarypro in node_modules" && \
+    echo "=== dist folder ===" && \
+    ls -la /tmp/api/dist/ 2>/dev/null || echo "No dist folder"
 
 # Production stage
 FROM node:20-alpine
@@ -47,16 +40,8 @@ RUN apk add --no-cache curl bash tini
 
 WORKDIR /app
 
-# Copy the deployed API (contains dist/ and node_modules/)
+# Copy the deployed API (should be self-contained)
 COPY --from=builder /tmp/api .
-
-# Debug: Check what we copied
-RUN echo "=== PRODUCTION STAGE STRUCTURE ===" && \
-    ls -la /app/ && \
-    echo "=== node_modules ===" && \
-    ls -la /app/node_modules/@aiglossarypro/ || echo "No @aiglossarypro packages" && \
-    echo "=== Looking for database dist ===" && \
-    find /app -name "*database*" -type d
 
 # Set environment
 ENV NODE_ENV=production
@@ -73,12 +58,12 @@ USER nodejs
 # Expose port
 EXPOSE 8080
 
-# Health check with better timeout
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
   CMD curl -f http://localhost:8080/health || exit 1
 
 # Use tini for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Start directly with node - using minimal server for production
+# Start the application
 CMD ["node", "dist/index-minimal.js"]

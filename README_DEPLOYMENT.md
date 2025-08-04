@@ -30,6 +30,8 @@
 - ✅ API routing fixed (CloudFront → ALB → ECS)
 - ✅ Health checks configured
 - ✅ CI/CD pipeline via GitHub Actions
+- ✅ **Vite TSX production build bug fixed**
+- ✅ **Frontend loading successfully with proper JS files**
 - ⏳ Custom domain setup pending
 - ⏳ SSL certificate pending
 
@@ -72,11 +74,20 @@ aws cloudfront create-invalidation --distribution-id E2U2I62CTZC9QK --paths "/*"
 
 - [Deployment Summary](docs/DEPLOYMENT_SUMMARY.md) - Complete deployment overview
 - [Deployment Steps](docs/DEPLOYMENT_STEPS.md) - Detailed step-by-step guide
+- [TSX Build Fix](docs/TSX_BUILD_FIX.md) - Solution for Vite TSX production build bug
+- [Vite Plugin Guide](docs/VITE_PLUGIN_GUIDE.md) - Custom plugin development guide
 - [Troubleshooting](docs/DEPLOYMENT_STEPS.md#troubleshooting-guide) - Common issues and fixes
 
 ## Recent Updates
 
-### 2025-08-04
+### 2025-08-04 (Latest)
+- **🎉 CRITICAL FIX**: Resolved Vite TSX production build bug using custom Rollup plugin
+- Created dual-hook solution (generateBundle + writeBundle) to rename .tsx → .js files
+- Implemented production-specific Vite config with enhanced file handling
+- Added CI/CD validation to prevent future .tsx file outputs
+- **Result**: Frontend now loads successfully with proper JavaScript MIME types
+
+### Earlier 2025-08-04
 - Fixed Million.js production build issues by using minimal Vite config
 - Added `/api/health` endpoint for CloudFront compatibility
 - Updated frontend to use CloudFront URL for API calls

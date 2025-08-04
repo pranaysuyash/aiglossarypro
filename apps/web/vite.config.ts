@@ -16,23 +16,30 @@ export default defineConfig({
     'process.env': 'import.meta.env',
   },
   plugins: [
-    million.vite({
-      auto: {
-        threshold: 0.05,
-        skip: [
-          'ExitIntentPopup',
-          'FloatingPricingWidget',
-          'TrustBadges',
-          'MediaLogos',
-          'LandingHeader',
-          'useCountryPricing',
-          'useExperiment',
-          'ComparisonTable',
-          'Pricing',
-          'Footer',
-        ],
-      },
-    }),
+    // Disable Million.js in production due to .tsx file generation bug
+    // Bug: https://github.com/aidenybai/million/issues
+    // Re-enable once upgraded to v3.5.2+ which fixes this issue
+    ...(process.env.NODE_ENV === 'production'
+      ? []
+      : [
+          million.vite({
+            auto: {
+              threshold: 0.05,
+              skip: [
+                'ExitIntentPopup',
+                'FloatingPricingWidget',
+                'TrustBadges',
+                'MediaLogos',
+                'LandingHeader',
+                'useCountryPricing',
+                'useExperiment',
+                'ComparisonTable',
+                'Pricing',
+                'Footer',
+              ],
+            },
+          }),
+        ]),
     react(),
     lucideTreeShakePlugin(),
     // Enhanced development tools (only in development)
@@ -135,8 +142,6 @@ export default defineConfig({
         );
       },
       output: {
-        // Disable modulepreload to avoid .tsx references
-        modulePreload: false,
         manualChunks: id => {
           // React core libraries (critical path)
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-hook-form')) {

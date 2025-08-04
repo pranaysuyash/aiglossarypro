@@ -1,6 +1,6 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import million from 'million/compiler';
+// import million from 'million/compiler'; // Disabled - causes .tsx file generation in production
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import viteCompression from 'vite-plugin-compression';
@@ -8,7 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { devToolsPlugin } from './vite-dev-tools-plugin';
 import { lucideTreeShakePlugin } from './vite-lucide-plugin';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // Explicitly set base path
   base: '/',
   define: {
@@ -16,34 +16,13 @@ export default defineConfig({
     'process.env': 'import.meta.env',
   },
   plugins: [
-    // Disable Million.js in production due to .tsx file generation bug
+    // Million.js disabled due to .tsx file generation bug in v3.1.11
     // Bug: https://github.com/aidenybai/million/issues
     // Re-enable once upgraded to v3.5.2+ which fixes this issue
-    ...(process.env.NODE_ENV === 'production'
-      ? []
-      : [
-          million.vite({
-            auto: {
-              threshold: 0.05,
-              skip: [
-                'ExitIntentPopup',
-                'FloatingPricingWidget',
-                'TrustBadges',
-                'MediaLogos',
-                'LandingHeader',
-                'useCountryPricing',
-                'useExperiment',
-                'ComparisonTable',
-                'Pricing',
-                'Footer',
-              ],
-            },
-          }),
-        ]),
     react(),
     lucideTreeShakePlugin(),
     // Enhanced development tools (only in development)
-    ...(process.env.NODE_ENV === 'development'
+    ...(mode === 'development'
       ? [
           devToolsPlugin({
             enableErrorOverlay: true,
@@ -67,7 +46,7 @@ export default defineConfig({
       deleteOriginFile: false,
     }),
     // Bundle analyzer (only in analyze mode)
-    ...(process.env.NODE_ENV === 'analyze'
+    ...(mode === 'analyze'
       ? [
           visualizer({
             filename: 'dist/bundle-analysis.html',
@@ -130,7 +109,7 @@ export default defineConfig({
     reportCompressedSize: false, // Faster builds
     chunkSizeWarningLimit: 1000,
     // Enhanced source map generation for better debugging
-    sourcemap: process.env.NODE_ENV === 'development' ? true : false,
+    sourcemap: mode === 'development' ? true : false,
     rollupOptions: {
       external: id => {
         // Exclude test and story files from build
@@ -273,8 +252,8 @@ export default defineConfig({
   // Enhanced development configuration
   esbuild: {
     // Better source map support for debugging
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: mode === 'development',
     // Keep function names for better debugging
-    keepNames: process.env.NODE_ENV === 'development',
+    keepNames: mode === 'development',
   },
-});
+}));

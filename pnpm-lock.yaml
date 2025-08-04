@@ -768,9 +768,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.3.2
         version: 4.7.0(vite@5.4.19(@types/node@22.17.0)(lightningcss@1.30.1)(terser@5.43.1))
-      million:
-        specifier: ^3.1.11
-        version: 3.1.11(rollup@2.79.2)
       rollup-plugin-visualizer:
         specifier: ^5.12.0
         version: 5.14.0(rollup@2.79.2)
@@ -21503,18 +21500,6 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
-
-  million@3.1.11(rollup@2.79.2):
-    dependencies:
-      '@babel/core': 7.28.0
-      '@babel/types': 7.28.2
-      '@rollup/pluginutils': 5.2.0(rollup@2.79.2)
-      kleur: 4.1.5
-      undici: 6.21.3
-      unplugin: 1.16.1
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
 
   million@3.1.11(rollup@4.46.2):
     dependencies:

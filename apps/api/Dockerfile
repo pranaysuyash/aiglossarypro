@@ -11,64 +11,31 @@ ARG TARGETARCH
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Set working directory
-WORKDIR /app
+WORKDIR /repo
 
-# Copy workspace files
-COPY package.json pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
+# Copy everything (monorepo)
+COPY . .
 
-# Copy workspace packages
-COPY packages ./packages
-COPY apps/api ./apps/api
+# Install dependencies and build all packages
+RUN pnpm install --frozen-lockfile && \
+    pnpm -r run build
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-# Build workspace packages in correct order with relaxed type checking
-RUN SKIP_TYPE_CHECK=true pnpm --filter @aiglossarypro/shared run build:fast || \
-    pnpm --filter @aiglossarypro/shared run build || true && \
-    SKIP_TYPE_CHECK=true pnpm --filter @aiglossarypro/database run build:fast || \
-    pnpm --filter @aiglossarypro/database run build || true && \
-    SKIP_TYPE_CHECK=true pnpm --filter @aiglossarypro/auth run build:fast || \
-    pnpm --filter @aiglossarypro/auth run build || true && \
-    SKIP_TYPE_CHECK=true pnpm --filter @aiglossarypro/config run build:fast || \
-    pnpm --filter @aiglossarypro/config run build || true
-
-# Build API with the working build system
-WORKDIR /app/apps/api
-RUN NODE_ENV=production pnpm run build:fast
+# Create a self-contained folder for the API using pnpm deploy
+RUN pnpm deploy --filter=./apps/api --prod /tmp/api
 
 # Production stage
 FROM node:20-alpine
 
-# Install pnpm and debugging tools
-RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    apk add --no-cache curl bash tini
+# Install debugging tools
+RUN apk add --no-cache curl bash tini
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
+# Copy the deployed API (contains dist/ and node_modules/)
+COPY --from=builder /tmp/api .
 
-# Copy ALL packages (including built dist folders)
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/api ./apps/api
-
-# Install production dependencies
-RUN pnpm install --prod --frozen-lockfile
-
-# Debug: Verify database package exists and has dist folder
-RUN echo "Checking database package:" && \
-    ls -la /app/packages/database/ && \
-    echo "\nChecking database dist:" && \
-    ls -la /app/packages/database/dist/ && \
-    echo "\nChecking node_modules symlink:" && \
-    ls -la /app/apps/api/node_modules/@aiglossarypro/ || true
-
-WORKDIR /app/apps/api
-
-# Skip the startup script for now - just use direct command
+# Set environment
+ENV NODE_ENV=production
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

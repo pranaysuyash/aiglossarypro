@@ -9,6 +9,8 @@ import { devToolsPlugin } from './vite-dev-tools-plugin';
 import { lucideTreeShakePlugin } from './vite-lucide-plugin';
 
 export default defineConfig({
+  // Explicitly set base path
+  base: '/',
   define: {
     global: 'globalThis',
     'process.env': 'import.meta.env',
@@ -133,6 +135,8 @@ export default defineConfig({
         );
       },
       output: {
+        // Disable modulepreload to avoid .tsx references
+        modulePreload: false,
         manualChunks: id => {
           // React core libraries (critical path)
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-hook-form')) {

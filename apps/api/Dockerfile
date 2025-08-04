@@ -20,28 +20,36 @@ COPY . .
 RUN pnpm install --frozen-lockfile && \
     pnpm -r run build
 
-# Create a self-contained folder for the API using pnpm deploy
-# The --prod flag skips devDependencies and --legacy flag handles workspaces without inject-workspace-packages
-RUN pnpm deploy --filter=./apps/api --prod /tmp/api
-
-# Debug: Check what pnpm deploy created
-RUN echo "=== DEPLOY STRUCTURE ===" && \
-    ls -la /tmp/api/ && \
-    echo "=== node_modules ===" && \
-    ls -la /tmp/api/node_modules/@aiglossarypro/ 2>/dev/null || echo "No @aiglossarypro in node_modules" && \
-    echo "=== dist folder ===" && \
-    ls -la /tmp/api/dist/ 2>/dev/null || echo "No dist folder"
-
-# Production stage
+# Production stage - Full workspace approach (most reliable)
 FROM node:20-alpine
 
-# Install debugging tools
-RUN apk add --no-cache curl bash tini
+# Install pnpm and debugging tools
+RUN corepack enable && corepack prepare pnpm@latest --activate && \
+    apk add --no-cache curl bash tini
 
-WORKDIR /app
+WORKDIR /repo
 
-# Copy the deployed API (should be self-contained)
-COPY --from=builder /tmp/api .
+# Copy everything the workspace links rely on (this is the key!)
+COPY --from=builder /repo/pnpm-workspace.yaml .
+COPY --from=builder /repo/pnpm-lock.yaml .
+COPY --from=builder /repo/package.json .
+COPY --from=builder /repo/.npmrc .
+COPY --from=builder /repo/packages ./packages
+COPY --from=builder /repo/apps/api ./apps/api
+
+# Install only production dependencies with workspace links intact
+RUN pnpm install --prod --frozen-lockfile
+
+# Debug: Verify the workspace structure works
+RUN echo "=== PACKAGES STRUCTURE ===" && \
+    ls -la /repo/packages/database/dist/ && \
+    echo "=== API node_modules workspace links ===" && \
+    ls -la /repo/apps/api/node_modules/@aiglossarypro/ && \
+    echo "=== Database package link verification ===" && \
+    ls -la /repo/apps/api/node_modules/@aiglossarypro/database/dist/
+
+# Set working directory to API
+WORKDIR /repo/apps/api
 
 # Set environment
 ENV NODE_ENV=production
@@ -50,8 +58,8 @@ ENV NODE_ENV=production
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Change ownership
-RUN chown -R nodejs:nodejs /app
+# Change ownership of the entire repo
+RUN chown -R nodejs:nodejs /repo
 
 USER nodejs
 
@@ -65,5 +73,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
 # Use tini for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Start the application
+# Start the application from the API directory
 CMD ["node", "dist/index-minimal.js"]

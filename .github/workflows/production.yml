@@ -93,7 +93,20 @@ jobs:
           VITE_FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@aiglossarypro.iam.gserviceaccount.com
           VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: aiglossarypro.firebaseapp.com
-          VITE_POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          VITE_FIREBASE_STORAGE_BUCKET: aiglossarypro.firebasestorage.app
+          VITE_FIREBASE_MESSAGING_SENDER_ID: 449850174939
+          VITE_FIREBASE_APP_ID: 1:449850174939:web:08d7973752807207d24bfe
+          VITE_POSTHOG_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          VITE_GA4_MEASUREMENT_ID: G-PGJ3NP5TR7
+          VITE_GA4_ENABLED: true
+          VITE_GUMROAD_PRODUCT_URL: https://pranaysuyash.gumroad.com/l/ggczfy
+          VITE_GUMROAD_DISCOUNT_URL: https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500
+          VITE_GUMROAD_BASE_PRICE: 249
+          VITE_GUMROAD_EARLY_BIRD_PRICE: 179
+          VITE_PPP_MIN_PRICE: 99
+          VITE_PPP_MAX_DISCOUNT: 60
+          VITE_PPP_ENABLED: true
+          VITE_EARLY_BIRD_SAVINGS: 70
         run: |
           pnpm --filter @aiglossarypro/web run build
 

@@ -20,8 +20,24 @@ COPY . .
 RUN pnpm install --frozen-lockfile && \
     pnpm -r run build
 
-# Create a self-contained folder for the API using pnpm deploy
+# Debug: Check what we have before deploy
+RUN echo "=== BEFORE DEPLOY ===" && \
+    ls -la /repo/apps/api/dist/ && \
+    echo "Database package:" && \
+    ls -la /repo/packages/database/dist/
+
+# Try pnpm deploy approach first
 RUN pnpm deploy --filter=./apps/api --prod /tmp/api
+
+# Debug: Check what pnpm deploy created
+RUN echo "=== AFTER DEPLOY ===" && \
+    find /tmp/api -name "*.js" | head -20 && \
+    echo "=== API structure ===" && \
+    ls -la /tmp/api/ && \
+    echo "=== node_modules structure ===" && \
+    ls -la /tmp/api/node_modules/ || echo "No node_modules" && \
+    echo "=== Looking for database package ===" && \
+    find /tmp/api -name "*database*" -type d
 
 # Production stage
 FROM node:20-alpine
@@ -33,6 +49,14 @@ WORKDIR /app
 
 # Copy the deployed API (contains dist/ and node_modules/)
 COPY --from=builder /tmp/api .
+
+# Debug: Check what we copied
+RUN echo "=== PRODUCTION STAGE STRUCTURE ===" && \
+    ls -la /app/ && \
+    echo "=== node_modules ===" && \
+    ls -la /app/node_modules/@aiglossarypro/ || echo "No @aiglossarypro packages" && \
+    echo "=== Looking for database dist ===" && \
+    find /app -name "*database*" -type d
 
 # Set environment
 ENV NODE_ENV=production

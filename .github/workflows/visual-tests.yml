@@ -1,13 +1,16 @@
 name: Visual Tests
 
+# Temporarily disabled to save costs
+# on:
+#   push:
+#     branches: [main, develop]
+#   pull_request:
+#     branches: [main, develop]
+#   schedule:
+#     # Run daily at 2 AM UTC
+#     - cron: '0 2 * * *'
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-  schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 env:
   # Visual audit settings

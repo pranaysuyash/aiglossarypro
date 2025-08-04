@@ -1,10 +1,13 @@
 name: Visual Testing Pipeline
 
+# Temporarily disabled to save costs
+# on:
+#   push:
+#     branches: [ main, develop ]
+#   pull_request:
+#     branches: [ main ]
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   visual-tests:

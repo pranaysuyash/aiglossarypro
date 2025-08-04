@@ -51,12 +51,20 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml ./
 
-# Copy built packages and API
+# Copy ALL packages (including built dist folders)
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps/api ./apps/api
 
-# Install production dependencies only
+# Install production dependencies
 RUN pnpm install --prod --frozen-lockfile
+
+# Debug: Verify database package exists and has dist folder
+RUN echo "Checking database package:" && \
+    ls -la /app/packages/database/ && \
+    echo "\nChecking database dist:" && \
+    ls -la /app/packages/database/dist/ && \
+    echo "\nChecking node_modules symlink:" && \
+    ls -la /app/apps/api/node_modules/@aiglossarypro/ || true
 
 WORKDIR /app/apps/api
 

@@ -1,17 +1,9 @@
 import path from 'node:path';
-import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/',
-  plugins: [
-    react({
-      // Use classic JSX runtime to avoid any experimental features
-      jsxRuntime: 'classic',
-      // Disable Fast Refresh for production builds
-      fastRefresh: false,
-    }),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -24,7 +16,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(__dirname, '../../dist/public'),
+    outDir: '../../dist/public',
     emptyOutDir: true,
     rollupOptions: {
       external: id => {

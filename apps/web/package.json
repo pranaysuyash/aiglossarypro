@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:prod": "vite build --config vite.config.minimal.ts",
+    "build:prod": "vite build --config vite.config.final.ts",
     "preview": "vite preview",
     "test": "vitest",
     "lint": "eslint src/**/*.{ts,tsx}"

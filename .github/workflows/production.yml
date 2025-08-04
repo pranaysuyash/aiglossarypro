@@ -111,7 +111,7 @@ jobs:
           VITE_PPP_ENABLED: true
           VITE_EARLY_BIRD_SAVINGS: 70
         run: |
-          pnpm --filter @aiglossarypro/web run build:prod
+          pnpm --filter @aiglossarypro/web run build:swc
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

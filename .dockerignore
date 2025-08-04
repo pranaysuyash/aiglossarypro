@@ -43,6 +43,13 @@ coverage
 *.spec.ts
 *.spec.tsx
 
+# Storybook files
+*.stories.ts
+*.stories.tsx
+*.stories.js
+*.stories.jsx
+.storybook/
+
 # Scripts and configs
 scripts
 lighthouse*

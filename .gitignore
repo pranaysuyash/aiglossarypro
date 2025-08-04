@@ -131,10 +131,16 @@ dist
 .cache/
 public
 
-# Storybook build outputs
+# Storybook build outputs and files
 .out
 .storybook-out
 *.stories.d.ts
+*.stories.ts
+*.stories.tsx
+*.stories.js
+*.stories.jsx
+.storybook/
+storybook-static/
 
 # Temporary folders
 tmp/

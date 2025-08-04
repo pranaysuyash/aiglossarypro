@@ -111,7 +111,18 @@ jobs:
           VITE_PPP_ENABLED: true
           VITE_EARLY_BIRD_SAVINGS: 70
         run: |
-          pnpm --filter @aiglossarypro/web run build:swc
+          pnpm --filter @aiglossarypro/web run build:prod
+
+      - name: Validate build output (no TSX files)
+        run: |
+          cd dist/public
+          if find . -name "*.tsx" -type f | grep -q .; then
+            echo "❌ .tsx files found in bundle:"
+            find . -name "*.tsx" -type f
+            exit 1
+          else
+            echo "✅ Bundle clean - no .tsx files found"
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

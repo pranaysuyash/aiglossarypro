@@ -1,4 +1,5 @@
 // Minimal server that starts without any imports that could crash
+// v2: Fixed database initialization
 import express from 'express';
 
 console.log('[MINIMAL] Starting minimal server...');

@@ -17,9 +17,13 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     // Million.js disabled due to .tsx file generation bug in v3.1.11
-    // Bug: https://github.com/aidenybai/million/issues
-    // Re-enable once upgraded to v3.5.2+ which fixes this issue
-    react(),
+    // Consider alternatives: Preact, React Compiler, or built-in React optimizations
+    react({
+      // Enable Fast Refresh for better DX
+      fastRefresh: true,
+      // Use automatic JSX runtime for smaller bundles
+      jsxRuntime: 'automatic',
+    }),
     lucideTreeShakePlugin(),
     // Enhanced development tools (only in development)
     ...(mode === 'development'
@@ -102,8 +106,15 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: path.resolve(__dirname, '../../dist/public'),
     emptyOutDir: true,
-    target: 'esnext',
-    minify: 'esbuild',
+    target: 'es2020', // Better browser compatibility than esnext
+    minify: 'terser', // Better minification than esbuild
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console logs in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+      },
+    },
     cssMinify: true,
     cssCodeSplit: true, // Enable CSS code splitting
     reportCompressedSize: false, // Faster builds

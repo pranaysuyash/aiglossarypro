@@ -7,8 +7,18 @@ console.log('[MINIMAL] Starting minimal server...');
 const app = express();
 app.use(express.json());
 
-// Health check endpoint
+// Health check endpoints
 app.get('/health', (_req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
+
+// Add /api/health endpoint for CloudFront compatibility
+app.get('/api/health', (_req, res) => {
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),

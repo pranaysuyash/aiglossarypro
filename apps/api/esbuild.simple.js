@@ -26,6 +26,16 @@ const buildOptions = {
   logLevel: 'info',
 };
 
+// ES module build options for index-minimal.ts
+const esmBuildOptions = {
+  ...buildOptions,
+  format: 'esm',
+  // Keep ES modules for dynamic imports
+  banner: {
+    js: '// ES Module build for dynamic imports\n',
+  },
+};
+
 async function build() {
   const start = Date.now();
   
@@ -62,11 +72,26 @@ async function build() {
     
     console.log(`Found ${allTsFiles.length} TypeScript files to transpile`);
     
-    // Build with all files
-    await esbuild.build({
-      ...buildOptions,
-      entryPoints: allTsFiles,
-    });
+    // Separate index-minimal.ts from other files
+    const minimalIndex = allTsFiles.find(f => f.endsWith('index-minimal.ts'));
+    const otherFiles = allTsFiles.filter(f => !f.endsWith('index-minimal.ts'));
+    
+    // Build regular files with CommonJS
+    if (otherFiles.length > 0) {
+      await esbuild.build({
+        ...buildOptions,
+        entryPoints: otherFiles,
+      });
+    }
+    
+    // Build index-minimal.ts with ES modules
+    if (minimalIndex) {
+      console.log('Building index-minimal.ts with ES modules...');
+      await esbuild.build({
+        ...esmBuildOptions,
+        entryPoints: [minimalIndex],
+      });
+    }
     
     const duration = Date.now() - start;
     console.log(`✅ Build completed in ${duration}ms`);

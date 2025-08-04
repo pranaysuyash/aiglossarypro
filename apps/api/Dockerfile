@@ -81,5 +81,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
 # Use tini for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Start directly with node
-CMD ["node", "dist/index.js"]
+# Start directly with node - using minimal server for production
+CMD ["node", "dist/index-minimal.js"]

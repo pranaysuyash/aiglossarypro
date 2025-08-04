@@ -52,11 +52,41 @@ const customRename = () => ({
     };
     
     const tsxFiles = findTsxFiles(outDir);
+    const renamedFiles = [];
     
+    // Rename .tsx files to .js
     for (const tsxFile of tsxFiles) {
       const jsFile = tsxFile.replace(/\.tsx$/, '.js');
       console.log(`🔄 Renaming on disk: ${tsxFile} → ${jsFile}`);
       fs.renameSync(tsxFile, jsFile);
+      
+      // Track the rename for HTML update
+      const relativeTsxPath = path.relative(outDir, tsxFile).replace(/\\/g, '/');
+      const relativeJsPath = path.relative(outDir, jsFile).replace(/\\/g, '/');
+      renamedFiles.push({ tsx: relativeTsxPath, js: relativeJsPath });
+    }
+    
+    // Update HTML file references
+    const htmlFile = path.join(outDir, 'index.html');
+    if (fs.existsSync(htmlFile) && renamedFiles.length > 0) {
+      let htmlContent = fs.readFileSync(htmlFile, 'utf8');
+      let htmlUpdated = false;
+      
+      for (const { tsx, js } of renamedFiles) {
+        const tsxPath = `/${tsx}`;
+        const jsPath = `/${js}`;
+        
+        if (htmlContent.includes(tsxPath)) {
+          htmlContent = htmlContent.replace(new RegExp(tsxPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), jsPath);
+          console.log(`🔄 Updating HTML: ${tsxPath} → ${jsPath}`);
+          htmlUpdated = true;
+        }
+      }
+      
+      if (htmlUpdated) {
+        fs.writeFileSync(htmlFile, htmlContent, 'utf8');
+        console.log(`✅ Updated HTML file references`);
+      }
     }
     
     console.log(`✅ Renamed ${tsxFiles.length} .tsx files to .js on disk`);

@@ -41,7 +41,7 @@ const server = app.listen(port, host, async () => {
       // Dynamic imports to avoid early initialization
       const { pool } = await import('@aiglossarypro/database');
       const { validateEnvironment, printValidationResult } = await import('@aiglossarypro/config');
-      const { log } = await import('./utils/logger.js');
+      const { log } = await import('./utils/logger');
       
       // Validate environment
       const envValidation = validateEnvironment();
@@ -58,7 +58,7 @@ const server = app.listen(port, host, async () => {
       }
       
       // Register routes
-      const { registerRoutes } = await import('./routes/index.js');
+      const { registerRoutes } = await import('./routes/index');
       await registerRoutes(app);
       
       log.info('✅ All services initialized');

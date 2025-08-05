@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
 import type { ApiResponse } from '@aiglossarypro/shared';
+import type { AuthenticatedRequest } from '../types/express';
 import { requireAdmin } from '../middleware/adminAuth';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { validateQuery } from '../middleware/security';
@@ -17,11 +18,6 @@ import { validate } from '../middleware/validationMiddleware';
 import { contentSchemas, paramSchemas } from '../schemas/apiValidation';
 
 // Types
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-  };
-}
 
 interface AccessibilityScore {
   score: number;

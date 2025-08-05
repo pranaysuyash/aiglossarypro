@@ -1,22 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import type { ApiResponse, ITerm, PaginatedResponse } from '@aiglossarypro/shared';
+import type { AuthenticatedRequest } from '../types/express';
 import { DEFAULT_LIMITS, SORT_ORDERS } from '../constants';
-
-// Types
-interface AuthenticatedRequest extends Request {
-  user?: {
-    claims?: {
-      sub: string;
-    };
-    id?: string;
-  };
-  previewMode?: boolean;
-  limitInfo?: {
-    currentViews: number;
-    maxViews: number;
-    resetsAt: Date;
-  };
-}
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { initializeRateLimiting, rateLimitMiddleware } from '../middleware/rateLimiting';
 import { termIdSchema } from '../middleware/security';

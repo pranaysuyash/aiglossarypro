@@ -4,7 +4,7 @@
  */
 
 import type { NextFunction, Request, Response } from 'express';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared';
+import type { AuthenticatedRequest } from '../types/express';
 import { setCustomUserClaims, verifyFirebaseToken } from '@aiglossarypro/config';
 import { optimizedStorage as storage } from '../optimizedStorage';
 

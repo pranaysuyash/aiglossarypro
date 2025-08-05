@@ -5,6 +5,7 @@
 
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../types/express';
 import {
   type InsertLearningPath,
   type InsertLearningPathStep,
@@ -31,13 +32,6 @@ import {
 import logger from '../utils/logger';
 
 // Types
-interface AuthenticatedRequest {
-  user?: {
-    id: string;
-    isAdmin?: boolean;
-    lifetimeAccess?: boolean;
-  };
-}
 
 interface LearningPathStep {
   term_id: string;

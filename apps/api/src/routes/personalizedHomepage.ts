@@ -5,6 +5,7 @@
 
 import { and, desc, eq, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../types/express';
 import { learningPaths, terms, userInteractions, userLearningProgress } from '@aiglossarypro/shared/schema';
 import { db } from '@aiglossarypro/database';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
@@ -18,12 +19,6 @@ import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/erro
 import { log } from '../utils/logger';
 
 // Types for request objects
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string;
-  };
-}
 
 interface RecentActivityItem {
   termId: string | null;

@@ -5,7 +5,7 @@ import { db } from '@aiglossarypro/database';
 import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { validate } from '../middleware/validationMiddleware';
 import ProgressTrackingService from '../services/progressTrackingService';
-import type { AuthenticatedRequest } from '@aiglossarypro/shared';
+import type { AuthenticatedRequest } from '../types/express';
 import { log as logger } from '../utils/logger';
 import { z } from 'zod';
 

@@ -4221,8 +4221,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getRecentTerms(limit: number): Promise<Term[]> {
     try {
-      if (typeof this.baseStorage.getRecentTerms === 'function') {
-        return await this.baseStorage.getRecentTerms(limit);
+      if ('getRecentTerms' in this.baseStorage && typeof (this.baseStorage as any).getRecentTerms === 'function') {
+        return await (this.baseStorage as any).getRecentTerms(limit);
       }
       // Fallback implementation
       return [];
@@ -4234,8 +4234,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getRecentFeedback(limit: number): Promise<FeedbackItem[]> {
     try {
-      if (typeof this.baseStorage.getRecentFeedback === 'function') {
-        return await this.baseStorage.getRecentFeedback(limit);
+      if ('getRecentFeedback' in this.baseStorage && typeof (this.baseStorage as any).getRecentFeedback === 'function') {
+        return await (this.baseStorage as any).getRecentFeedback(limit);
       }
       // Fallback implementation
       return [];
@@ -4247,8 +4247,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async deleteTerm(id: string): Promise<void> {
     try {
-      if (typeof this.baseStorage.deleteTerm === 'function') {
-        await this.baseStorage.deleteTerm(id);
+      if ('deleteTerm' in this.baseStorage && typeof (this.baseStorage as any).deleteTerm === 'function') {
+        await (this.baseStorage as any).deleteTerm(id);
       } else {
         logger.warn('[EnhancedStorage] deleteTerm not implemented in base storage');
       }
@@ -4260,11 +4260,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkDeleteTerms(ids: string[]): Promise<BulkDeleteResult> {
     try {
-      if (typeof this.baseStorage.bulkDeleteTerms === 'function') {
-        return await this.baseStorage.bulkDeleteTerms(ids);
+      if ('bulkDeleteTerms' in this.baseStorage && typeof (this.baseStorage as any).bulkDeleteTerms === 'function') {
+        return await (this.baseStorage as any).bulkDeleteTerms(ids);
       }
       // Fallback implementation
-      return { success: false, message: 'Bulk delete not implemented' };
+      return { success: false, deleted: 0, failed: ids.length, errors: ['Bulk delete not implemented'] };
     } catch (error) {
       logger.error('[EnhancedStorage] bulkDeleteTerms error:', error);
       throw error;
@@ -4273,11 +4273,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkUpdateTermCategory(ids: string[], categoryId: string): Promise<BulkUpdateResult> {
     try {
-      if (typeof this.baseStorage.bulkUpdateTermCategory === 'function') {
-        return await this.baseStorage.bulkUpdateTermCategory(ids, categoryId);
+      if ('bulkUpdateTermCategory' in this.baseStorage && typeof (this.baseStorage as any).bulkUpdateTermCategory === 'function') {
+        return await (this.baseStorage as any).bulkUpdateTermCategory(ids, categoryId);
       }
       // Fallback implementation
-      return { success: false, message: 'Bulk update category not implemented' };
+      return { success: false, updated: 0, failed: ids.length, message: 'Bulk update category not implemented' };
     } catch (error) {
       logger.error('[EnhancedStorage] bulkUpdateTermCategory error:', error);
       throw error;
@@ -4286,11 +4286,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkUpdateTermStatus(ids: string[], status: string): Promise<BulkUpdateResult> {
     try {
-      if (typeof this.baseStorage.bulkUpdateTermStatus === 'function') {
-        return await this.baseStorage.bulkUpdateTermStatus(ids, status);
+      if ('bulkUpdateTermStatus' in this.baseStorage && typeof (this.baseStorage as any).bulkUpdateTermStatus === 'function') {
+        return await (this.baseStorage as any).bulkUpdateTermStatus(ids, status);
       }
       // Fallback implementation
-      return { success: false, message: 'Bulk update status not implemented' };
+      return { success: false, updated: 0, failed: ids.length, message: 'Bulk update status not implemented' };
     } catch (error) {
       logger.error('[EnhancedStorage] bulkUpdateTermStatus error:', error);
       throw error;
@@ -4312,7 +4312,11 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async getUserSettings(userId: string): Promise<UserSettings> {
-    return this.baseStorage.getUserSettings(userId);
+    const result = await this.baseStorage.getUserSettings(userId);
+    if (!result) {
+      throw new Error(`User settings not found for user ${userId}`);
+    }
+    return result;
   }
 
   async updateUserSettings(userId: string, settings: Partial<UserSettings>): Promise<void> {
@@ -4338,7 +4342,8 @@ export class EnhancedStorage implements IEnhancedStorage {
   // ===== MISSING ADMIN METHODS =====
 
   async getUserById(userId: string): Promise<User | null> {
-    return this.baseStorage.getUser(userId);
+    const result = await this.baseStorage.getUser(userId);
+    return result || null;
   }
 
   async deleteUser(userId: string): Promise<void> {

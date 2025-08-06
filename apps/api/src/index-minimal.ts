@@ -27,6 +27,23 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// Add basic API endpoints for immediate functionality
+app.get('/api/terms', (_req, res) => {
+  res.status(200).json({
+    message: 'Terms endpoint working',
+    status: 'success',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/categories', (_req, res) => {
+  res.status(200).json({
+    message: 'Categories endpoint working', 
+    status: 'success',
+    timestamp: new Date().toISOString()
+  });
+});
+
 const port = parseInt(process.env.PORT || '8080', 10);
 const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
 

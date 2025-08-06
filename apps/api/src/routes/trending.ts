@@ -7,7 +7,7 @@ import { and, avg, count, desc, eq, gte, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express'
 import type { Request, Response } from 'express';
 import { categories, terms, termViews } from '@aiglossarypro/shared/schema';
-import { CacheKeys, redisCache } from '@aiglossarypro/config/config/redis';
+import { CacheKeys, redisCache } from '@aiglossarypro/config';
 import { db } from '@aiglossarypro/database';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';

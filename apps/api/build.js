@@ -42,7 +42,15 @@ try {
   process.exit(1);
 }
 
-// Step 4: Copy non-JS files if needed (e.g., JSON files, etc.)
+// Step 4: Fix ES module imports in index-minimal.js
+console.log('🔧 Fixing ES module imports...');
+try {
+  execSync('node fix-esm-imports.js', { stdio: 'inherit' });
+} catch (error) {
+  console.error('⚠️  Failed to fix ES module imports');
+}
+
+// Step 5: Copy non-JS files if needed (e.g., JSON files, etc.)
 console.log('📁 Copying additional files...');
 const filesToCopy = [
   // Add any non-JS files that need to be copied to dist

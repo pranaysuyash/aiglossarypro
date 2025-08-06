@@ -178,3 +178,45 @@ ps aux | grep "docker build" | grep -v grep
 ```
 
 This approach ensures builds complete successfully without CLI timeout interruptions.
+
+## Critical Platform Build Issue - Aug 5, 2025
+
+### The Problem
+After fixing all code issues, deployment still failed with:
+```
+CannotPullContainerError: pull image manifest has been retried 7 time(s): 
+image Manifest does not contain descriptor matching platform 'linux/amd64'
+```
+
+### Root Cause
+- Built Docker image for ARM64 (Apple Silicon default) instead of AMD64
+- AWS ECS Fargate requires AMD64 architecture
+- Forgot to specify `--platform linux/amd64` during build
+
+### The Fix
+Always specify platform when building for deployment:
+```bash
+# CORRECT - Build for AMD64 (ECS requirement)
+docker buildx build --platform linux/amd64 --load \
+  -f apps/api/Dockerfile \
+  -t aiglossarypro-api:amd64 .
+```
+
+### Prevention
+Add platform checks to all deployment scripts:
+```bash
+if [[ $(uname -m) == "arm64" ]]; then
+  echo "⚠️  Building for AMD64 platform (required for ECS)"
+  DOCKER_PLATFORM="--platform linux/amd64"
+fi
+```
+
+### Time Wasted
+- ~1 hour debugging deployment failures
+- Multiple failed ECS task starts
+- Unnecessary Docker cache cleanup
+- Complete rebuild from scratch
+
+### Current Status
+- ✅ AMD64 image built successfully
+- ✅ Ready for deployment to ECS

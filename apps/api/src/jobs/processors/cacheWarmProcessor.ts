@@ -4,7 +4,7 @@
  */
 
 import type { Job } from 'bullmq';
-import { redisCache } from '@aiglossarypro/config/config/redis';
+import { redisCache } from '@aiglossarypro/config';
 import { enhancedStorage } from '../../enhancedStorage';
 import { optimizedSearch } from '../../optimizedSearchService';
 import { log as logger } from '../../utils/logger';

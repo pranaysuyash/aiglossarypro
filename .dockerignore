@@ -80,6 +80,9 @@ frontend-audit*/
 artifacts/
 visual-audit*/
 storybook-static/
+playwright-report/
+Trace-*.json
+docker-build-*.log
 
 # Large JSON trace files (keep package.json, tsconfig.json, etc)
 Trace-*.json

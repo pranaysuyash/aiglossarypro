@@ -74,4 +74,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Start the application from the API directory
-CMD ["node", "dist/index-minimal.js"]
+CMD ["node", "dist/index.js"]

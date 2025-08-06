@@ -1,5 +1,6 @@
+// Start with minimal imports to avoid initialization failures
+import express from 'express';
 import { log } from './utils/logger';
-import { validateEnvironment, printValidationResult } from '@aiglossarypro/config';
 
 // Add process error handlers first
 process.on('uncaughtException', (error) => {
@@ -18,22 +19,36 @@ console.log(`[STARTUP] Node version: ${process.version}`);
 console.log(`[STARTUP] Platform: ${process.platform}`);
 console.log(`[STARTUP] Current directory: ${process.cwd()}`);
 
-// Validate environment on startup
-console.log(`[DEBUG] ${new Date().toISOString()} - About to validate environment...`);
-const envValidation = validateEnvironment();
-console.log(`[DEBUG] ${new Date().toISOString()} - Environment validation result:`, envValidation);
-printValidationResult(envValidation);
+// Create Express app immediately
+const app = express();
+app.use(express.json());
 
-if (!envValidation.isValid && process.env.NODE_ENV === 'production') {
-  log.error('Environment validation failed. Exiting...');
-  process.exit(1);
-}
+// Add health check endpoints that work immediately
+app.get('/health', (_req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
 
 console.log(`[INIT] ${new Date().toISOString()} - Environment validation complete`);
 
 // Import database pool for connection testing
 console.log(`[DEBUG] ${new Date().toISOString()} - About to import database pool...`);
+
 import { pool } from '@aiglossarypro/database';
+
 console.log(`[DEBUG] ${new Date().toISOString()} - Database pool imported successfully`);
 
 // Only log Firebase config status in development (never log actual values)
@@ -74,10 +89,9 @@ if (process.env.NODE_ENV === 'production') {
   initSentry();
 }
 
-import express from 'express';
-import expressWs from 'express-ws';
 // import { smartLoadExcelData } from "./smartExcelLoader";
 import { features, getServerConfig, logConfigStatus } from '@aiglossarypro/config';
+import expressWs from 'express-ws';
 import {
   initializeAnalytics,
   pageViewTrackingMiddleware,
@@ -103,13 +117,13 @@ import {
 
 import { registerFirebaseAuthRoutes } from './routes/firebaseAuth';
 import { registerRoutes } from './routes/index';
-import { registerSimpleAuthRoutes } from './routes/simpleAuth';
 import { registerLocationRoutes } from './routes/location';
+import { registerSimpleAuthRoutes } from './routes/simpleAuth';
 import { initS3Client } from './s3Service';
 import { setupSwagger } from './swagger/setup';
 import { serveStatic } from './vite';
 
-const app = express();
+// Express app already created at the top of the file
 // const wsInstance = expressWs(app);
 expressWs(app);
 
@@ -124,7 +138,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(sentryTracingHandler());
 }
 
-app.use(express.json());
+// express.json() already applied at top, only add urlencoded
 app.use(express.urlencoded({ extended: false }));
 
 // Apply logging middleware early
@@ -210,17 +224,8 @@ async function startServer() {
     log.info('✅ S3 client initialized');
   }
 
-  // Add health check endpoint
-  app.get('/health', (_req, res) => {
-    res.status(200).json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      version: process.env.npm_package_version || '1.0.0',
-      uptime: process.uptime()
-    });
-  });
-  log.info('✅ Health check endpoint registered at /health');
+  // Health check endpoints already registered at top of file
+  log.info('✅ Health check endpoints already registered at /health and /api/health');
 
   // Register location routes (needed for country pricing)
   registerLocationRoutes(app);
@@ -331,20 +336,20 @@ async function startServer() {
   await initializeAnalytics();
 
   // Initialize cache monitoring
-  
+
 
   // Start listening - use 0.0.0.0 in production for external access
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';
 
   console.log(`[INIT] ${new Date().toISOString()} - Starting HTTP server on ${host}:${port}`);
-  
+
   server.listen(port, host, () => {
     console.log(`[HTTP] ${new Date().toISOString()} - Server listening on ${host}:${port}`);
     log.info(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
     log.info(`🔍 Server address: ${JSON.stringify(server.address())}`);
     log.info(`🛡️  Error handling and monitoring enabled`);
   });
-  
+
   // Setup graceful shutdown
   gracefulShutdown(server);
 

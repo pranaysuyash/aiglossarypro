@@ -189,6 +189,59 @@ GET /api/search?q={query}
 
 ---
 
+## 📋 EXECUTABLE TESTING TASKS FOR CURSOR
+
+### **High Priority Testing (Execute First)**:
+
+1. **Test API Health Check**:
+   ```bash
+   curl https://d1m7nnfj3im4kp.cloudfront.net/api/health
+   curl https://d1m7nnfj3im4kp.cloudfront.net/api/terms
+   ```
+
+2. **Run Frontend-API Integration Tests**:
+   ```bash
+   npm test tests/frontend-api-integration.spec.js
+   ```
+
+3. **Test Database Integration**:
+   ```bash
+   node test-database-integration.js
+   ```
+
+4. **Start Database-Enabled API (separate terminal)**:
+   ```bash
+   DB_ENABLED=true node simple-api-with-db.js
+   ```
+
+### **Medium Priority Testing**:
+
+5. **Run Visual Regression Tests**:
+   ```bash
+   npx playwright test tests/visual/ --headed
+   ```
+
+6. **Performance Benchmarks**:
+   ```bash
+   chmod +x monitoring/performance-benchmarks.sh
+   ./monitoring/performance-benchmarks.sh
+   ```
+
+7. **Security Audit**:
+   ```bash
+   chmod +x monitoring/security-audit.sh
+   ./monitoring/security-audit.sh
+   ```
+
+8. **Frontend Build Verification**:
+   ```bash
+   cd apps/frontend && npm run build
+   ```
+
+**Note**: These tasks won't interfere with deployment work and provide comprehensive test coverage while production API runs.
+
+---
+
 ## 💡 SUCCESS CRITERIA
 
 **Frontend Integration is Complete When**:

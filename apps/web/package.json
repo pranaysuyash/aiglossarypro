@@ -21,6 +21,7 @@
   "devDependencies": {
     "@playwright/test": "^1.54.2",
     "@rollup/plugin-typescript": "^12.1.4",
+    "@storybook/react": "^9.1.1",
     "@vitejs/plugin-react": "^4.3.2",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "rollup-plugin-rename": "^1.0.1",

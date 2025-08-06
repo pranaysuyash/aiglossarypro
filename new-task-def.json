@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "api",
-      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:full-ts-api-notypecheck",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:full-ts-api-fixed-errors",
       "cpu": 0,
       "portMappings": [
         {

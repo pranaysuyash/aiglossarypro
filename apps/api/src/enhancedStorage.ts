@@ -269,7 +269,10 @@ interface RequestContext {
     isAdmin: boolean;
     first_name?: string;
     last_name?: string;
-    claims?: Record<string, unknown>;
+    claims?: {
+      sub: string;
+      [key: string]: unknown;
+    };
   };
   userId?: string;
   requestId?: string;
@@ -2342,15 +2345,12 @@ export class EnhancedStorage implements IEnhancedStorage {
       mockFeedback.push({
         id: `feedback_${offset + i}`,
         type: category,
-        category,
+        content: `Mock feedback message ${offset + i}`,
         status,
-        message: `Mock feedback message ${offset + i}`,
-        rating: category === 'term' ? Math.floor(Math.random() * 5) + 1 : undefined,
-        termId: category === 'term' ? `term_${Math.floor(Math.random() * 100)}` : undefined,
-        userId: `user_${Math.floor(Math.random() * 10)}`,
-        email: `user${Math.floor(Math.random() * 10)}@example.com`,
         createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(),
+        userId: `user_${Math.floor(Math.random() * 10)}`,
+        termId: category === 'term' ? `term_${Math.floor(Math.random() * 100)}` : undefined,
       });
     }
 
@@ -2517,8 +2517,8 @@ export class EnhancedStorage implements IEnhancedStorage {
           ? [
               {
                 query: 'SELECT * FROM enhanced_terms',
-                averageTime: performanceMetrics.averageResponseTime || 0,
-                callCount: performanceMetrics.totalCachedQueries || 0,
+                averageTime: (performanceMetrics as any)?.averageResponseTime || 0,
+                callCount: (performanceMetrics as any)?.totalCachedQueries || 0,
                 lastExecuted: new Date(),
               },
             ]
@@ -2568,7 +2568,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const analyticsOverview = await this.termsStorage.getAnalyticsOverview();
 
       // Get popular terms from optimized storage if available
-      let popularTerms = [];
+      let popularTerms: any[] = [];
       try {
         if ('getPopularTerms' in this.baseStorage) {
           // Validate and convert timeframe parameter
@@ -2633,24 +2633,12 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Return minimal metrics on error
       return {
         totalSearches: 0,
-        uniqueTermsSearched: 0,
-        averageSearchTime: 0,
-        popularSearchTerms: [],
+        uniqueUsers: 0,
+        averageResultsPerSearch: 0,
+        zeroResultSearches: 0,
+        popularQueries: [],
+        searchVelocity: [],
         searchCategories: {},
-        searchPatterns: {
-          singleTermQueries: 0,
-          multiTermQueries: 0,
-          advancedQueries: 0,
-          filterUsage: 0,
-        },
-        performanceMetrics: {
-          fastQueries: 0,
-          mediumQueries: 0,
-          slowQueries: 0,
-          timeoutQueries: 0,
-        },
-        timestamp: new Date(),
-        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -2742,7 +2730,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           try {
             // Validate update data
             if (!update.id) {
-              results.errors.push({
+              results.errors!.push({
                 id: update.id || 'unknown',
                 error: 'Missing term ID',
               });
@@ -2754,7 +2742,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             const existingTerm = await this.termsStorage.getEnhancedTermById(update.id);
 
             if (!existingTerm) {
-              results.errors.push({
+              results.errors!.push({
                 id: update.id,
                 error: 'Term not found',
               });
@@ -2774,7 +2762,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             results.updated++;
           } catch (updateError) {
             logger.error(`[EnhancedStorage] Failed to update term ${update.id}:`, updateError);
-            results.errors.push({
+            results.errors!.push({
               id: update.id,
               error: updateError instanceof Error ? updateError.message : 'Unknown error',
             });
@@ -2802,7 +2790,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         updated: results.updated,
         failed: results.failed + (updates.length - results.updated - results.failed),
         errors: [
-          ...results.errors,
+          ...(results.errors || []),
           {
             id: 'bulk_operation',
             error: error instanceof Error ? error.message : 'Bulk operation failed',
@@ -2869,10 +2857,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           // Only include enhanced data if requested
           ...(filters?.includeEnhanced && {
             enhancedData: {
-              applicationDomains: term.applicationDomains || [],
-              techniques: term.techniques || [],
-              keywords: term.keywords || [],
-              searchText: term.searchText || '',
+              applicationDomains: (term as any).applicationDomains || [],
+              techniques: (term as any).techniques || [],
+              keywords: (term as any).keywords || [],
+              searchText: (term as any).searchText || '',
             },
           }),
         })),
@@ -2998,19 +2986,13 @@ export class EnhancedStorage implements IEnhancedStorage {
             return dbSections.map(section => ({
               id: section.id,
               termId: section.termId,
-              sectionName: section.sectionName,
-              sectionData: section.sectionData || {},
-              displayType: section.displayType || 'text',
-              priority: section.priority ?? undefined,
-              isInteractive: section.isInteractive ?? false,
-              createdAt: section.createdAt ?? undefined,
-              updatedAt: section.updatedAt ?? undefined,
-              // Additional fields for compatibility
-              title: section.sectionName,
-              content: section.sectionData?.content || '',
-              order: section.priority ?? undefined,
-              metadata: section.sectionData || {},
-              isCompleted: section.sectionData?.content ? true : false,
+              sectionId: section.id, // Use section id as sectionId
+              title: (section as any).sectionName || section.title || '',
+              content: (section as any).sectionData?.content || section.content || '',
+              order: (section as any).priority ?? section.order ?? 0,
+              metadata: (section as any).sectionData || section.metadata || {},
+              createdAt: section.createdAt ?? new Date(),
+              updatedAt: section.updatedAt ?? new Date(),
             }));
           }
         }
@@ -3033,18 +3015,13 @@ export class EnhancedStorage implements IEnhancedStorage {
       const termSections: TermSection[] = sections.map((section, _index) => ({
         id: section.id.toString(),
         termId: section.termId.toString(),
-        sectionName: section.name,
-        sectionData: {},
-        displayType: 'text',
-        priority: section.displayOrder ?? undefined,
-        isInteractive: false,
-        createdAt: section.createdAt ?? undefined,
-        updatedAt: section.updatedAt ?? undefined,
+        sectionId: section.id.toString(), // Use section id as sectionId
         title: section.name,
         content: '',
-        order: section.displayOrder ?? undefined,
+        order: section.displayOrder ?? 0,
         metadata: {},
-        isCompleted: false,
+        createdAt: section.createdAt ?? new Date(),
+        updatedAt: section.updatedAt ?? new Date(),
       }));
 
       return termSections;
@@ -3065,9 +3042,9 @@ export class EnhancedStorage implements IEnhancedStorage {
       const aiContent: Record<string, unknown> = {};
       
       sections.forEach(section => {
-        if (section.sectionData?.content || section.content) {
-          aiContent[section.sectionName] = {
-            content: section.sectionData?.content || section.content,
+        if ((section as any).sectionData?.content || section.content) {
+          aiContent[(section as any).sectionName || section.title] = {
+            content: (section as any).sectionData?.content || section.content,
             generatedAt: section.updatedAt,
             metadata: section.metadata,
           };

@@ -22,11 +22,11 @@ export const getEnhancedStorage = (): EnhancedStorage => {
       } as any;
     }
   }
-  return _enhancedStorage;
+  return _enhancedStorage!;
 };
 
 export const enhancedStorage = new Proxy({} as EnhancedStorage, {
-  get(target, prop) {
+  get(_target, prop) {
     const storage = getEnhancedStorage();
     return storage[prop as keyof EnhancedStorage];
   }

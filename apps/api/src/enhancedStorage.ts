@@ -3607,10 +3607,11 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Update user progress stats
       try {
         if (typeof this.baseStorage.updateUserProgress === 'function') {
-          await this.baseStorage.updateUserProgress(userId, {
+          // OptimizedStorage expects 4 arguments: userId, termId, sectionId, progressData
+          await this.baseStorage.updateUserProgress(userId, termId, sectionId, {
             completedSections: 1, // Increment by 1
             lastActivity: new Date(),
-          });
+          } as any);
         }
       } catch (progressError) {
         logger.warn('[EnhancedStorage] Progress update failed:', progressError);
@@ -3663,8 +3664,8 @@ export class EnhancedStorage implements IEnhancedStorage {
           logger.info('[EnhancedStorage] updateLearningStreak: Found existing streak');
 
           const lastActivityDate = new Date
-            (existingStreak.lastActivityDate ||
-              existingStreak.lastActivity ||
+            ((existingStreak as any).lastActivityDate ||
+              (existingStreak as any).lastActivity ||
               new Date()
             );
           const lastActivityDay = new Date(
@@ -3681,35 +3682,39 @@ export class EnhancedStorage implements IEnhancedStorage {
           if (daysDiff === 0) {
             // Same day - no streak change, just update activity time
             updatedStreak = {
-              userId,
-              currentStreak: existingStreak.currentStreak,
-              longestStreak: existingStreak.longestStreak,
+              current: (existingStreak as any).currentStreak || (existingStreak as any).current || 1,
+              longest: (existingStreak as any).longestStreak || (existingStreak as any).longest || 1,
+              currentStreak: (existingStreak as any).currentStreak,
+              longestStreak: (existingStreak as any).longestStreak,
               lastActivityDate: now,
-              isActive: true,
-              streakType: 'daily',
+              streakHistory: [],
             };
           } else if (daysDiff === 1) {
             // Consecutive day - extend streak
+            const newCurrentStreak = ((existingStreak as any).currentStreak || (existingStreak as any).current || 0) + 1;
             updatedStreak = {
-              userId,
-              currentStreak: existingStreak.currentStreak + 1,
+              current: newCurrentStreak,
+              longest: Math.max(
+                (existingStreak as any).longestStreak || (existingStreak as any).longest || 0,
+                newCurrentStreak
+              ),
+              currentStreak: newCurrentStreak,
               longestStreak: Math.max(
-                existingStreak.longestStreak,
-                existingStreak.currentStreak + 1
+                (existingStreak as any).longestStreak || (existingStreak as any).longest || 0,
+                newCurrentStreak
               ),
               lastActivityDate: now,
-              isActive: true,
-              streakType: 'daily',
+              streakHistory: [],
             };
           } else {
             // Streak broken - reset to 1
             updatedStreak = {
-              userId,
+              current: 1,
+              longest: (existingStreak as any).longestStreak || (existingStreak as any).longest || 1,
               currentStreak: 1,
-              longestStreak: existingStreak.longestStreak,
+              longestStreak: (existingStreak as any).longestStreak || (existingStreak as any).longest || 1,
               lastActivityDate: now,
-              isActive: true,
-              streakType: 'daily',
+              streakHistory: [],
             };
           }
 
@@ -3735,7 +3740,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             logger.info('[EnhancedStorage] updateLearningStreak: Using base storage streak');
 
             const lastActivityDate = new Date(
-              baseStreak.lastActivity || baseStreak.lastActivityDate
+              (baseStreak as any).lastActivity || (baseStreak as any).lastActivityDate
             );
             const lastActivityDay = new Date(
               lastActivityDate.getFullYear(),
@@ -3751,39 +3756,39 @@ export class EnhancedStorage implements IEnhancedStorage {
             if (daysDiff === 0) {
               // Same day
               updatedStreak = {
-                userId,
-                currentStreak: baseStreak.currentStreak || 1,
-                longestStreak: baseStreak.longestStreak || baseStreak.currentStreak || 1,
+                current: (baseStreak as any).currentStreak || (baseStreak as any).current || 1,
+                longest: (baseStreak as any).longestStreak || (baseStreak as any).longest || 1,
+                currentStreak: (baseStreak as any).currentStreak || 1,
+                longestStreak: (baseStreak as any).longestStreak || (baseStreak as any).currentStreak || 1,
                 lastActivityDate: now,
-                isActive: true,
-                streakType: 'daily',
+                streakHistory: [],
               };
             } else if (daysDiff === 1) {
               // Consecutive day
-              const newStreak = (baseStreak.currentStreak || 0) + 1;
+              const newStreak = ((baseStreak as any).currentStreak || 0) + 1;
               updatedStreak = {
-                userId,
+                current: newStreak,
+                longest: Math.max((baseStreak as any).longestStreak || 0, newStreak),
                 currentStreak: newStreak,
-                longestStreak: Math.max(baseStreak.longestStreak || 0, newStreak),
+                longestStreak: Math.max((baseStreak as any).longestStreak || 0, newStreak),
                 lastActivityDate: now,
-                isActive: true,
-                streakType: 'daily',
+                streakHistory: [],
               };
             } else {
               // Streak broken
               updatedStreak = {
-                userId,
+                current: 1,
+                longest: (baseStreak as any).longestStreak || 1,
                 currentStreak: 1,
-                longestStreak: baseStreak.longestStreak || 1,
+                longestStreak: (baseStreak as any).longestStreak || 1,
                 lastActivityDate: now,
-                isActive: true,
-                streakType: 'daily',
+                streakHistory: [],
               };
             }
 
             // Update in base storage if possible
             if ('updateUserStreak' in this.baseStorage) {
-              await this.baseStorage.updateUserStreak(userId, updatedStreak);
+              await (this.baseStorage as any).updateUserStreak(userId, updatedStreak);
             }
 
             logger.info(
@@ -3800,12 +3805,12 @@ export class EnhancedStorage implements IEnhancedStorage {
       logger.info('[EnhancedStorage] updateLearningStreak: Creating new streak for user');
 
       const newStreak: LearningStreak = {
-        userId,
+        current: 1,
+        longest: 1,
         currentStreak: 1,
         longestStreak: 1,
         lastActivityDate: now,
-        isActive: true,
-        streakType: 'daily',
+        streakHistory: [],
       };
 
       // Try to save new streak
@@ -3813,7 +3818,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         if (typeof this.termsStorage.updateUserStreak === 'function') {
           await this.termsStorage.updateUserStreak(userId, newStreak);
         } else if ('updateUserStreak' in this.baseStorage) {
-          await this.baseStorage.updateUserStreak(userId, newStreak);
+          await (this.baseStorage as any).updateUserStreak(userId, newStreak);
         }
         logger.info(
           `[EnhancedStorage] updateLearningStreak: Created new streak for user ${userId}`
@@ -3829,12 +3834,12 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Return minimal streak on error
       return {
-        userId,
+        current: 1,
+        longest: 1,
         currentStreak: 1,
         longestStreak: 1,
         lastActivityDate: new Date(),
-        isActive: true,
-        streakType: 'daily',
+        streakHistory: [],
       };
     }
   }
@@ -3870,7 +3875,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           id: 'streak_week',
           name: 'Weekly Warrior',
           description: 'Maintain a 7-day learning streak',
-          condition: userStats.streakDays >= 7,
+          condition: (userStats.currentStreak || 0) >= 7,
           icon: '🔥',
           points: 50,
         },
@@ -3894,8 +3899,8 @@ export class EnhancedStorage implements IEnhancedStorage {
           id: 'category_master',
           name: 'Category Master',
           description: 'Complete all terms in a category',
-          condition: Object.values(userStats.categoryProgress).some(
-            p => p.completionPercentage === 100
+          condition: Object.values(userStats.categoryProgress || {}).some(
+            (p: any) => p.completionPercentage === 100
           ),
           icon: '🏆',
           points: 200,

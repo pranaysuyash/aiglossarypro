@@ -1,0 +1,2 @@
+FROM 927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:full-ts-api-fixed-errors
+CMD ["node", "dist/index.js"]

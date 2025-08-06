@@ -14,20 +14,35 @@
   },
   "dependencies": {
     "@aiglossarypro/shared": "workspace:*",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "dompurify": "^3.2.6",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^0.453.0",
+    "mermaid": "^11.9.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.6.3"
+    "react-router-dom": "^7.7.1",
+    "three": "^0.160.1",
+    "web-vitals": "^3.5.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
+    "@react-three/fiber": "^8.18.0",
     "@rollup/plugin-typescript": "^12.1.4",
     "@storybook/react": "^9.1.1",
+    "@types/node": "^20.19.9",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/three": "^0.160.0",
     "@vitejs/plugin-react": "^4.3.2",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "rollup-plugin-rename": "^1.0.1",
     "rollup-plugin-visualizer": "^5.12.0",
     "vite": "^7.0.6",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-pwa": "^0.20.5"
+    "vite-plugin-pwa": "^0.20.5",
+    "vitest": "^3.2.4"
   }
 }

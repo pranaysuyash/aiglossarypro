@@ -57,7 +57,7 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],
   decorators: [
-    Story => {
+    (Story: any) => {
       const queryClient = new QueryClient({
         defaultOptions: {
           queries: { retry: false },

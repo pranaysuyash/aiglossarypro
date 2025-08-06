@@ -1,11 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { type Express, type Request, type Response, Router } from 'express'
-import type { Request, Response } from 'express';
-import { ZodError } from 'zod';
-import { categories, terms } from '@aiglossarypro/shared/schema';
-import type { ApiResponse } from '@aiglossarypro/shared';
-import { BULK_ACTIONS } from '../../constants';
 import { db } from '@aiglossarypro/database';
+import type { ApiResponse } from '@aiglossarypro/shared';
+import { categories, terms } from '@aiglossarypro/shared/schema';
+import { eq, gte, sql } from 'drizzle-orm';
+import type { Request, Response } from 'express';
+import { type Express, Router } from 'express';
+import { ZodError } from 'zod';
+import { BULK_ACTIONS } from '../../constants';
 import { enhancedStorage as storage } from '../../enhancedStorage';
 import { requireAdmin } from '../../middleware/adminAuth';
 import { ErrorCategory, errorLogger } from '../../middleware/errorHandler';
@@ -20,8 +20,8 @@ adminContentRouter.use(requireAdmin);
 adminContentRouter.get('/dashboard', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const now = new Date();
-    const _lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const _lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Get counts using enhanced storage
     const adminStats = await storage.getAdminStats();
@@ -34,9 +34,19 @@ adminContentRouter.get('/dashboard', async (req: Request, res: Response<ApiRespo
     const recentTerms = await storage.getRecentTerms(10);
     const recentFeedback = await storage.getRecentFeedback(10);
 
-    // Growth metrics
-    const weeklyGrowth = { count: adminStats.weeklyGrowth || 0 };
-    const monthlyGrowth = { count: adminStats.monthlyGrowth || 0 };
+    // Calculate actual growth metrics using date ranges
+    const weeklyTermsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(terms)
+      .where(gte(terms.createdAt, lastWeek));
+
+    const monthlyTermsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(terms)
+      .where(gte(terms.createdAt, lastMonth));
+
+    const weeklyGrowth = { count: weeklyTermsResult[0]?.count || 0 };
+    const monthlyGrowth = { count: monthlyTermsResult[0]?.count || 0 };
 
     res.json({
       success: true,
@@ -70,7 +80,7 @@ adminContentRouter.get('/terms', async (req: Request, res: Response<ApiResponse<
     const {
       search,
       categoryId,
-      status,
+      status: _status,
       sortBy = 'updatedAt',
       sortOrder = 'desc',
       page = 1,

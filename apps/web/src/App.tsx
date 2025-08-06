@@ -1,6 +1,3 @@
-import { QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState, useRef } from 'react';
-import { Route, Switch, useLocation } from 'wouter';
 import SkipLinks from '@/components/accessibility/SkipLinks';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import FirebaseLoginPage from '@/components/FirebaseLoginPage';
@@ -8,64 +5,67 @@ import Footer from '@/components/Footer';
 import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
 import { GuestConversionFab } from '@/components/GuestPreviewBanner';
 import Header from '@/components/Header';
-import { ga4Analytics } from '@/lib/ga4Analytics';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { Route, Switch, useLocation } from 'wouter';
 // Lazy load heavy pages to reduce initial bundle size
+import { LandingPageGuard } from '@/components/LandingPageGuard';
 import {
-  LazyAboutPage,
-  LazyAdminPage,
-  LazyAISearchPage,
-  LazyAIToolsPage,
-  LazyAnalyticsPage,
-  LazyCategoriesPage,
-  LazyCodeExamplesPage,
-  LazyDashboardPage,
-  LazyDiscoveryPage,
-  LazyFavoritesPage,
-  LazyLearningPathDetailPage,
-  LazyLearningPathsPage,
-  LazyLifetimePage,
-  LazyPrivacyPolicyPage,
-  LazyProfilePage,
-  LazyProgressPage,
-  LazySettingsPage,
-  LazySubcategoriesPage,
-  LazySubcategoryDetailPage,
-  LazySurpriseMePage,
-  LazyTermsOfServicePage,
-  LazyTermsPage,
-  LazyThreeDVisualizationPage,
-  LazyTrendingPage,
-  LazySupportCenterPage,
+    LazyAboutPage,
+    LazyAdminPage,
+    LazyAISearchPage,
+    LazyAIToolsPage,
+    LazyAnalyticsPage,
+    LazyCategoriesPage,
+    LazyCodeExamplesPage,
+    LazyDashboardPage,
+    LazyDiscoveryPage,
+    LazyFavoritesPage,
+    LazyLearningPathDetailPage,
+    LazyLearningPathsPage,
+    LazyLifetimePage,
+    LazyPrivacyPolicyPage,
+    LazyProfilePage,
+    LazyProgressPage,
+    LazySettingsPage,
+    LazySubcategoriesPage,
+    LazySubcategoryDetailPage,
+    LazySupportCenterPage,
+    LazySurpriseMePage,
+    LazyTermsOfServicePage,
+    LazyTermsPage,
+    LazyThreeDVisualizationPage,
+    LazyTrendingPage,
 } from '@/components/lazy/LazyPages';
 import OfflineStatus from '@/components/OfflineStatus';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
-import { useOnboarding } from '@/hooks/useOnboarding';
+import { PageTransitionLoader } from '@/components/PageTransitionLoader';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import { StickyUrgencyBar, UrgencyBanner } from '@/components/UrgencyIndicators';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { PageTransitionLoader } from '@/components/PageTransitionLoader';
+import { StickyUrgencyBar, UrgencyBanner } from '@/components/UrgencyIndicators';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { ga4Analytics } from '@/lib/ga4Analytics';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/not-found';
 import PurchaseSuccess from '@/pages/PurchaseSuccess';
+import { activateExperiments } from '@/services/activeExperiments';
+import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
 import {
-  checkPerformanceBudget,
-  preloadCriticalAssets,
-  reportWebVitals,
+    checkPerformanceBudget,
+    preloadCriticalAssets,
+    reportWebVitals,
 } from '@/utils/performance';
 import {
-  preloadForAdmin,
-  preloadForAuthenticatedUser,
-  preloadOnIdle,
+    preloadForAdmin,
+    preloadForAuthenticatedUser,
+    preloadOnIdle,
 } from '@/utils/preloadComponents';
 import { queryClient } from './lib/queryClient';
-import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
-import { LandingPageGuard } from '@/components/LandingPageGuard';
 // Analytics initialization moved to main.tsx for better performance
 import { posthogExperiments } from '@/services/posthogExperiments';
-import { activateExperiments } from '@/services/activeExperiments';
 
 // Smart Term Detail component that chooses between enhanced and regular view with guest support
 function SmartTermDetail() {
@@ -122,7 +122,7 @@ function SmartLandingPage() {
       if (isAuthenticated) {
         // Determine the best landing page for authenticated users
         // Premium users go to app, free users might go to dashboard to see their progress
-        const redirectPath = user?.lifetimeAccess ? '/app' : '/dashboard';
+        const redirectPath = (user as any)?.lifetimeAccess ? '/app' : '/dashboard';
 
         // Small delay to ensure smooth transition
         setTimeout(() => {
@@ -171,7 +171,7 @@ function Router() {
     // Initialize PostHog experiments with user context
     const userProperties = {
       is_authenticated: isAuthenticated,
-      user_type: isAuthenticated ? (user?.lifetimeAccess ? 'premium' : 'free') : 'guest',
+      user_type: isAuthenticated ? ((user as any)?.lifetimeAccess ? 'premium' : 'free') : 'guest',
       page_path: location,
       device_type:
         window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop',
@@ -184,7 +184,7 @@ function Router() {
             : 'other',
     };
 
-    posthogExperiments.initialize(user?.uid, userProperties);
+    posthogExperiments.initialize((user as any)?.uid, userProperties);
     
     // Activate A/B testing experiments
     activateExperiments();
@@ -215,7 +215,7 @@ function Router() {
   }, [isAuthenticated, user, location]);
 
   // Debounced analytics tracking
-  const analyticsTimeoutRef = useRef<NodeJS.Timeout>();
+  const analyticsTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   
   // Track page views with GA4
   useEffect(() => {
@@ -246,7 +246,7 @@ function Router() {
       preloadForAuthenticatedUser();
 
       // Check if user is admin via proper authentication and preload admin components
-      if (user?.isAdmin) {
+      if ((user as any)?.isAdmin) {
         preloadForAdmin();
       }
     }

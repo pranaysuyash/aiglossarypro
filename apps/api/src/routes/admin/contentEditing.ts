@@ -203,7 +203,7 @@ router.get('/content/:termId/:sectionName/history', async (req, res) => {
  */
 router.post('/content/bulk-update-status', async (req, res) => {
   try {
-    const { termIds, sectionNames, status } = z
+    const { termIds, sectionNames: _sectionNames, status } = z
       .object({
         termIds: z.array(z.string().uuid()).optional(),
         sectionNames: z.array(z.string()).optional(),

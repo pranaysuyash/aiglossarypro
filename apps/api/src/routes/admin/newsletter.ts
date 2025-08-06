@@ -1,9 +1,8 @@
-import { and, asc, count, desc, eq, inArray, isNotNull, like, or, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
-import { z } from 'zod';
-import { contactSubmissions, newsletterSubscriptions } from '@aiglossarypro/shared/schema';
 import { db } from '@aiglossarypro/database';
+import { contactSubmissions, newsletterSubscriptions } from '@aiglossarypro/shared/schema';
+import { and, asc, count, desc, eq, inArray, isNotNull, like, or, sql } from 'drizzle-orm';
+import type { Express, Request, Response } from 'express';
+import { z } from 'zod';
 import { canPerformAdminAction } from '../../utils/accessControl';
 import { log } from '../../utils/logger';
 
@@ -133,11 +132,22 @@ async function getNewsletterSubscriptions(req: Request, res: Response) {
 
     const total = countResult[0].total;
 
-    // Get subscriptions
+    // Get subscriptions with dynamic sorting
+    const getSortField = (sortField: string) => {
+      switch (sortField) {
+        case 'email': return newsletterSubscriptions.email;
+        case 'status': return newsletterSubscriptions.status;
+        case 'language': return newsletterSubscriptions.language;
+        case 'utmSource': return newsletterSubscriptions.utmSource;
+        case 'createdAt':
+        default: return newsletterSubscriptions.createdAt;
+      }
+    };
+
     const orderBy =
       order === 'desc'
-        ? desc(newsletterSubscriptions.createdAt)
-        : asc(newsletterSubscriptions.createdAt);
+        ? desc(getSortField(sort))
+        : asc(getSortField(sort));
 
     const subscriptions = await db
       .select({
@@ -271,9 +281,21 @@ async function getContactSubmissions(req: Request, res: Response) {
 
     const total = countResult[0].total;
 
-    // Get submissions
+    // Get submissions with dynamic sorting
+    const getContactSortField = (sortField: string) => {
+      switch (sortField) {
+        case 'name': return contactSubmissions.name;
+        case 'email': return contactSubmissions.email;
+        case 'subject': return contactSubmissions.subject;
+        case 'status': return contactSubmissions.status;
+        case 'language': return contactSubmissions.language;
+        case 'createdAt':
+        default: return contactSubmissions.createdAt;
+      }
+    };
+
     const orderBy =
-      order === 'desc' ? desc(contactSubmissions.createdAt) : asc(contactSubmissions.createdAt);
+      order === 'desc' ? desc(getContactSortField(sort)) : asc(getContactSortField(sort));
 
     const submissions = await db
       .select()

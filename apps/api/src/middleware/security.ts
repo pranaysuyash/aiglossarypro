@@ -1,7 +1,7 @@
 import cors from 'cors';
-import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
+import type { NextFunction, Request, Response } from 'express';
+// TODO: Install express-rate-limit package
+// import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { z } from 'zod';
 import { log } from '../utils/logger';
@@ -115,7 +115,7 @@ export const rateLimitConfig = {
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {return callback(null, true);}
+    if (!origin) { return callback(null, true); }
 
     const allowedOrigins = [
       'http://localhost:3000',
@@ -149,13 +149,13 @@ export const corsMiddleware = cors({
 
       if (productionOrigins.includes(origin)) {
         return callback(null, true);
-      } 
-        log.warn('CORS blocked origin in production', {
-          origin,
-          allowedOrigins: productionOrigins,
-        });
-        return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
-      
+      }
+      log.warn('CORS blocked origin in production', {
+        origin,
+        allowedOrigins: productionOrigins,
+      });
+      return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+
     }
 
     // In development, allow localhost and 127.0.0.1 variants
@@ -255,10 +255,10 @@ export const securityHeaders = helmet({
   hsts:
     process.env.NODE_ENV === 'production'
       ? {
-          maxAge: 31536000, // 1 year
-          includeSubDomains: true,
-          preload: true,
-        }
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true,
+      }
       : false,
 
   // Referrer policy
@@ -443,9 +443,9 @@ export const securityMonitoring = (req: Request, _res: Response, next: NextFunct
   };
 
   // Check request body, query, and params for suspicious patterns
-  if (req.body) {checkForSuspiciousActivity(req.body, 'body');}
-  if (req.query) {checkForSuspiciousActivity(req.query, 'query');}
-  if (req.params) {checkForSuspiciousActivity(req.params, 'params');}
+  if (req.body) { checkForSuspiciousActivity(req.body, 'body'); }
+  if (req.query) { checkForSuspiciousActivity(req.query, 'query'); }
+  if (req.params) { checkForSuspiciousActivity(req.params, 'params'); }
 
   next();
 };

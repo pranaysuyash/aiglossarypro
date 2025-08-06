@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getCurrentPhase, getCurrentPhaseConfig, getExitIntentPricing, PRICING_PHASES } from '@/config/pricing';
+import { getCurrentPhase, getExitIntentPricing, PRICING_PHASES } from '@/config/pricing';
 import { pricingPhaseService } from '@/services/pricingPhaseService';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock environment variable
 vi.mock('@/config/pricing', async () => {
@@ -42,7 +42,7 @@ describe('Pricing Phase System', () => {
   describe('Exit Intent Pricing', () => {
     it('should calculate correct exit-intent pricing for early phase', () => {
       const exitPricing = getExitIntentPricing();
-      
+
       // Early phase: $162 with 15% extra discount
       const expectedPrice = Math.round(162 * (1 - 15 / 100));
       expect(exitPricing.price).toBe(expectedPrice);
@@ -52,11 +52,11 @@ describe('Pricing Phase System', () => {
 
     it('should generate proper discount codes', () => {
       const phases: Array<keyof typeof PRICING_PHASES> = ['beta', 'early', 'launch', 'regular'];
-      
+
       phases.forEach(phase => {
         vi.mocked(getCurrentPhase).mockReturnValue(phase);
         const exitPricing = getExitIntentPricing();
-        
+
         if (phase === 'regular') {
           expect(exitPricing.discountCode).toBe('EXIT');
         } else {
@@ -75,11 +75,11 @@ describe('Pricing Phase System', () => {
 
     it('should identify next phase correctly', () => {
       const service = pricingPhaseService;
-      
+
       // Mock current phase as 'beta'
       service['currentPhase'] = 'beta';
       expect(service.getNextPhase()).toBe('early');
-      
+
       // Mock current phase as 'regular'
       service['currentPhase'] = 'regular';
       expect(service.getNextPhase()).toBeNull();
@@ -91,9 +91,9 @@ describe('Pricing Phase System', () => {
       const service = pricingPhaseService;
       service['currentPhase'] = 'early';
       service['salesCount'] = 50;
-      
+
       const progress = service.getPhaseProgress();
-      
+
       expect(progress.phase).toBe('early');
       expect(progress.soldCount).toBe(50);
       expect(progress.totalSlots).toBe(200);
@@ -104,9 +104,9 @@ describe('Pricing Phase System', () => {
       const service = pricingPhaseService;
       service['currentPhase'] = 'regular';
       service['salesCount'] = 1000;
-      
+
       const progress = service.getPhaseProgress();
-      
+
       expect(progress.totalSlots).toBe(Infinity);
       expect(progress.percentage).toBe(0);
     });
@@ -116,11 +116,11 @@ describe('Pricing Phase System', () => {
 describe('Gumroad Integration', () => {
   it('should generate correct Gumroad URLs with discount codes', () => {
     const { getGumroadUrlWithDiscount, PRICING_CONFIG } = require('@/config/pricing');
-    
+
     // Test with phase discount code
     const urlWithDiscount = getGumroadUrlWithDiscount('EARLY35');
     expect(urlWithDiscount).toBe(`${PRICING_CONFIG.GUMROAD_URL}/EARLY35`);
-    
+
     // Test without discount code
     const urlWithoutDiscount = getGumroadUrlWithDiscount();
     expect(urlWithoutDiscount).toBe(PRICING_CONFIG.GUMROAD_URL);

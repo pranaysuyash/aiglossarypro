@@ -120,7 +120,7 @@ export async function aiBatchProcessingProcessor(
         );
 
         const completed = jobStatuses.filter(
-          status => status && (status.state === 'completed' || status.state === 'failed')
+          status => status && ((status as any).state === 'completed' || (status as any).state === 'failed')
         );
 
         if (completed.length === createdJobIds.length) {
@@ -138,12 +138,12 @@ export async function aiBatchProcessingProcessor(
           if (!jobId) {return null;}
 
           const status = await jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId);
-          if (status?.state === 'completed' && status.result) {
+          if ((status as any)?.state === 'completed' && (status as any).result) {
             result.processedTerms++;
-            result.totalTokensUsed += status.result.tokensUsed || 0;
-            result.totalCost += status.result.cost || 0;
-            return status.result;
-          } else if (status?.state === 'failed') {
+            result.totalTokensUsed += (status as any).result.tokensUsed || 0;
+            result.totalCost += (status as any).result.cost || 0;
+            return (status as any).result;
+          } else if ((status as any)?.state === 'failed') {
             result.failedTerms++;
           }
           return null;

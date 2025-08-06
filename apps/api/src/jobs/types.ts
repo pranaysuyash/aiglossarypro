@@ -329,6 +329,7 @@ export interface ColumnBatchMonitoringJobResult {
   alertsTriggered: number;
   systemHealth: 'healthy' | 'warning' | 'critical';
   recommendations: string[];
+  executionTimeMs: number; // Performance tracking feature
 }
 
 export interface ColumnBatchCleanupJobData extends BaseJobData {

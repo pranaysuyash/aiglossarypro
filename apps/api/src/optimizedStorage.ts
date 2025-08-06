@@ -6,26 +6,24 @@
  * with better query patterns and caching.
  */
 
+import { db } from '@aiglossarypro/database';
+import type { ICategory, ITerm, Purchase, UpsertUser, User } from '@aiglossarypro/shared';
 import {
   aiContentFeedback,
   categories,
-  favorites,
+  favorites, purchases,
   subcategories,
   termSections,
   termSubcategories,
-  terms,
   termViews,
+  terms,
   userProgress,
   userSettings,
-  users,
+  users
 } from '@aiglossarypro/shared';
-import { purchases } from '@aiglossarypro/shared';
-import type { UpsertUser, User, Purchase } from '@aiglossarypro/shared';
 import { subDays } from 'date-fns';
 import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
-import type { ICategory, ITerm } from '@aiglossarypro/shared';
-import { db } from '@aiglossarypro/database';
 import {
   CacheInvalidation,
   CacheKeys,
@@ -34,45 +32,44 @@ import {
   getCacheStats,
   queryCache,
 } from './middleware/queryCache';
-import { log } from './utils/logger';
 import type {
-  OptimizedTerm,
-  SectionUserProgress as SectionProgress,
-  RecentPurchase,
-  RevenuePeriodData,
-  CountryRevenue,
-  ConversionFunnel,
-  RefundAnalytics,
-  PurchaseExport,
-  WebhookActivity,
-  PurchaseDetails,
-  UserAccessUpdate,
-  UserSettings,
-  UserDataExport,
-} from './types/enhancedStorage.types';
-import type {
-  UserProgressStats,
-  PendingContent,
-  FeedbackResult,
-  FeedbackUpdate,
-  LearningStreak,
-  Achievement,
-  Term,
-  PaginatedResult,
-  FeedbackStatistics,
-} from './types/storage.types';
-import type {
-  IStorage as IStorageTypeSafe,
-  PurchaseData,
-  UserListResult,
   AdminStats,
-  OptimizedFavoritesResult,
   FeedbackData,
+  IStorage as IStorageTypeSafe,
+  OptimizedFavoritesResult,
+  PurchaseData,
   TermSectionUpdate,
+  UserListResult,
   UserProgressUpdate,
 } from './optimizedStorageTypes';
+import type {
+  ConversionFunnel,
+  CountryRevenue,
+  OptimizedTerm,
+  PurchaseDetails,
+  PurchaseExport,
+  RecentPurchase,
+  RefundAnalytics,
+  RevenuePeriodData,
+  SectionUserProgress as SectionProgress,
+  UserAccessUpdate,
+  UserDataExport,
+  UserSettings,
+  WebhookActivity,
+} from './types/enhancedStorage.types';
+import type {
+  Achievement,
+  FeedbackResult,
+  FeedbackStatistics,
+  FeedbackUpdate,
+  LearningStreak,
+  PaginatedResult,
+  PendingContent,
+  Term,
+  UserProgressStats,
+} from './types/storage.types';
+import logger, { log } from './utils/logger';
 
-import logger from './utils/logger';
 // Additional type definitions
 interface ISubcategory {
   id: string;
@@ -187,7 +184,7 @@ export class OptimizedStorage implements IStorage {
           .from(categories)
           .where(eq(categories.id, id))
           .limit(1);
-        if (!result[0]) {return null;}
+        if (!result[0]) { return null; }
         return {
           id: result[0].id,
           name: result[0].name,
@@ -269,7 +266,7 @@ export class OptimizedStorage implements IStorage {
           .where(eq(terms.id, id))
           .groupBy(terms.id, categories.id)
           .limit(1);
-        if (result.length === 0) {return null;}
+        if (result.length === 0) { return null; }
         return {
           id: result[0].id,
           name: result[0].name,
@@ -342,11 +339,11 @@ export class OptimizedStorage implements IStorage {
         const currentUser = user[0];
         const now = new Date();
         const lastReset = currentUser.lastViewReset ? new Date(currentUser.lastViewReset) : null;
-        
+
         // Check if we need to reset daily views (new day)
-        const needsReset = !lastReset || 
+        const needsReset = !lastReset ||
           now.toDateString() !== lastReset.toDateString();
-        
+
         if (needsReset) {
           // Reset daily views for new day
           await db
@@ -509,14 +506,14 @@ export class OptimizedStorage implements IStorage {
           relevance: relevanceScore,
         };
 
-        if (fields.includes('id')) {selectObj.id = terms.id;}
-        if (fields.includes('name')) {selectObj.name = terms.name;}
-        if (fields.includes('shortDefinition')) {selectObj.shortDefinition = terms.shortDefinition;}
-        if (fields.includes('definition')) {selectObj.definition = terms.definition;}
-        if (fields.includes('viewCount')) {selectObj.viewCount = terms.viewCount;}
-        if (fields.includes('categoryId')) {selectObj.categoryId = terms.categoryId;}
-        if (fields.includes('category')) {selectObj.category = categories.name;}
-        if (fields.includes('createdAt')) {selectObj.createdAt = terms.createdAt;}
+        if (fields.includes('id')) { selectObj.id = terms.id; }
+        if (fields.includes('name')) { selectObj.name = terms.name; }
+        if (fields.includes('shortDefinition')) { selectObj.shortDefinition = terms.shortDefinition; }
+        if (fields.includes('definition')) { selectObj.definition = terms.definition; }
+        if (fields.includes('viewCount')) { selectObj.viewCount = terms.viewCount; }
+        if (fields.includes('categoryId')) { selectObj.categoryId = terms.categoryId; }
+        if (fields.includes('category')) { selectObj.category = categories.name; }
+        if (fields.includes('createdAt')) { selectObj.createdAt = terms.createdAt; }
 
         // Build main query with any type for dynamic select
         const baseQuery = db.select(selectObj as any).from(terms);
@@ -582,12 +579,12 @@ export class OptimizedStorage implements IStorage {
           createdAt: favorites.createdAt,
         };
 
-        if (fields.includes('name')) {selectObj.name = terms.name;}
-        if (fields.includes('shortDefinition')) {selectObj.shortDefinition = terms.shortDefinition;}
-        if (fields.includes('definition')) {selectObj.definition = terms.definition;}
-        if (fields.includes('viewCount')) {selectObj.viewCount = terms.viewCount;}
-        if (fields.includes('category')) {selectObj.category = categories.name;}
-        if (fields.includes('categoryId')) {selectObj.categoryId = categories.id;}
+        if (fields.includes('name')) { selectObj.name = terms.name; }
+        if (fields.includes('shortDefinition')) { selectObj.shortDefinition = terms.shortDefinition; }
+        if (fields.includes('definition')) { selectObj.definition = terms.definition; }
+        if (fields.includes('viewCount')) { selectObj.viewCount = terms.viewCount; }
+        if (fields.includes('category')) { selectObj.category = categories.name; }
+        if (fields.includes('categoryId')) { selectObj.categoryId = categories.id; }
 
         // Single query with field selection and pagination
         const results = await db
@@ -760,15 +757,15 @@ export class OptimizedStorage implements IStorage {
         // Build dynamic select based on requested fields
         const selectObj: Record<string, unknown> = {};
 
-        if (fields.includes('id')) {selectObj.id = terms.id;}
-        if (fields.includes('name')) {selectObj.name = terms.name;}
-        if (fields.includes('shortDefinition')) {selectObj.shortDefinition = terms.shortDefinition;}
-        if (fields.includes('definition')) {selectObj.definition = terms.definition;}
-        if (fields.includes('viewCount')) {selectObj.viewCount = terms.viewCount;}
-        if (fields.includes('category')) {selectObj.category = categories.name;}
-        if (fields.includes('categoryId')) {selectObj.categoryId = categories.id;}
-        if (fields.includes('createdAt')) {selectObj.createdAt = terms.createdAt;}
-        if (fields.includes('updatedAt')) {selectObj.updatedAt = terms.updatedAt;}
+        if (fields.includes('id')) { selectObj.id = terms.id; }
+        if (fields.includes('name')) { selectObj.name = terms.name; }
+        if (fields.includes('shortDefinition')) { selectObj.shortDefinition = terms.shortDefinition; }
+        if (fields.includes('definition')) { selectObj.definition = terms.definition; }
+        if (fields.includes('viewCount')) { selectObj.viewCount = terms.viewCount; }
+        if (fields.includes('category')) { selectObj.category = categories.name; }
+        if (fields.includes('categoryId')) { selectObj.categoryId = categories.id; }
+        if (fields.includes('createdAt')) { selectObj.createdAt = terms.createdAt; }
+        if (fields.includes('updatedAt')) { selectObj.updatedAt = terms.updatedAt; }
 
         // Get total count first
         const totalResult = await db
@@ -902,17 +899,17 @@ export class OptimizedStorage implements IStorage {
   async updateTerm(termId: string, updates: Partial<ITerm>): Promise<ITerm> {
     // Extract only the fields that exist on the terms table
     const { category, isFavorite, isLearned, relativeTime, subcategories, subcategoryIds, ...termUpdates } = updates;
-    
+
     // Convert characteristics string to array if needed
     const updateData: any = {
       ...termUpdates,
       updatedAt: new Date(),
     };
-    
+
     if (typeof updateData.characteristics === 'string') {
       updateData.characteristics = [updateData.characteristics];
     }
-    
+
     const [updatedTerm] = await db
       .update(terms)
       .set(updateData)
@@ -923,8 +920,8 @@ export class OptimizedStorage implements IStorage {
     CacheInvalidation.term(termId);
 
     // Convert characteristics array back to string if needed for compatibility
-    const characteristics = Array.isArray(updatedTerm.characteristics) 
-      ? updatedTerm.characteristics.join(', ') 
+    const characteristics = Array.isArray(updatedTerm.characteristics)
+      ? updatedTerm.characteristics.join(', ')
       : updatedTerm.characteristics;
 
     return {
@@ -1010,9 +1007,9 @@ export class OptimizedStorage implements IStorage {
         // Build dynamic select based on requested fields
         const selectObj: Record<string, unknown> = {};
 
-        if (fields.includes('id')) {selectObj.id = categories.id;}
-        if (fields.includes('name')) {selectObj.name = categories.name;}
-        if (fields.includes('description')) {selectObj.description = categories.description;}
+        if (fields.includes('id')) { selectObj.id = categories.id; }
+        if (fields.includes('name')) { selectObj.name = categories.name; }
+        if (fields.includes('description')) { selectObj.description = categories.description; }
 
         // Add termCount if explicitly requested
         if (needsTermCount) {
@@ -1186,9 +1183,9 @@ export class OptimizedStorage implements IStorage {
     options: { limit?: number; offset?: number } = {}
   ): Promise<PaginatedResult<Term>> {
     const { limit = 100, offset = 0 } = options;
-    
+
     const cacheKey = `all-terms:${limit}:${offset}`;
-    
+
     return cached(
       cacheKey,
       async () => {
@@ -1197,7 +1194,7 @@ export class OptimizedStorage implements IStorage {
           .select({ count: sql<number>`count(*)` })
           .from(terms);
         const total = totalResult[0]?.count || 0;
-        
+
         // Get terms with category information
         const result = await db
           .select({
@@ -1275,7 +1272,7 @@ export class OptimizedStorage implements IStorage {
       async () => {
         // Build dynamic select based on requested fields
         const selectObj: any = {};
-        
+
         if (fields.includes('id')) selectObj.id = terms.id;
         if (fields.includes('name')) selectObj.name = terms.name;
         if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
@@ -1327,11 +1324,11 @@ export class OptimizedStorage implements IStorage {
 
         // Get total count with same filters
         let countQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
-        
+
         if (fields.includes('category')) {
           countQuery = countQuery.leftJoin(categories, eq(terms.categoryId, categories.id));
         }
-        
+
         if (whereConditions.length > 0) {
           countQuery = countQuery.where(and(...whereConditions));
         }
@@ -1550,40 +1547,118 @@ export class OptimizedStorage implements IStorage {
     }));
   }
 
-  async getRecentPurchases(limit = 10): Promise<RecentPurchase[]> {
-    const results = await db
-      .select({
-        id: purchases.id,
-        userId: purchases.userId,
-        orderId: purchases.gumroadOrderId,
-        amount: purchases.amount,
-        currency: purchases.currency,
-        status: purchases.status,
-        createdAt: purchases.createdAt,
-        userEmail: users.email,
-      })
-      .from(purchases)
-      .leftJoin(users, eq(purchases.userId, users.id))
-      .orderBy(desc(purchases.createdAt))
-      .limit(limit);
+  async getRecentPurchases(options: number | {
+    page: number;
+    limit: number;
+    status?: string;
+    currency?: string;
+  } = 10): Promise<RecentPurchase[] | {
+    items: RecentPurchase[];
+    total: number;
+    hasMore: boolean;
+  }> {
+    // Handle both old (number) and new (object) parameter styles
+    if (typeof options === 'number') {
+      // Legacy simple call - return array
+      const limit = options;
+      const results = await db
+        .select({
+          id: purchases.id,
+          userId: purchases.userId,
+          orderId: purchases.gumroadOrderId,
+          amount: purchases.amount,
+          currency: purchases.currency,
+          status: purchases.status,
+          createdAt: purchases.createdAt,
+          userEmail: users.email,
+        })
+        .from(purchases)
+        .leftJoin(users, eq(purchases.userId, users.id))
+        .orderBy(desc(purchases.createdAt))
+        .limit(limit);
 
-    return results.map(r => ({
-      orderId: r.orderId,
-      email: '', // TODO: Get email from user table via join
-      productName: 'AI Glossary Pro', // Default product name
-      amount: r.amount || 0,
-      currency: r.currency || 'USD',
-      purchaseDate: r.createdAt || new Date(),
-      status: r.status || 'completed',
-      refunded: r.status === 'refunded',
-    }));
+      return results.map(r => ({
+        orderId: r.orderId,
+        email: r.userEmail || '', // Fixed: Use joined email
+        productName: 'AI Glossary Pro', // Default product name
+        amount: r.amount || 0,
+        currency: r.currency || 'USD',
+        purchaseDate: r.createdAt || new Date(),
+        status: r.status || 'completed',
+        refunded: r.status === 'refunded',
+      }));
+    } else {
+      // New paginated call - return paginated object
+      const { page, limit, status, currency } = options;
+      const offset = (page - 1) * limit;
+
+      // Build conditions
+      const conditions = [];
+      if (status) {
+        conditions.push(eq(purchases.status, status));
+      }
+      if (currency) {
+        conditions.push(eq(purchases.currency, currency));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      // Get purchases with user info
+      const results = await db
+        .select({
+          id: purchases.id,
+          userId: purchases.userId,
+          orderId: purchases.gumroadOrderId,
+          amount: purchases.amount,
+          currency: purchases.currency,
+          status: purchases.status,
+          createdAt: purchases.createdAt,
+          userEmail: users.email,
+          purchaseData: purchases.purchaseData,
+        })
+        .from(purchases)
+        .leftJoin(users, eq(purchases.userId, users.id))
+        .where(whereClause)
+        .orderBy(desc(purchases.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      // Get total count
+      const totalResult = await db
+        .select({
+          count: sql<number>`COUNT(*)`,
+        })
+        .from(purchases)
+        .where(whereClause);
+
+      const total = totalResult[0]?.count || 0;
+
+      // Map to RecentPurchase type
+      const items: RecentPurchase[] = results.map((r: any) => ({
+        orderId: r.orderId,
+        email: r.userEmail || '',
+        productName: (r.purchaseData as any)?.product_name || 'AI Glossary Pro',
+        amount: r.amount || 0,
+        currency: r.currency || 'USD',
+        purchaseDate: r.createdAt || new Date(),
+        status: r.status || 'completed',
+        country: (r.purchaseData as any)?.country,
+        refunded: r.status === 'refunded',
+      }));
+
+      return {
+        items,
+        total,
+        hasMore: offset + limit < total,
+      };
+    }
   }
 
   async getRevenueByPeriod(period: string): Promise<RevenuePeriodData> {
     // Simplified implementation - can be enhanced
     const now = new Date();
     const startDate = new Date();
-    
+
     // Calculate start date based on period
     switch (period) {
       case 'day':
@@ -1757,7 +1832,7 @@ export class OptimizedStorage implements IStorage {
 
     const purchase = result[0];
     if (!purchase) return null;
-    
+
     return {
       orderId: purchase.gumroadOrderId,
       email: '', // TODO: Get email from user table via join
@@ -1819,7 +1894,7 @@ export class OptimizedStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     const [purchase] = await db.insert(purchases).values(purchaseRecord).returning();
     return purchase;
   }
@@ -1929,7 +2004,7 @@ export class OptimizedStorage implements IStorage {
     });
 
     // Sort dates in descending order
-    const sortedDates = Array.from(viewsByDate.keys()).sort((a, b) => 
+    const sortedDates = Array.from(viewsByDate.keys()).sort((a, b) =>
       new Date(b).getTime() - new Date(a).getTime()
     );
 
@@ -1945,12 +2020,12 @@ export class OptimizedStorage implements IStorage {
     if (viewsByDate.has(todayStr) || viewsByDate.has(yesterdayStr)) {
       currentStreak = 1;
       const checkDate = viewsByDate.has(todayStr) ? today : yesterday;
-      
+
       // Go backwards and count consecutive days
       for (let i = 1; i < sortedDates.length; i++) {
         checkDate.setDate(checkDate.getDate() - 1);
         const checkDateStr = checkDate.toISOString().split('T')[0];
-        
+
         if (viewsByDate.has(checkDateStr)) {
           currentStreak++;
         } else {
@@ -1966,7 +2041,7 @@ export class OptimizedStorage implements IStorage {
 
     sortedDates.forEach(dateStr => {
       const currentDate = new Date(dateStr);
-      
+
       if (!lastDate) {
         tempStreak = 1;
       } else {
@@ -1978,10 +2053,10 @@ export class OptimizedStorage implements IStorage {
           tempStreak = 1;
         }
       }
-      
+
       lastDate = currentDate;
     });
-    
+
     longestStreak = Math.max(longestStreak, tempStreak, currentStreak);
 
     // Get streak history (last 7 days)
@@ -1990,7 +2065,7 @@ export class OptimizedStorage implements IStorage {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      
+
       streakHistory.push({
         date: dateStr,
         hasActivity: viewsByDate.has(dateStr),
@@ -2636,9 +2711,9 @@ export class OptimizedStorage implements IStorage {
           status: 'resolved',
           message: 'Content approved successfully',
         };
-      } 
-        throw new Error('Content not found');
-      
+      }
+      throw new Error('Content not found');
+
     } catch (error) {
       logger.error('[OptimizedStorage] approveContent error:', error);
       throw new Error(
@@ -2671,9 +2746,9 @@ export class OptimizedStorage implements IStorage {
           status: 'dismissed',
           message: 'Content rejected successfully',
         };
-      } 
-        throw new Error('Content not found');
-      
+      }
+      throw new Error('Content not found');
+
     } catch (error) {
       logger.error('[OptimizedStorage] rejectContent error:', error);
       throw new Error(
@@ -2714,21 +2789,21 @@ export class OptimizedStorage implements IStorage {
           termCount: termCountResult?.count || 0,
           lastUpdated: new Date(),
         };
-      } 
-        // Get stats for all categories
-        const results = await db
-          .select({
-            categoryId: categories.id,
-            categoryName: categories.name,
-            termCount: sql<number>`count(${terms.id})`,
-          })
-          .from(categories)
-          .leftJoin(terms, eq(categories.id, terms.categoryId))
-          .groupBy(categories.id, categories.name)
-          .orderBy(desc(sql`count(${terms.id})`));
+      }
+      // Get stats for all categories
+      const results = await db
+        .select({
+          categoryId: categories.id,
+          categoryName: categories.name,
+          termCount: sql<number>`count(${terms.id})`,
+        })
+        .from(categories)
+        .leftJoin(terms, eq(categories.id, terms.categoryId))
+        .groupBy(categories.id, categories.name)
+        .orderBy(desc(sql`count(${terms.id})`));
 
-        return results;
-      
+      return results;
+
     } catch (error) {
       logger.error('[OptimizedStorage] getCategoryStats error:', error);
       throw new Error(
@@ -2739,7 +2814,7 @@ export class OptimizedStorage implements IStorage {
 
   // Additional missing methods implementation
   async getTermsByIds(ids: string[]): Promise<Term[]> {
-    if (ids.length === 0) {return [];}
+    if (ids.length === 0) { return []; }
 
     return await db.select().from(terms).where(inArray(terms.id, ids));
   }
@@ -2856,6 +2931,7 @@ export class OptimizedStorage implements IStorage {
           rejected: 0,
         },
         byType: {} as Record<string, number>,
+        bySeverity: {} as Record<string, number>,
         averageResolutionTime: 0,
         recentTrends: [],
       };
@@ -2864,7 +2940,7 @@ export class OptimizedStorage implements IStorage {
       statusStats.forEach(({ status, count }) => {
         const countNum = Number(count);
         stats.total += countNum;
-        
+
         switch (status) {
           case 'pending':
             stats.byStatus.pending = countNum;
@@ -2887,6 +2963,13 @@ export class OptimizedStorage implements IStorage {
         stats.byType[feedbackType] = Number(count);
       });
 
+      // Process severity stats
+      severityStats.forEach(({ severity, count }) => {
+        if (stats.bySeverity) {
+          stats.bySeverity[severity] = Number(count);
+        }
+      });
+
       return stats;
     } catch (error) {
       log.error('Error fetching feedback stats', { error });
@@ -2907,8 +2990,8 @@ export class OptimizedStorage implements IStorage {
   }
 
   async updateFeedbackStatus(
-    id: string, 
-    status: string, 
+    id: string,
+    status: string,
     notes?: string,
     reviewerId?: string
   ): Promise<FeedbackUpdate> {
@@ -2937,17 +3020,17 @@ export class OptimizedStorage implements IStorage {
         throw new Error('Feedback not found');
       }
 
-      log.info('Feedback status updated', { 
-        feedbackId: id, 
+      log.info('Feedback status updated', {
+        feedbackId: id,
         newStatus: status,
         reviewerId
       });
 
-      return { 
-        success: true, 
-        id, 
+      return {
+        success: true,
+        id,
         status,
-        feedback: updated 
+        feedback: updated
       };
     } catch (error) {
       log.error('Error updating feedback status', { error, feedbackId: id });
@@ -3091,24 +3174,24 @@ export class OptimizedStorage implements IStorage {
   // Helper method to get user achievements based on their activity
   async getUserAchievements(userId: string): Promise<Achievement[]> {
     const achievements = [];
-    
+
     // Get user stats
     const termViewsCount = await db
       .select({ count: sql<number>`count(distinct ${termViews.termId})` })
       .from(termViews)
       .where(eq(termViews.userId, userId));
-    
+
     const viewCount = Number(termViewsCount[0]?.count || 0);
-    
+
     // Get streak data
     const streakData = await this.getUserStreak(userId);
-    
+
     // Get favorites count
     const favoritesCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(favorites)
       .where(eq(favorites.userId, userId));
-    
+
     const favCount = Number(favoritesCount[0]?.count || 0);
 
     // Check achievements

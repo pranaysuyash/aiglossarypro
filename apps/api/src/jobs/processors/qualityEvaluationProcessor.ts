@@ -1,10 +1,23 @@
+import { db } from '@aiglossarypro/database';
+import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared';
 import type { Job } from 'bullmq';
 import { and, eq, lte, or } from 'drizzle-orm';
-import { enhancedTerms, sectionItems, sections } from '@aiglossarypro/shared';
-import { db } from '@aiglossarypro/database';
-import { aiQualityEvaluationService } from '../../services/aiQualityEvaluationService';
+import { aiQualityEvaluationService, type QualityEvaluationResult } from '../../services/aiQualityEvaluationService';
+
+// Define batch evaluation result type
+interface BatchEvaluationResult {
+  results: QualityEvaluationResult[];
+  summary: {
+    totalEvaluations: number;
+    averageScore: number;
+    successCount: number;
+    failureCount: number;
+    totalCost: number;
+    totalTime: number;
+  };
+}
 import { emailService as email } from '../../services/emailService';
-import { qualityAnalyticsService } from '../../services/qualityAnalyticsService';
+import { qualityAnalyticsService, type QualityReport } from '../../services/qualityAnalyticsService';
 import { log as logger } from '../../utils/logger';
 
 export interface QualityEvaluationJobData {
@@ -30,7 +43,7 @@ export interface QualityEvaluationJobData {
  * Process quality evaluation jobs
  */
 export async function processQualityEvaluationJob(job: Job<QualityEvaluationJobData>) {
-  const { type, termId, termIds, sectionName, options, scheduledAudit } = job.data;
+  const { type, termId, termIds, sectionName: _sectionName, options, scheduledAudit: _scheduledAudit } = job.data;
 
   logger.info(`Processing quality evaluation job: ${type}`, {
     jobId: job.id,
@@ -328,7 +341,7 @@ async function processAutoEvaluation(job: Job<QualityEvaluationJobData>) {
 function mapSectionToContentType(
   sectionName: string
 ): 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general' {
-  const mappings: Record<string, unknown> = {
+  const mappings: Record<string, 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general'> = {
     definition: 'definition',
     overview: 'definition',
     examples: 'example',
@@ -354,22 +367,22 @@ function mapSectionToContentType(
 /**
  * Send evaluation report email
  */
-async function sendEvaluationReport(termName: string, result: Response, recipients: string[]) {
+async function sendEvaluationReport(termName: string, result: QualityEvaluationResult, recipients: string[]) {
   const subject = `Quality Evaluation Report: ${termName}`;
   const html = `
     <h2>Quality Evaluation Report</h2>
     <h3>${termName}</h3>
     
-    <h4>Overall Score: ${result.overallScore}/10</h4>
+    <h4>Overall Score: ${(result as any).overallScore}/10</h4>
     
     <h4>Dimension Scores:</h4>
     <ul>
-      <li>Accuracy: ${result.dimensions.accuracy.score}/10</li>
-      <li>Clarity: ${result.dimensions.clarity.score}/10</li>
-      <li>Completeness: ${result.dimensions.completeness.score}/10</li>
-      <li>Relevance: ${result.dimensions.relevance.score}/10</li>
-      <li>Style: ${result.dimensions.style.score}/10</li>
-      <li>Engagement: ${result.dimensions.engagement.score}/10</li>
+      <li>Accuracy: ${(result as any).dimensions.accuracy.score}/10</li>
+      <li>Clarity: ${(result as any).dimensions.clarity.score}/10</li>
+      <li>Completeness: ${(result as any).dimensions.completeness.score}/10</li>
+      <li>Relevance: ${(result as any).dimensions.relevance.score}/10</li>
+      <li>Style: ${(result as any).dimensions.style.score}/10</li>
+      <li>Engagement: ${(result as any).dimensions.engagement.score}/10</li>
     </ul>
     
     <h4>Key Strengths:</h4>
@@ -395,7 +408,7 @@ async function sendEvaluationReport(termName: string, result: Response, recipien
 /**
  * Send batch evaluation summary email
  */
-async function sendBatchEvaluationSummary(result: Response, recipients: string[]) {
+async function sendBatchEvaluationSummary(result: BatchEvaluationResult, recipients: string[]) {
   const subject = 'Batch Quality Evaluation Summary';
   const html = `
     <h2>Batch Quality Evaluation Summary</h2>
@@ -407,15 +420,15 @@ async function sendBatchEvaluationSummary(result: Response, recipients: string[]
       <li>Failed: ${result.summary.failureCount}</li>
       <li>Average Score: ${result.summary.averageScore.toFixed(1)}/10</li>
       <li>Total Cost: $${result.summary.totalCost.toFixed(2)}</li>
-      <li>Processing Time: ${(result.summary.processingTime / 1000).toFixed(1)}s</li>
+      <li>Processing Time: ${(result.summary.totalTime / 1000).toFixed(1)}s</li>
     </ul>
     
     <h3>Score Distribution:</h3>
     <ul>
-      <li>Excellent (8.5+): ${result.results.filter((r: Response) => r.overallScore >= 8.5).length}</li>
-      <li>Good (7.0-8.5): ${result.results.filter((r: Response) => r.overallScore >= 7.0 && r.overallScore < 8.5).length}</li>
-      <li>Acceptable (5.5-7.0): ${result.results.filter((r: Response) => r.overallScore >= 5.5 && r.overallScore < 7.0).length}</li>
-      <li>Poor (<5.5): ${result.results.filter((r: Response) => r.overallScore < 5.5).length}</li>
+      <li>Excellent (8.5+): ${result.results.filter((r: QualityEvaluationResult) => r.overallScore >= 8.5).length}</li>
+      <li>Good (7.0-8.5): ${result.results.filter((r: QualityEvaluationResult) => r.overallScore >= 7.0 && r.overallScore < 8.5).length}</li>
+      <li>Acceptable (5.5-7.0): ${result.results.filter((r: QualityEvaluationResult) => r.overallScore >= 5.5 && r.overallScore < 7.0).length}</li>
+      <li>Poor (<5.5): ${result.results.filter((r: QualityEvaluationResult) => r.overallScore < 5.5).length}</li>
     </ul>
     
     <p>Evaluated on: ${new Date().toISOString()}</p>
@@ -432,7 +445,7 @@ async function sendBatchEvaluationSummary(result: Response, recipients: string[]
  * Send audit report email
  */
 async function sendAuditReport(
-  report: any,
+  report: QualityReport,
   flaggedContent: any,
   includeRecommendations: boolean,
   recipients: string[]
@@ -460,9 +473,9 @@ async function sendAuditReport(
       <p>${flaggedContent.flaggedCount} terms flagged for review</p>
       <ul>
         ${flaggedContent.flaggedTerms
-          .slice(0, 5)
-          .map((t: any) => `<li>${t.termName} (Score: ${t.score}) - ${t.issues.join(', ')}</li>`)
-          .join('')}
+        .slice(0, 5)
+        .map((t: any) => `<li>${t.termName} (Score: ${t.score}) - ${t.issues.join(', ')}</li>`)
+        .join('')}
       </ul>
     `;
   }

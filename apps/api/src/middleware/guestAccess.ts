@@ -1,7 +1,6 @@
-import type { Request, RequestHandler, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { Request, RequestHandler } from 'express';
+import { redisService } from '../services/redisService';
 import { log } from '../utils/logger';
-import { redisService, cacheKeys, cacheTTL } from '../services/redisService';
 
 /**
  * Guest access configuration
@@ -70,7 +69,7 @@ async function getGuestSessionFromStorage(sessionId: string): Promise<GuestServe
         return cached;
       }
     }
-    
+
     // Fallback to in-memory
     return inMemorySessions.get(sessionId) || null;
   } catch (error) {
@@ -86,7 +85,7 @@ async function saveGuestSessionToStorage(session: GuestServerSession): Promise<v
   try {
     // Save to in-memory (always)
     inMemorySessions.set(session.sessionId, session);
-    
+
     // Save to Redis if available
     if (redisService.isAvailable()) {
       const ttl = Math.floor(DEFAULT_GUEST_CONFIG.sessionDuration / 1000); // Convert to seconds
@@ -135,7 +134,7 @@ async function getOrCreateGuestSession(req: Request): Promise<GuestServerSession
       session.viewedTerms = [];
       session.firstVisit = Date.now();
     }
-    
+
     // Save updated session
     await saveGuestSessionToStorage(session);
   }
@@ -337,7 +336,7 @@ export async function cleanupExpiredGuestSessions(): Promise<void> {
 
   for (const sessionId of expiredSessions) {
     inMemorySessions.delete(sessionId);
-    
+
     // Also try to delete from Redis
     if (redisService.isAvailable()) {
       try {

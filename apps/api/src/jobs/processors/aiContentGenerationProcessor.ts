@@ -12,6 +12,7 @@ import type {
   AIContentGenerationJobResult,
   JobProgressUpdate,
 } from '../types';
+import type { TermSection } from '../../types/storage.types';
 
 // Initialize OpenAI client
 const openai = new OpenAI({

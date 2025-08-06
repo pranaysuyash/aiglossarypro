@@ -11,7 +11,7 @@ import type { ColumnBatchMonitoringJobData, ColumnBatchMonitoringJobResult } fro
 export async function columnBatchMonitoringProcessor(
   job: Job<ColumnBatchMonitoringJobData>
 ): Promise<ColumnBatchMonitoringJobResult> {
-  const _startTime = Date.now();
+  const startTime = Date.now();
   const {
     operationIds,
     checkInterval = 30000, // 30 seconds default
@@ -34,6 +34,7 @@ export async function columnBatchMonitoringProcessor(
     alertsTriggered: 0,
     systemHealth: 'healthy',
     recommendations: [],
+    executionTimeMs: 0, // Will be calculated at the end
   };
 
   try {
@@ -229,6 +230,9 @@ export async function columnBatchMonitoringProcessor(
       },
     });
 
+    // Calculate execution time for performance monitoring
+    result.executionTimeMs = Date.now() - startTime;
+    
     return result;
   } catch (error) {
     logger.error(`Column batch monitoring job ${job.id} failed:`, {

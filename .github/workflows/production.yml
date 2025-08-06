@@ -1,8 +1,9 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [main]
+  # Disabled automatic deployment to save GitHub Actions costs
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 env:

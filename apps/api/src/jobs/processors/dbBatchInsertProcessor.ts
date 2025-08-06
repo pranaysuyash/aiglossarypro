@@ -3,8 +3,8 @@
  * Handles batch database operations with conflict resolution
  */
 
-import type { Job } from 'bullmq';
 import { db } from '@aiglossarypro/database';
+import type { Job } from 'bullmq';
 import { log as logger } from '../../utils/logger';
 import type { DBBatchInsertJobData, DBBatchInsertJobResult } from '../types';
 
@@ -12,7 +12,7 @@ export async function dbBatchInsertProcessor(
   job: Job<DBBatchInsertJobData>
 ): Promise<DBBatchInsertJobResult> {
   const startTime = Date.now();
-  const { table, records, conflictResolution = 'ignore', batchSize = 1000, userId } = job.data;
+  const { table, records, conflictResolution = 'ignore', batchSize = 1000, userId: _userId } = job.data;
 
   logger.info(
     `Starting DB batch insert job ${job.id} for table: ${table} with ${records.length} records`
@@ -177,12 +177,15 @@ async function handleTermsBatch(
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { terms } = await import('@aiglossarypro/shared/enhancedSchema');
+  
+  // Type assertion for term records
+  const termRecords = records as any[];
 
   if (conflictResolution === 'ignore') {
     // Insert only new records, ignore conflicts
     const insertedRecords = await db
       .insert(terms)
-      .values(records)
+      .values(termRecords)
       .onConflictDoNothing()
       .returning();
 
@@ -194,7 +197,7 @@ async function handleTermsBatch(
     let inserted = 0;
     let updated = 0;
 
-    for (const record of records) {
+    for (const record of termRecords) {
       const result = await db
         .insert(terms)
         .values(record)
@@ -227,7 +230,7 @@ async function handleTermsBatch(
 
   if (conflictResolution === 'error') {
     // Strict insert, fail on conflicts
-    const insertedRecords = await db.insert(terms).values(records).returning();
+    const insertedRecords = await db.insert(terms).values(termRecords).returning();
 
     return { inserted: insertedRecords.length, updated: 0 };
   }
@@ -243,11 +246,12 @@ async function handleCategoriesBatch(
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { categories } = await import('@aiglossarypro/shared/enhancedSchema');
+  const categoryRecords = records as any[];
 
   if (conflictResolution === 'ignore') {
     const insertedRecords = await db
       .insert(categories)
-      .values(records)
+      .values(categoryRecords)
       .onConflictDoNothing()
       .returning();
 
@@ -268,11 +272,12 @@ async function handleTermSectionsBatch(
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { termSections } = await import('@aiglossarypro/shared/enhancedSchema');
+  const sectionRecords = records as any[];
 
   if (conflictResolution === 'ignore') {
     const insertedRecords = await db
       .insert(termSections)
-      .values(records)
+      .values(sectionRecords)
       .onConflictDoNothing()
       .returning();
 

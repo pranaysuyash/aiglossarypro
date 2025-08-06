@@ -1,8 +1,8 @@
+import { api } from '@/lib/api';
+import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { api } from '@/lib/api';
-import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
 import FirebaseLoginPage from '../FirebaseLoginPage';
 
 // Mock dependencies
@@ -76,8 +76,8 @@ describe('FirebaseLoginPage', () => {
       lifetimeAccess: false,
     };
 
-    (signInWithProvider as unknown).mockResolvedValueOnce({ idToken: mockIdToken });
-    (api.post as unknown).mockResolvedValueOnce({
+    (signInWithProvider as any).mockResolvedValueOnce({ idToken: mockIdToken });
+    (api.post as any).mockResolvedValueOnce({
       success: true,
       data: {
         token: 'mock-jwt-token',
@@ -110,8 +110,8 @@ describe('FirebaseLoginPage', () => {
       lifetimeAccess: true,
     };
 
-    (signInWithEmail as unknown).mockResolvedValueOnce({ idToken: mockIdToken });
-    (api.post as unknown).mockResolvedValueOnce({
+    (signInWithEmail as any).mockResolvedValueOnce({ idToken: mockIdToken });
+    (api.post as any).mockResolvedValueOnce({
       success: true,
       data: {
         token: 'mock-jwt-token',
@@ -141,7 +141,7 @@ describe('FirebaseLoginPage', () => {
   });
 
   it('should handle authentication errors', async () => {
-    (signInWithProvider as unknown).mockRejectedValueOnce({
+    (signInWithProvider as any).mockRejectedValueOnce({
       code: 'auth/user-not-found',
       message: 'User not found',
     });

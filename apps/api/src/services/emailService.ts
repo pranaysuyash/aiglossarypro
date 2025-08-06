@@ -44,6 +44,37 @@ export class EmailService {
   }
 
   /**
+   * Public send method for generic email sending
+   */
+  async send(params: { to: string | string[]; subject: string; html: string; text?: string }): Promise<boolean> {
+    const recipients = Array.isArray(params.to) ? params.to : [params.to];
+    const textBody = params.text || this.htmlToText(params.html);
+    
+    // Send to each recipient individually
+    const results = await Promise.all(
+      recipients.map(recipient => this.sendEmail(recipient, params.subject, params.html, textBody))
+    );
+    
+    return results.every(result => result);
+  }
+
+  /**
+   * Convert HTML to plain text
+   */
+  private htmlToText(html: string): string {
+    return html
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+      .replace(/&amp;/g, '&') // Replace HTML entities
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ') // Collapse multiple spaces
+      .trim();
+  }
+
+  /**
    * Send email using AWS SES
    */
   private async sendEmail(

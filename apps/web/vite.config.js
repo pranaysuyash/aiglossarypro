@@ -1,39 +1,31 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import million from 'million/compiler';
+// import million from 'million/compiler'; // Disabled - causes .tsx file generation in production
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import viteCompression from 'vite-plugin-compression';
 import { VitePWA } from 'vite-plugin-pwa';
 import { devToolsPlugin } from './vite-dev-tools-plugin';
 import { lucideTreeShakePlugin } from './vite-lucide-plugin';
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+    // Explicitly set base path
+    base: '/',
     define: {
         global: 'globalThis',
         'process.env': 'import.meta.env',
     },
     plugins: [
-        million.vite({
-            auto: {
-                threshold: 0.05,
-                skip: [
-                    'ExitIntentPopup',
-                    'FloatingPricingWidget',
-                    'TrustBadges',
-                    'MediaLogos',
-                    'LandingHeader',
-                    'useCountryPricing',
-                    'useExperiment',
-                    'ComparisonTable',
-                    'Pricing',
-                    'Footer',
-                ],
-            },
+        // Million.js disabled due to .tsx file generation bug in v3.1.11
+        // Consider alternatives: Preact, React Compiler, or built-in React optimizations
+        react({
+            // Enable Fast Refresh for better DX
+            fastRefresh: true,
+            // Use automatic JSX runtime for smaller bundles
+            jsxRuntime: 'automatic',
         }),
-        react(),
         lucideTreeShakePlugin(),
         // Enhanced development tools (only in development)
-        ...(process.env.NODE_ENV === 'development'
+        ...(mode === 'development'
             ? [
                 devToolsPlugin({
                     enableErrorOverlay: true,
@@ -57,7 +49,7 @@ export default defineConfig({
             deleteOriginFile: false,
         }),
         // Bundle analyzer (only in analyze mode)
-        ...(process.env.NODE_ENV === 'analyze'
+        ...(mode === 'analyze'
             ? [
                 visualizer({
                     filename: 'dist/bundle-analysis.html',
@@ -72,6 +64,7 @@ export default defineConfig({
             registerType: 'autoUpdate',
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+                maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4MB limit instead of default 2MB
                 runtimeCaching: [
                     {
                         urlPattern: /^https?:\/\/.*\/api\/.*/i,
@@ -113,14 +106,21 @@ export default defineConfig({
     build: {
         outDir: path.resolve(__dirname, '../../dist/public'),
         emptyOutDir: true,
-        target: 'esnext',
-        minify: 'esbuild',
+        target: 'es2020', // Better browser compatibility than esnext
+        minify: 'terser', // Better minification than esbuild
+        terserOptions: {
+            compress: {
+                drop_console: true, // Remove console logs in production
+                drop_debugger: true,
+                pure_funcs: ['console.log', 'console.info', 'console.debug'],
+            },
+        },
         cssMinify: true,
         cssCodeSplit: true, // Enable CSS code splitting
         reportCompressedSize: false, // Faster builds
         chunkSizeWarningLimit: 1000,
         // Enhanced source map generation for better debugging
-        sourcemap: process.env.NODE_ENV === 'development' ? true : false,
+        sourcemap: mode === 'development' ? true : false,
         rollupOptions: {
             external: id => {
                 // Exclude test and story files from build
@@ -250,8 +250,8 @@ export default defineConfig({
     // Enhanced development configuration
     esbuild: {
         // Better source map support for debugging
-        sourcemap: process.env.NODE_ENV === 'development',
+        sourcemap: mode === 'development',
         // Keep function names for better debugging
-        keepNames: process.env.NODE_ENV === 'development',
+        keepNames: mode === 'development',
     },
-});
+}));

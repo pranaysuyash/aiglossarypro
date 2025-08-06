@@ -1,4 +1,4 @@
-import { desc, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express'
 import type { Request, Response } from 'express';
 import { terms, termViews } from '@aiglossarypro/shared/schema';
@@ -47,7 +47,7 @@ export function registerAnalyticsRoutes(app: Express): void {
         const { timeframe, granularity } = req.query as unknown as GeneralAnalyticsQuery;
 
         // Get analytics overview using enhancedStorage
-        const _overview = await storage.getAnalyticsOverview();
+        const overview = await storage.getAnalyticsOverview();
         const contentMetrics = await storage.getContentMetrics();
 
         res.json({
@@ -57,11 +57,21 @@ export function registerAnalyticsRoutes(app: Express): void {
             granularity,
             metrics: {
               totalTerms: contentMetrics.totalTerms,
-              totalViews: contentMetrics.totalViews || 0,
+              totalViews: overview.totalViews || contentMetrics.totalViews || 0,
               totalCategories: contentMetrics.totalCategories,
               averageSectionsPerTerm: contentMetrics.averageSectionsPerTerm,
+              totalUsers: overview.totalUsers,
+              averageSessionDuration: overview.averageSessionDuration,
             },
+            topContent: {
+              terms: overview.topTerms,
+              categories: overview.topCategories,
+            },
+            engagement: overview.userEngagement,
+            quality: overview.contentQuality,
+            growth: overview.growthMetrics,
             generatedAt: new Date().toISOString(),
+            lastUpdated: overview.lastUpdated,
           },
         });
       } catch (error) {
@@ -154,7 +164,10 @@ export function registerAnalyticsRoutes(app: Express): void {
           })
           .from(terms)
           .leftJoin(termViews, eq(termViews.termId, terms.id))
-          .where(gte(termViews.viewedAt, startDate))
+          .where(and(
+            gte(termViews.viewedAt, startDate),
+            lte(termViews.viewedAt, endDate)
+          ))
           .groupBy(terms.id)
           .orderBy(sort === 'views' ? desc(sql`count(${termViews.id})`) : desc(terms.name))
           .limit(limit)
@@ -165,7 +178,10 @@ export function registerAnalyticsRoutes(app: Express): void {
           .select({ count: sql<number>`count(*)` })
           .from(terms)
           .leftJoin(termViews, eq(termViews.termId, terms.id))
-          .where(gte(termViews.viewedAt, startDate));
+          .where(and(
+            gte(termViews.viewedAt, startDate),
+            lte(termViews.viewedAt, endDate)
+          ));
 
         res.json({
           success: true,
@@ -218,7 +234,10 @@ export function registerAnalyticsRoutes(app: Express): void {
           })
           .from(terms)
           .leftJoin(termViews, eq(termViews.termId, terms.id))
-          .where(gte(termViews.viewedAt, startDate))
+          .where(and(
+            gte(termViews.viewedAt, startDate),
+            lte(termViews.viewedAt, endDate)
+          ))
           .groupBy(terms.categoryId)
           .orderBy(desc(sql`count(${termViews.id})`))
           .limit(ANALYTICS_CONSTANTS.REALTIME_CATEGORY_LIMIT);
@@ -320,7 +339,10 @@ export function registerAnalyticsRoutes(app: Express): void {
           })
           .from(terms)
           .leftJoin(termViews, sql`${termViews.termId} = ${terms.id}`)
-          .where(gte(termViews.viewedAt, startDate))
+          .where(and(
+            gte(termViews.viewedAt, startDate),
+            lte(termViews.viewedAt, endDate)
+          ))
           .groupBy(terms.id)
           .orderBy(desc(sql`count(${termViews.id})`));
 

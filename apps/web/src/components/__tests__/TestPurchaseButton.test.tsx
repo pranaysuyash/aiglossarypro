@@ -1,8 +1,8 @@
+import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/lib/api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/lib/api';
 import { TestPurchaseButton } from '../TestPurchaseButton';
 
 // Mock dependencies
@@ -18,7 +18,7 @@ const mockStripe = {
   redirectToCheckout: vi.fn(),
 };
 
-(global as unknown).Stripe = vi.fn(() => mockStripe);
+(global as any).Stripe = vi.fn(() => mockStripe);
 
 const mockToast = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({
@@ -46,7 +46,7 @@ describe('TestPurchaseButton', () => {
   };
 
   it('should render purchase button for unauthenticated users', () => {
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -57,7 +57,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should show verification status for authenticated users with lifetime access', () => {
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isAuthenticated: true,
       user: {
         id: '1',
@@ -73,7 +73,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should handle successful test purchase', async () => {
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -85,7 +85,7 @@ describe('TestPurchaseButton', () => {
       purchaseDate: new Date().toISOString(),
     };
 
-    (api.post as unknown).mockResolvedValueOnce({
+    (api.post as any).mockResolvedValueOnce({
       success: true,
       data: {
         message: 'Test purchase successful',
@@ -111,12 +111,12 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should handle purchase errors', async () => {
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
 
-    (api.post as unknown).mockResolvedValueOnce({
+    (api.post as any).mockResolvedValueOnce({
       success: false,
       error: 'Purchase failed',
     });
@@ -136,7 +136,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should show loading state during purchase', async () => {
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -147,7 +147,7 @@ describe('TestPurchaseButton', () => {
       resolvePromise = resolve;
     });
 
-    (api.post as unknown).mockReturnValueOnce(purchasePromise);
+    (api.post as any).mockReturnValueOnce(purchasePromise);
 
     renderComponent();
 
@@ -172,7 +172,7 @@ describe('TestPurchaseButton', () => {
   });
 
   it('should display payment information correctly', async () => {
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isAuthenticated: false,
       user: null,
     });
@@ -183,7 +183,7 @@ describe('TestPurchaseButton', () => {
       environment: 'test',
     };
 
-    (api.post as unknown).mockResolvedValueOnce({
+    (api.post as any).mockResolvedValueOnce({
       success: true,
       data: {
         message: 'Test purchase successful',

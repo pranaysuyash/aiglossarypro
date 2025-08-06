@@ -245,13 +245,13 @@ export interface CategoryDistribution {
 export interface PendingContent {
   id: string;
   type:
-    | 'term'
-    | 'definition'
-    | 'example'
-    | 'visual'
-    | 'feedback'
-    | 'term_suggestion'
-    | 'ai_generated';
+  | 'term'
+  | 'definition'
+  | 'example'
+  | 'visual'
+  | 'feedback'
+  | 'term_suggestion'
+  | 'ai_generated';
   termId?: string;
   content: Record<string, unknown>;
   submittedBy: string;
@@ -347,6 +347,7 @@ export interface FeedbackStatistics {
   total: number;
   byStatus: Record<FeedbackStatus, number>;
   byType: Record<string, number>;
+  bySeverity?: Record<string, number>;
   averageResolutionTime?: number;
   recentTrends?: TrendData[];
 }

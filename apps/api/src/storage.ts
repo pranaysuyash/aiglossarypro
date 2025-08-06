@@ -16,6 +16,7 @@ import { and, desc, eq, gte, ilike, isNull, lte, not, sql } from 'drizzle-orm';
 import { db } from '@aiglossarypro/database';
 
 import logger from './utils/logger';
+import { dbTermToTerm, dbTermsToTerms, dbCategoryToCategoryWithStats } from './utils/typeConverters';
 import type {
   Term,
   EnhancedTerm,
@@ -47,10 +48,10 @@ import type {
   TermAnalytics,
   CategoryWithStats,
   UserSettings,
+  RecentActivity,
   AnalyticsOverview,
   UserDataExport,
   OptimizedTerm,
-  RecentActivity,
   WebhookActivity,
   PurchaseExport,
   ConversionFunnel,
@@ -333,13 +334,9 @@ export class DatabaseStorage implements IStorage {
       .where(eq(terms.categoryId, id))
       .orderBy(terms.name);
 
+    const categoryWithStats = dbCategoryToCategoryWithStats(category, subcats, termsInCategory);
     return {
-      ...category,
-      termCount: termsInCategory.length,
-      completedTerms: 0, // TODO: Implement completion tracking
-      averageCompletionRate: 0, // TODO: Calculate from user progress
-      totalViews: termsInCategory.reduce((sum, term) => sum + (term.viewCount || 0), 0),
-      subcategories: subcats,
+      ...categoryWithStats,
       terms: termsInCategory,
     };
   }
@@ -441,7 +438,7 @@ export class DatabaseStorage implements IStorage {
     } as unknown as Term;
   }
 
-  async getRecentlyViewedTerms(userId: string): Promise<UserActivity[]> {
+  async getRecentlyViewedTerms(userId: string): Promise<RecentActivity[]> {
     // Get recently viewed terms with relative time
     const recentViews = await db
       .select({
@@ -457,15 +454,15 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(termViews.viewedAt))
       .limit(10);
 
-    // Format the dates and return as UserActivity
+    // Format the dates and return as RecentActivity
     return recentViews.map((view: any) => ({
       id: `view-${view.termId}-${view.viewedAt?.getTime() || Date.now()}`,
+      type: 'view' as const,
       userId,
-      action: 'view' as const,
-      entityType: 'term' as const,
-      entityId: view.termId,
+      termId: view.termId,
+      termName: view.name,
+      timestamp: view.viewedAt || new Date(),
       metadata: {
-        termName: view.name,
         category: view.category,
         relativeTime: view.viewedAt
           ? formatDistanceToNow(new Date(view.viewedAt), { addSuffix: true })
@@ -755,7 +752,17 @@ export class DatabaseStorage implements IStorage {
       streakDays: streak,
       favoriteCategories: categoryProgress.slice(0, 3),
       categoryProgress,
-      recentActivity: recentActivity.slice(0, 5),
+      recentActivity: recentActivity.slice(0, 5).map(activity => ({
+        id: activity.id,
+        userId: activity.userId,
+        action: activity.type === 'view' ? 'view' as const : 
+                activity.type === 'favorite' ? 'favorite' as const : 
+                'learn' as const,
+        entityType: 'term' as const,
+        entityId: activity.termId || '',
+        metadata: activity.metadata,
+        createdAt: activity.timestamp
+      })),
       completedSections: 0,
       favoriteTerms: [],
       achievements: [],
@@ -1212,7 +1219,11 @@ export class DatabaseStorage implements IStorage {
     const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
 
     if (settings) {
-      return settings as UserSettings;
+      return {
+        userId: settings.userId,
+        ...(settings.preferences as any || {}),
+        lastUpdated: settings.updatedAt || new Date()
+      } as UserSettings;
     }
 
     // Create default settings
@@ -1230,7 +1241,11 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
 
-    return newSettings as UserSettings;
+    return {
+      userId: newSettings.userId,
+      ...(newSettings.preferences as any || {}),
+      lastUpdated: newSettings.updatedAt || new Date()
+    } as UserSettings;
   }
 
   async updateUserSettings(userId: string, settings: any): Promise<void> {
@@ -1429,16 +1444,7 @@ export class DatabaseStorage implements IStorage {
     // Get user's progress
     const progressStats = await this.getUserProgress(userId);
 
-    // Get learned terms
-    const _learned = await db
-      .select({
-        termId: userProgress.termId,
-        learnedAt: userProgress.learnedAt,
-        name: terms.name,
-      })
-      .from(userProgress)
-      .innerJoin(terms, eq(userProgress.termId, terms.id))
-      .where(eq(userProgress.userId, userId));
+    // Note: Learned terms query removed as it wasn't used in the export
 
     // Get user's views with aggregated data
     const viewData = await db
@@ -2743,8 +2749,14 @@ export class DatabaseStorage implements IStorage {
       .from(userProgress)
       .where(and(eq(userProgress.userId, userId), sql`${userProgress.learnedAt} IS NOT NULL`));
 
-    // Get user progress stats in the correct format
-    return this.getUserProgress(userId);
+    // Get base progress stats and enhance with calculated values
+    const baseStats = await this.getUserProgress(userId);
+    
+    return {
+      ...baseStats,
+      totalTermsViewed: totalProgress[0]?.count || 0,
+      totalTermsCompleted: completedProgress[0]?.count || 0,
+    };
   }
 
   // Missing methods for tests
@@ -2785,10 +2797,11 @@ export class DatabaseStorage implements IStorage {
       ? await db.select().from(categories).where(eq(categories.id, term.categoryId)).limit(1)
       : null;
 
-    return {
+    const termWithCategory = {
       ...term,
-      category: category?.[0]?.name || null,
-    } as Term;
+      category: category?.[0]?.name || '',
+    };
+    return dbTermToTerm(termWithCategory);
   }
 
   async getTermsByCategory(
@@ -2841,25 +2854,38 @@ export class DatabaseStorage implements IStorage {
       ? await db.select().from(categories).where(eq(categories.id, newTerm.categoryId)).limit(1)
       : null;
 
-    return {
+    const termWithCategory = {
       ...newTerm,
-      category: category?.[0]?.name || null,
-    } as Term;
+      category: category?.[0]?.name || '',
+    };
+    return dbTermToTerm(termWithCategory);
   }
 
   // AI/Search operations
 
   async updateTerm(termId: string, updates: Partial<Term>): Promise<Term> {
+    // Filter out fields that don't exist in the database table
+    const { sections, metadata, category, relatedTerms, prerequisites, nextTerms, ...dbUpdates } = updates;
+    
     const [updatedTerm] = await db
       .update(terms)
       .set({
-        ...updates,
+        ...dbUpdates,
         updatedAt: new Date(),
       })
       .where(eq(terms.id, termId))
       .returning();
 
-    return updatedTerm;
+    // Get category name if categoryId is provided
+    const category = updatedTerm.categoryId
+      ? await db.select().from(categories).where(eq(categories.id, updatedTerm.categoryId)).limit(1)
+      : null;
+
+    const termWithCategory = {
+      ...updatedTerm,
+      category: category?.[0]?.name || '',
+    };
+    return dbTermToTerm(termWithCategory);
   }
 
   // Missing optional methods implementation
@@ -2914,7 +2940,7 @@ export class DatabaseStorage implements IStorage {
     const result = await query;
 
     return {
-      terms: result,
+      terms: dbTermsToTerms(result),
       total: Number(total),
       page,
       limit,
@@ -2944,7 +2970,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(terms.createdAt))
       .limit(limit);
 
-    return result;
+    return dbTermsToTerms(result);
   }
 
   async deleteTerm(id: string): Promise<void> {
@@ -3035,7 +3061,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getUserAnalytics(userId: string): Promise<TermAnalytics> {
+  async getUserAnalytics(_userId: string): Promise<TermAnalytics> {
     // This is a placeholder implementation
     return {
       termId: '',
@@ -3052,12 +3078,12 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getUserSectionProgress(userId: string, options?: PaginationOptions): Promise<SectionProgress[]> {
+  async getUserSectionProgress(_userId: string, _options?: PaginationOptions): Promise<SectionProgress[]> {
     // This is a placeholder implementation
     return [];
   }
 
-  async trackTermView(userId: string, termId: string, sectionId?: string): Promise<void> {
+  async trackTermView(userId: string, termId: string, _sectionId?: string): Promise<void> {
     // Already implemented as recordTermView
     await this.recordTermView(termId, userId);
   }
@@ -3067,7 +3093,7 @@ export class DatabaseStorage implements IStorage {
     logger.info('Section completion tracked:', { userId, termId, sectionId });
   }
 
-  async getUserTimeSpent(userId: string, timeframe?: string): Promise<number> {
+  async getUserTimeSpent(_userId: string, _timeframe?: string): Promise<number> {
     // This is a placeholder implementation
     return 0;
   }
@@ -3077,7 +3103,7 @@ export class DatabaseStorage implements IStorage {
     logger.info('User streak updated:', { userId, streak });
   }
 
-  async isAchievementUnlocked(userId: string, achievementId: string): Promise<boolean> {
+  async isAchievementUnlocked(_userId: string, _achievementId: string): Promise<boolean> {
     // This is a placeholder implementation
     return false;
   }
@@ -3178,7 +3204,7 @@ export class DatabaseStorage implements IStorage {
     logger.info('Feedback stored:', feedback);
   }
 
-  async getFeedback(filters?: FeedbackFilters, pagination?: PaginationOptions): Promise<PaginatedFeedback> {
+  async getFeedback(_filters?: FeedbackFilters, pagination?: PaginationOptions): Promise<PaginatedFeedback> {
     // This is a placeholder implementation
     return {
       data: [],
@@ -3225,7 +3251,7 @@ export class DatabaseStorage implements IStorage {
     logger.info('Feedback indexes created');
   }
 
-  async getRecentFeedback(limit: number): Promise<(TermFeedback | GeneralFeedback)[]> {
+  async getRecentFeedback(_limit: number): Promise<(TermFeedback | GeneralFeedback)[]> {
     // This is a placeholder implementation
     return [];
   }
@@ -3254,7 +3280,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(categories, eq(terms.categoryId, categories.id))
       .where(sql`${terms.id} IN (${ids})`);
 
-    return result;
+    return dbTermsToTerms(result);
   }
 }
 

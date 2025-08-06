@@ -5,16 +5,15 @@
  * and quality validation.
  */
 
-import { and, eq, ilike, isNull, or, sql } from 'drizzle-orm';
-import type { Express, Request, Response } from 'express'
-import type { Request, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import { db } from '@aiglossarypro/database';
+import type { ApiResponse } from '@aiglossarypro/shared';
 // TODO: Fix these imports for production build
 // import ContentGapAnalyzer from '../../../scripts/content-gap-analysis';
 // import ContentPopulator from '../../../scripts/content-population';
-import { enhancedTerms, termSections } from '@aiglossarypro/shared';
-import type { ApiResponse } from '@aiglossarypro/shared';
-import { db } from '@aiglossarypro/database';
+import { enhancedTerms } from '@aiglossarypro/shared';
+import { and, eq, ilike, isNull, or, sql } from 'drizzle-orm';
+import type { Express, Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { log as logger } from '../../utils/logger';
 import { DataQualityValidator } from '../../validators/dataQualityValidator';
 
@@ -209,6 +208,81 @@ export function registerContentManagementRoutes(app: Express): void {
   });
 
   /**
+   * @swagger
+   * /api/admin/content/terms:
+   *   get:
+   *     summary: List terms with search and filtering
+   *     tags: [Admin - Content Management]
+   */
+  app.get('/api/admin/content/terms', async (req: Request, res: Response) => {
+    try {
+      const { search, category, page = 1, limit = 20 } = req.query;
+      const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      const conditions = [];
+
+      // Add search condition using the imported functions
+      if (search) {
+        conditions.push(
+          or(
+            ilike(enhancedTerms.name, `%${search}%`),
+            ilike(enhancedTerms.shortDefinition, `%${search}%`)
+          )
+        );
+      }
+
+      // Add category filter
+      if (category) {
+        conditions.push(ilike(enhancedTerms.mainCategories, `%${category}%`));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      // Get total count
+      const totalResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(enhancedTerms)
+        .where(whereClause);
+      const total = totalResult[0]?.count || 0;
+
+      // Get terms
+      const terms = await db
+        .select({
+          id: enhancedTerms.id,
+          name: enhancedTerms.name,
+          shortDefinition: enhancedTerms.shortDefinition,
+          mainCategories: enhancedTerms.mainCategories,
+          difficultyLevel: enhancedTerms.difficultyLevel,
+          createdAt: enhancedTerms.createdAt,
+          updatedAt: enhancedTerms.updatedAt,
+        })
+        .from(enhancedTerms)
+        .where(whereClause)
+        .limit(parseInt(limit as string))
+        .offset(offset)
+        .orderBy(enhancedTerms.updatedAt);
+
+      res.json({
+        success: true,
+        data: {
+          terms,
+          pagination: {
+            page: parseInt(page as string),
+            limit: parseInt(limit as string),
+            total,
+            totalPages: Math.ceil(total / parseInt(limit as string)),
+          },
+        },
+      });
+    } catch (error) {
+      logger.error('[ContentManagement] Error listing terms:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve terms',
+      });
+    }
+  });
+
+  /**
    * @openapi
    * /api/admin/content/bulk-operations:
    *   post:
@@ -394,7 +468,7 @@ export function registerContentManagementRoutes(app: Express): void {
       results.sort((a, b) => {
         const severityOrder = { high: 3, medium: 2, low: 1 };
         const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
-        if (severityDiff !== 0) {return severityDiff;}
+        if (severityDiff !== 0) { return severityDiff; }
         return a.qualityScore - b.qualityScore;
       });
 
@@ -433,7 +507,7 @@ async function processBulkOperation(
   options: Record<string, unknown>
 ): Promise<void> {
   const operation = bulkOperations.get(operationId);
-  if (!operation) {return;}
+  if (!operation) { return; }
 
   try {
     operation.status = 'running';
@@ -617,25 +691,25 @@ function calculateTermQuality(term: any): number {
 
   // Definition quality (40 points)
   if (term.fullDefinition) {
-    if (term.fullDefinition.length > 200) {score += 25;}
-    else if (term.fullDefinition.length > 100) {score += 15;}
-    else if (term.fullDefinition.length > 50) {score += 10;}
+    if (term.fullDefinition.length > 200) { score += 25; }
+    else if (term.fullDefinition.length > 100) { score += 15; }
+    else if (term.fullDefinition.length > 50) { score += 10; }
   }
 
-  if (term.shortDefinition && term.shortDefinition.length > 50) {score += 15;}
+  if (term.shortDefinition && term.shortDefinition.length > 50) { score += 15; }
 
   // Categorization (20 points)
-  if (term.mainCategories && term.mainCategories.length > 0) {score += 15;}
-  if (term.subCategories && term.subCategories.length > 0) {score += 5;}
+  if (term.mainCategories && term.mainCategories.length > 0) { score += 15; }
+  if (term.subCategories && term.subCategories.length > 0) { score += 5; }
 
   // Content richness (30 points)
-  if (term.hasCodeExamples) {score += 10;}
-  if (term.hasInteractiveElements) {score += 10;}
-  if (term.difficultyLevel) {score += 5;}
-  if (term.keywords && term.keywords.length > 0) {score += 5;}
+  if (term.hasCodeExamples) { score += 10; }
+  if (term.hasInteractiveElements) { score += 10; }
+  if (term.difficultyLevel) { score += 5; }
+  if (term.keywords && term.keywords.length > 0) { score += 5; }
 
   // Completeness (10 points)
-  if (term.searchText && term.searchText.length > 100) {score += 10;}
+  if (term.searchText && term.searchText.length > 100) { score += 10; }
 
   return Math.min(score, 100);
 }
@@ -653,20 +727,20 @@ function validateTermQuality(term: any): ContentValidationResult {
   } else if (term.fullDefinition.length < 100) {
     issues.push('Definition is too short');
     suggestions.push('Expand definition to provide more context');
-    if (severity === 'low') {severity = 'medium';}
+    if (severity === 'low') { severity = 'medium'; }
   }
 
   if (!term.shortDefinition || term.shortDefinition.length < 30) {
     issues.push('Missing short definition');
     suggestions.push('Add a concise summary (50-150 characters)');
-    if (severity === 'low') {severity = 'medium';}
+    if (severity === 'low') { severity = 'medium'; }
   }
 
   // Check categorization
   if (!term.mainCategories || term.mainCategories.length === 0) {
     issues.push('No main category assigned');
     suggestions.push('Assign appropriate main category');
-    if (severity === 'low') {severity = 'medium';}
+    if (severity === 'low') { severity = 'medium'; }
   }
 
   // Check content richness
@@ -735,13 +809,12 @@ function inferSubCategory(termName: string, definition?: string): string {
   const name = termName.toLowerCase();
   const def = definition?.toLowerCase() || '';
 
-  if (name.includes('supervised') || def.includes('supervised')) {return 'Supervised Learning';}
-  if (name.includes('unsupervised') || def.includes('unsupervised')) {return 'Unsupervised Learning';}
-  if (name.includes('reinforcement') || def.includes('reinforcement'))
-    {return 'Reinforcement Learning';}
-  if (name.includes('deep') || name.includes('neural')) {return 'Deep Learning';}
-  if (name.includes('nlp') || name.includes('language')) {return 'Natural Language Processing';}
-  if (name.includes('vision') || name.includes('image')) {return 'Computer Vision';}
+  if (name.includes('supervised') || def.includes('supervised')) { return 'Supervised Learning'; }
+  if (name.includes('unsupervised') || def.includes('unsupervised')) { return 'Unsupervised Learning'; }
+  if (name.includes('reinforcement') || def.includes('reinforcement')) { return 'Reinforcement Learning'; }
+  if (name.includes('deep') || name.includes('neural')) { return 'Deep Learning'; }
+  if (name.includes('nlp') || name.includes('language')) { return 'Natural Language Processing'; }
+  if (name.includes('vision') || name.includes('image')) { return 'Computer Vision'; }
 
   return 'General AI/ML';
 }

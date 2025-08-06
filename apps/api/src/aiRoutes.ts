@@ -667,7 +667,7 @@ export function registerAIRoutes(app: Express): void {
             totalOutputTokens: Number(summaryResult?.totalOutputTokens || 0),
           },
           byOperation: byOperation.reduce(
-            (acc, item) => {
+            (acc: Record<string, any>, item: any) => {
               acc[item.operation] = {
                 count: Number(item.count),
                 totalCost: Number(item.totalCost || 0),
@@ -678,7 +678,7 @@ export function registerAIRoutes(app: Express): void {
             {} as Record<string, unknown>
           ),
           byModel: byModel.reduce(
-            (acc, item) => {
+            (acc: Record<string, any>, item: any) => {
               acc[item.model] = {
                 count: Number(item.count),
                 totalCost: Number(item.totalCost || 0),

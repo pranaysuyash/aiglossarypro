@@ -1,5 +1,5 @@
-import type { Express, Request, Response } from 'express';
 import type { ApiResponse } from '@aiglossarypro/shared';
+import type { Express, Request, Response } from 'express';
 import { TIME_PERIODS } from '../../constants';
 import { enhancedStorage as storage } from '../../enhancedStorage';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
@@ -82,7 +82,13 @@ export function registerAdminRevenueRoutes(app: Express): void {
       try {
         const { page = 1, limit = 50, status, currency } = req.query;
 
-        const purchases = await storage.getRecentPurchases(parseInt(limit as string));
+        // Use paginated purchase retrieval if available
+        const purchases = await storage.getRecentPurchases({
+          page: parseInt(page as string),
+          limit: parseInt(limit as string),
+          status: status as string,
+          currency: currency as string,
+        });
 
         const response: ApiResponse<typeof purchases> = {
           success: true,

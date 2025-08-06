@@ -338,7 +338,7 @@ function generatePrerequisites(result: Request, _query: string): string[] {
 
   const advancedTerms = ['transformer', 'attention', 'gradient', 'backpropagation', 'optimization'];
   const intermediateTerms = ['neural network', 'supervised learning', 'feature', 'algorithm'];
-  const _basicTerms = ['machine learning', 'artificial intelligence', 'data', 'model'];
+  const basicTerms = ['machine learning', 'artificial intelligence', 'data', 'model'];
 
   const lowerName = result.name.toLowerCase();
 
@@ -346,8 +346,12 @@ function generatePrerequisites(result: Request, _query: string): string[] {
     prerequisites.push('linear algebra', 'calculus', 'statistics');
   } else if (intermediateTerms.some(term => lowerName.includes(term))) {
     prerequisites.push('basic statistics', 'programming fundamentals');
+  } else if (basicTerms.some(term => lowerName.includes(term))) {
+    // Basic AI/ML terms - provide foundational prerequisites
+    prerequisites.push('basic mathematics', 'problem solving', 'logical thinking');
   } else {
-    prerequisites.push('basic mathematics');
+    // Generic term - provide minimal prerequisites
+    prerequisites.push('basic computer literacy');
   }
 
   return prerequisites.slice(0, 3);

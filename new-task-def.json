@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "api",
-      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:enhanced-api-101730",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:stable-api-103951",
       "cpu": 0,
       "portMappings": [
         {

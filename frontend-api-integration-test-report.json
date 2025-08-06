@@ -1,0 +1,93 @@
+{
+  "timestamp": "2025-08-06T03:38:19.660Z",
+  "duration": "3840ms",
+  "summary": {
+    "frontendStatus": "FORBIDDEN",
+    "apiEndpointsWorking": 3,
+    "apiEndpointsTotal": 5,
+    "corsIssues": 1,
+    "recommendationsCount": 2
+  },
+  "details": {
+    "frontendLoading": {
+      "status": "FORBIDDEN",
+      "statusCode": 403,
+      "issue": "CloudFront access denied - likely missing index.html or incorrect S3 permissions"
+    },
+    "apiEndpoints": {
+      "/terms": {
+        "status": "SUCCESS",
+        "statusCode": 200,
+        "responseType": "JSON",
+        "hasData": true,
+        "dataCount": 2,
+        "responseSize": 246,
+        "structure": [
+          "message",
+          "status",
+          "timestamp",
+          "data"
+        ]
+      },
+      "/categories": {
+        "status": "SUCCESS",
+        "statusCode": 200,
+        "responseType": "JSON",
+        "hasData": true,
+        "dataCount": 2,
+        "responseSize": 177,
+        "structure": [
+          "message",
+          "status",
+          "timestamp",
+          "data"
+        ]
+      },
+      "/health": {
+        "status": "SUCCESS",
+        "statusCode": 200,
+        "responseType": "JSON",
+        "hasData": false,
+        "dataCount": 0,
+        "responseSize": 109,
+        "structure": [
+          "status",
+          "timestamp",
+          "environment",
+          "uptime"
+        ]
+      },
+      "/auth/status": {
+        "status": "HTTP_ERROR",
+        "statusCode": 403,
+        "statusText": "Forbidden",
+        "responseSize": 111
+      },
+      "/search?q=test": {
+        "status": "HTTP_ERROR",
+        "statusCode": 403,
+        "statusText": "Forbidden",
+        "responseSize": 111
+      }
+    },
+    "corsIssues": [
+      "CORS may not allow CloudFront origin"
+    ],
+    "authFlow": null,
+    "searchFunctionality": null,
+    "errorHandling": null,
+    "recommendations": [
+      "Fix CloudFront/S3 permissions for frontend access",
+      "Update CORS configuration to allow CloudFront origin"
+    ],
+    "corsConfiguration": {
+      "status": "CONFIGURED",
+      "headers": {}
+    }
+  },
+  "browserTestScript": "// ====================================================================\n// Frontend API Integration Browser Test Script\n// Copy and paste this into the browser console at https://d1m7nnfj3im4kp.cloudfront.net/\n// ====================================================================\n\nconsole.log('🚀 Starting Frontend API Integration Tests in Browser');\n\n// Test API connectivity\nasync function testAPI() {\n  const tests = [\n    { name: 'Terms', url: 'https://d1m7nnfj3im4kp.cloudfront.net/api/terms' },\n    { name: 'Categories', url: 'https://d1m7nnfj3im4kp.cloudfront.net/api/categories' }\n  ];\n  \n  for (const test of tests) {\n    try {\n      console.log(`Testing ${test.name} API...`);\n      const response = await fetch(test.url);\n      const data = await response.json();\n      \n      if (response.ok) {\n        console.log(`✅ ${test.name} API Success:`, data);\n      } else {\n        console.error(`❌ ${test.name} API Error (${response.status}):`, data);\n      }\n    } catch (error) {\n      console.error(`❌ ${test.name} Network Error:`, error);\n    }\n  }\n}\n\n// Test authentication if available\nasync function testAuth() {\n  try {\n    const response = await fetch('https://d1m7nnfj3im4kp.cloudfront.net/api/auth/status', {\n      credentials: 'include'\n    });\n    const data = await response.json();\n    console.log('🔐 Auth Status:', data);\n  } catch (error) {\n    console.log('ℹ️  Auth endpoint not available or errored:', error.message);\n  }\n}\n\n// Test search functionality\nasync function testSearch(query = 'artificial intelligence') {\n  try {\n    const response = await fetch(`https://d1m7nnfj3im4kp.cloudfront.net/api/search?q=${encodeURIComponent(query)}`);\n    const data = await response.json();\n    \n    if (response.ok) {\n      console.log(`🔍 Search for \"${query}\" Success:`, data);\n    } else {\n      console.error(`❌ Search Error (${response.status}):`, data);\n    }\n  } catch (error) {\n    console.error('❌ Search Network Error:', error);\n  }\n}\n\n// Check for frontend JavaScript errors\nfunction checkForErrors() {\n  console.log('📊 Current JavaScript Errors:');\n  if (window.console.error.length) {\n    console.log('Errors found in console');\n  } else {\n    console.log('No obvious errors detected');\n  }\n  \n  // Check for React\n  if (window.React || window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {\n    console.log('✅ React detected');\n  } else {\n    console.log('⚠️  React not detected');\n  }\n  \n  // Check for common frontend frameworks\n  if (window.Vue) console.log('✅ Vue.js detected');\n  if (window.angular) console.log('✅ Angular detected');\n  if (window.jQuery || window.$) console.log('✅ jQuery detected');\n}\n\n// Run all tests\nasync function runAllTests() {\n  checkForErrors();\n  await testAPI();\n  await testAuth();\n  await testSearch();\n  \n  console.log('🎉 Browser tests completed!');\n}\n\n// Auto-run tests\nrunAllTests();\n\n// Make functions available globally for manual testing\nwindow.testAPI = testAPI;\nwindow.testAuth = testAuth;\nwindow.testSearch = testSearch;\nwindow.checkForErrors = checkForErrors;\n\nconsole.log('💡 Available functions: testAPI(), testAuth(), testSearch(query), checkForErrors()');",
+  "recommendations": [
+    "Fix CloudFront/S3 permissions for frontend access",
+    "Update CORS configuration to allow CloudFront origin"
+  ]
+}

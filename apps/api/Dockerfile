@@ -7,8 +7,8 @@ ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm (specific version for reliability)
+RUN corepack enable && corepack prepare pnpm@9.1.1 --activate
 
 # Set working directory
 WORKDIR /repo
@@ -20,36 +20,19 @@ COPY . .
 RUN pnpm install --frozen-lockfile && \
     pnpm -r run build
 
-# Production stage - Full workspace approach (most reliable)
+# Create a self-contained folder for the API using pnpm deploy
+RUN pnpm deploy --filter=./apps/api --prod /tmp/api
+
+# Production stage - Minimal self-contained approach
 FROM node:20-alpine
 
-# Install pnpm and debugging tools
-RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    apk add --no-cache curl bash tini
+# Install debugging tools
+RUN apk add --no-cache curl bash tini
 
-WORKDIR /repo
+WORKDIR /app
 
-# Copy everything the workspace links rely on (this is the key!)
-COPY --from=builder /repo/pnpm-workspace.yaml .
-COPY --from=builder /repo/pnpm-lock.yaml .
-COPY --from=builder /repo/package.json .
-COPY --from=builder /repo/.npmrc .
-COPY --from=builder /repo/packages ./packages
-COPY --from=builder /repo/apps/api ./apps/api
-
-# Install only production dependencies with workspace links intact
-RUN pnpm install --prod --frozen-lockfile
-
-# Debug: Verify the workspace structure works
-RUN echo "=== PACKAGES STRUCTURE ===" && \
-    ls -la /repo/packages/database/dist/ && \
-    echo "=== API node_modules workspace links ===" && \
-    ls -la /repo/apps/api/node_modules/@aiglossarypro/ && \
-    echo "=== Database package link verification ===" && \
-    ls -la /repo/apps/api/node_modules/@aiglossarypro/database/dist/
-
-# Set working directory to API
-WORKDIR /repo/apps/api
+# Copy the self-contained API folder
+COPY --from=builder /tmp/api .
 
 # Set environment
 ENV NODE_ENV=production
@@ -58,8 +41,8 @@ ENV NODE_ENV=production
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Change ownership of the entire repo
-RUN chown -R nodejs:nodejs /repo
+# Change ownership
+RUN chown -R nodejs:nodejs /app
 
 USER nodejs
 
@@ -74,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Start the application from the API directory
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/index-minimal.js"]

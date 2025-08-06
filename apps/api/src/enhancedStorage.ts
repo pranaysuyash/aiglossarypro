@@ -3925,13 +3925,10 @@ export class EnhancedStorage implements IEnhancedStorage {
               // Unlock the achievement
               const unlockedAchievement: Achievement = {
                 id: achievement.id,
-                achievementId: achievement.id,
-                userId,
                 name: achievement.name,
-                title: achievement.name,
                 description: achievement.description,
+                icon: achievement.icon,
                 unlockedAt: new Date(),
-                category: 'learning',
               };
 
               // Store achievement (in real implementation)
@@ -4043,7 +4040,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         const categoriesResult = await this.getCategories();
         const categories = Array.isArray(categoriesResult)
           ? categoriesResult
-          : categoriesResult?.data || [];
+          : (categoriesResult as any)?.data || [];
 
         // Get user progress stats
         const userStats = await this.getUserProgressStats(userId);
@@ -4051,27 +4048,25 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Build progress for each category
         for (const category of categories) {
-          const progress = userCategoryProgress[category.name] || {
+          const progress = (userCategoryProgress as any)[category.name] || {
             totalTerms: category.termCount || 0,
             completedTerms: 0,
             completionPercentage: 0,
           };
 
           categoryProgress.push({
-            userId,
             categoryId: category.id,
             categoryName: category.name,
-            totalTerms: progress.totalTerms,
-            viewedTerms: progress.completedTerms,
+            termsViewed: progress.completedTerms,
+            termsTotal: progress.totalTerms,
             completedTerms: Math.floor(progress.completedTerms * 0.8), // Estimate 80% completion rate
+            percentComplete: progress.completionPercentage,
             completionPercentage: progress.completionPercentage,
-            lastAccessed: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-            timeSpent: Math.floor(Math.random() * 120) + 10,
           });
         }
 
         // Sort by completion percentage (highest first)
-        categoryProgress.sort((a, b) => b.completionPercentage - a.completionPercentage);
+        categoryProgress.sort((a, b) => (b.completionPercentage || 0) - (a.completionPercentage || 0));
 
         logger.info(
           `[EnhancedStorage] getCategoryProgress: Generated progress for ${categoryProgress.length} categories`
@@ -4197,7 +4192,11 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getPurchaseByOrderId(orderId: string): Promise<PurchaseDetails> {
     this.requireAdminAuth();
-    return await this.baseStorage.getPurchaseByOrderId(orderId);
+    const result = await this.baseStorage.getPurchaseByOrderId(orderId);
+    if (!result) {
+      throw new Error(`Purchase with order ID ${orderId} not found`);
+    }
+    return result;
   }
 
   async updateUserAccess(orderId: string, updates: UserAccessUpdate): Promise<void> {
@@ -4213,10 +4212,10 @@ export class EnhancedStorage implements IEnhancedStorage {
         return await this.baseStorage.getAllTerms(options);
       }
       // Fallback implementation
-      return { terms: [], total: 0 };
+      return { data: [], total: 0, page: 1, limit: 100, totalPages: 0, hasMore: false };
     } catch (error) {
       logger.error('[EnhancedStorage] getAllTerms error:', error);
-      return { terms: [], total: 0 };
+      return { data: [], total: 0, page: 1, limit: 100, totalPages: 0, hasMore: false };
     }
   }
 

@@ -22,7 +22,7 @@ COPY packages/config/package.json ./packages/config/
 COPY apps/api/package.json ./apps/api/
 
 # Install all dependencies (including dev dependencies for tsx)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Clean up any existing node_modules in packages/apps to avoid conflicts
 RUN find packages -name "node_modules" -type d -exec rm -rf {} +; true

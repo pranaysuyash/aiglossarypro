@@ -187,6 +187,61 @@ app.get('/api/user/profile', (_req, res) => {
   });
 });
 
+// Additional endpoints for full API compatibility
+app.post('/api/terms', (req, res) => {
+  res.status(201).json({
+    status: 'success',
+    message: 'Term created (mock)',
+    timestamp: new Date().toISOString(),
+    data: { id: Date.now(), ...req.body }
+  });
+});
+
+app.put('/api/terms/:id', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Term updated (mock)',
+    timestamp: new Date().toISOString(),
+    data: { id: req.params.id, ...req.body }
+  });
+});
+
+app.delete('/api/terms/:id', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Term deleted (mock)',
+    timestamp: new Date().toISOString(),
+    data: { id: req.params.id }
+  });
+});
+
+app.post('/api/categories', (req, res) => {
+  res.status(201).json({
+    status: 'success',
+    message: 'Category created (mock)',
+    timestamp: new Date().toISOString(),
+    data: { id: Date.now(), ...req.body }
+  });
+});
+
+app.get('/api/tags', (_req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Tags endpoint working',
+    timestamp: new Date().toISOString(),
+    data: [
+      { id: 1, name: 'machine-learning' },
+      { id: 2, name: 'deep-learning' },
+      { id: 3, name: 'neural-networks' }
+    ]
+  });
+});
+
+app.get('/api/glossary', (_req, res) => {
+  // Redirect to terms for compatibility
+  res.redirect('/api/terms');
+});
+
 const port = parseInt(process.env.PORT || '8080', 10);
 const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
 

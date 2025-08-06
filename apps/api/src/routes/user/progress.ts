@@ -1,5 +1,5 @@
 import type { Express } from 'express';
-import { enhancedStorage } from '../../enhancedStorage-lazy';
+import { enhancedStorage } from '../../enhancedStorage';
 import { multiAuthMiddleware } from '../../middleware/multiAuth';
 import type { AuthenticatedRequest } from '../../types/express';
 import { log } from '../../utils/logger';

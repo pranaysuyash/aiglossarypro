@@ -178,14 +178,23 @@ app.use(cdnCacheMiddleware);
 async function startServer() {
   // Test database connection first
   console.log(`[INIT] ${new Date().toISOString()} - Starting server function...`);
-  console.log(`[INIT] ${new Date().toISOString()} - Connecting to database...`);
-  try {
-    console.log(`[DEBUG] ${new Date().toISOString()} - About to call pool.connect()...`);
-    await pool.connect();
-    console.log(`[DB] ${new Date().toISOString()} - Database connected successfully`);
-  } catch (error) {
-    console.error('[FATAL] Database connection failed:', error);
-    process.exit(1);
+  console.log(`[INIT] ${new Date().toISOString()} - Checking database configuration...`);
+  
+  // Check if DATABASE_URL is configured
+  if (!process.env.DATABASE_URL) {
+    console.warn('[WARNING] DATABASE_URL not configured - running without database connection');
+    console.warn('[WARNING] Some features may be limited');
+  } else {
+    console.log(`[INIT] ${new Date().toISOString()} - Connecting to database...`);
+    try {
+      console.log(`[DEBUG] ${new Date().toISOString()} - About to call pool.connect()...`);
+      await pool.connect();
+      console.log(`[DB] ${new Date().toISOString()} - Database connected successfully`);
+    } catch (error) {
+      console.error('[WARNING] Database connection failed:', error);
+      console.warn('[WARNING] Continuing without database - some features may be limited');
+      // Don't exit - continue running without database
+    }
   }
 
   // Load and validate configuration

@@ -12,20 +12,54 @@
  * Gemini Approved: Option A naming approach with composition pattern
  */
 
-import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
-import OpenAI from 'openai';
+import { redisCache as enhancedRedisCache } from '@aiglossarypro/config';
 import type {
   AdminStats,
   AdvancedSearchOptions,
+  ISection,
   ITerm,
-  UpsertUser,
-  UserActivity,
-  User,
   Purchase,
+  UpsertUser,
+  User,
+  UserActivity,
 } from '@aiglossarypro/shared';
-import { redisCache as enhancedRedisCache } from '@aiglossarypro/config';
+import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import OpenAI from 'openai';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
 import { type IStorage, optimizedStorage } from './optimizedStorage';
+import type {
+  AnalyticsOverview,
+  AutocompleteSuggestion,
+  BackupResult,
+  CategoryStats,
+  CategoryWithStats,
+  ConversionFunnel,
+  CountryRevenue,
+  EnhancedSearchFacets,
+  EnhancedTermsStats,
+  EnhancedTermWithSections,
+  HealthStatus,
+  MaintenanceStatus,
+  OptimizedTerm,
+  ProcessingStats,
+  PurchaseDetails,
+  PurchaseExport,
+  QualityReport,
+  RecentActivity,
+  RecentPurchase,
+  RefundAnalytics,
+  RelatedTerm,
+  RevenuePeriodData,
+  SchemaInfo,
+  SectionEngagement,
+  TermAnalytics,
+  TermRelationships,
+  UserAccessUpdate,
+  UserDataExport,
+  UserPreferences,
+  UserSettings,
+  WebhookActivity,
+} from './types/enhancedStorage.types';
 import type {
   Achievement,
   BulkDeleteResult,
@@ -65,42 +99,7 @@ import type {
   TermUpdate,
   UserProgressStats,
 } from './types/storage.types';
-
 import logger from './utils/logger';
-
-import type {
-  EnhancedTermWithSections,
-  EnhancedSearchFacets,
-  AutocompleteSuggestion,
-  UserPreferences,
-  UserSettings,
-  TermAnalytics,
-  AnalyticsOverview,
-  QualityReport,
-  ProcessingStats,
-  SchemaInfo,
-  HealthStatus,
-  TermRelationships,
-  RecentPurchase,
-  RevenuePeriodData,
-  CountryRevenue,
-  ConversionFunnel,
-  RefundAnalytics,
-  PurchaseExport,
-  WebhookActivity,
-  PurchaseDetails,
-  UserAccessUpdate,
-  UserDataExport,
-  OptimizedTerm,
-  RecentActivity,
-  CategoryWithStats,
-  CategoryStats,
-  MaintenanceStatus,
-  BackupResult,
-  EnhancedTermsStats,
-  RelatedTerm,
-  SectionEngagement,
-} from './types/enhancedStorage.types';
 // ===== CORE INTERFACES =====
 
 export interface IEnhancedStorage extends Omit<IStorage, 'getAllUsers'> {
@@ -407,11 +406,11 @@ export class EnhancedStorage implements IEnhancedStorage {
     if (!result) {
       throw new Error('Term not found');
     }
-    
+
     // Ensure the result has all required EnhancedTermWithSections fields
     // Cast the result to a more flexible type to handle missing properties
     const termData = result as any;
-    
+
     return {
       ...termData,
       // Required EnhancedTerm fields
@@ -443,7 +442,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       techniques: params.techniques?.join(','),
     };
     const result = await this.termsStorage.enhancedSearch(enhancedParams, userId);
-    
+
     // Ensure the result conforms to SearchResult interface
     const { page = 1, limit = 20 } = params;
     const terms = (result.terms || []).map((term: any) => ({
@@ -453,7 +452,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }));
     const total = result.pagination?.total || terms.length || 0;
     const hasMore = (page * limit) < total;
-    
+
     return {
       terms,
       total,
@@ -482,7 +481,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       sortOrder: params.sortOrder || 'desc',
     };
     const result = await this.termsStorage.advancedFilter(filterParams, userId);
-    
+
     // Ensure the result conforms to SearchResult interface
     const { page = 1, limit = 20 } = params;
     const terms = (result.terms || []).map((term: any) => ({
@@ -492,7 +491,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     }));
     const total = result.pagination?.total || terms.length || 0;
     const hasMore = (page * limit) < total;
-    
+
     return {
       terms,
       total,
@@ -507,7 +506,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getSearchFacets(): Promise<EnhancedSearchFacets> {
     const rawFacets = await this.termsStorage.getSearchFacets();
-    
+
     // Transform the raw facets to match EnhancedSearchFacets interface
     return {
       categories: rawFacets.categories.map((c: any) => ({
@@ -575,7 +574,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     if (!prefs) {
       return {} as UserPreferences;
     }
-    
+
     // Map database result to UserPreferences, handling type mismatches
     return {
       experienceLevel: prefs.experienceLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert' | undefined,
@@ -625,7 +624,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         averageTimeSpent: a.timeSpent || a.averageTimeSpent || 0,
         engagementScore: a.engagementScore || a.interactionCount || 0
       }));
-      
+
       return {
         termId,
         totalViews: analytics.reduce((sum: number, a: any) => sum + (a.views || 0), 0),
@@ -646,7 +645,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   async getAnalyticsOverview(): Promise<AnalyticsOverview> {
     const overview = await this.termsStorage.getAnalyticsOverview();
     const baseOverview = overview as any;
-    
+
     // Ensure all required properties are present
     return {
       totalTerms: baseOverview.totalTerms || 0,
@@ -702,7 +701,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getQualityReport(): Promise<QualityReport> {
     const report = await this.termsStorage.getQualityReport();
-    
+
     // Map database result to QualityReport interface
     return {
       timestamp: new Date(),
@@ -732,14 +731,14 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getTermRelationships(termId: string): Promise<TermRelationships> {
     const relationships = await this.termsStorage.getTermRelationships(termId);
-    
+
     // Map database result to TermRelationships interface
     if (Array.isArray(relationships)) {
       // Database returns an array of relationships, convert to TermRelationships structure
       const relatedTerms: RelatedTerm[] = [];
       const prerequisites: RelatedTerm[] = [];
       const nextTerms: RelatedTerm[] = [];
-      
+
       relationships.forEach((rel: any) => {
         const relatedTerm: RelatedTerm = {
           termId: rel.relatedTerm?.id || rel.id,
@@ -748,7 +747,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           relationshipType: rel.relationshipType || 'related',
           relevanceScore: rel.strength || rel.relevanceScore || 0
         };
-        
+
         // Categorize based on relationship type
         if (rel.relationshipType === 'prerequisite') {
           prerequisites.push(relatedTerm);
@@ -758,7 +757,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           relatedTerms.push(relatedTerm);
         }
       });
-      
+
       return {
         termId,
         relatedTerms,
@@ -768,14 +767,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         references: []
       };
     }
-    
+
     // If already in correct format, return as is
     return relationships;
   }
 
   async getLearningPath(termId: string, userId?: string | null): Promise<LearningPath> {
     const path = await this.termsStorage.getLearningPath(termId, userId);
-    
+
     // Map database result to LearningPath interface
     return {
       id: termId + '-path',
@@ -796,7 +795,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getProcessingStats(): Promise<ProcessingStats> {
     const stats = await this.termsStorage.getProcessingStats();
-    
+
     // Map database result to ProcessingStats interface
     return {
       totalProcessed: stats.totalTerms || 0,
@@ -813,7 +812,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getSchemaInfo(): Promise<SchemaInfo> {
     const info = await this.termsStorage.getSchemaInfo();
-    
+
     // Map database result to SchemaInfo interface
     return {
       version: '1.0.0',
@@ -828,7 +827,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getHealthStatus(): Promise<HealthStatus> {
     const status = await this.termsStorage.getHealthStatus();
-    
+
     // Map database result to HealthStatus interface
     if ('databaseConnected' in status) {
       return {
@@ -872,7 +871,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         }
       };
     }
-    
+
     return status as HealthStatus;
   }
 
@@ -1131,7 +1130,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         this.baseStorage
           .getAllUsers({ limit: 5 })
           .then(async users => {
-            if (!users.data.length) {return [];}
+            if (!users.data.length) { return []; }
 
             // Get recent views for active users
             const viewPromises = users.data.map(async user => {
@@ -1159,7 +1158,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         this.baseStorage
           .getAllUsers({ limit: 5 })
           .then(async users => {
-            if (!users.data.length) {return [];}
+            if (!users.data.length) { return []; }
 
             const favoritePromises = users.data.map(async user => {
               return this.baseStorage.getUserFavorites(user.id).then(favorites =>
@@ -2340,7 +2339,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     for (let i = 0; i < limit && i + offset < 100; i++) {
       const category =
         filters.category || categories[Math.floor(Math.random() * categories.length)];
-      const status = filters.status || statuses[Math.floor(Math.random() * statuses.length)];
+      const status = Array.isArray(filters.status) ? filters.status[0] : (filters.status || statuses[Math.floor(Math.random() * statuses.length)]);
 
       mockFeedback.push({
         id: `feedback_${offset + i}`,
@@ -2404,7 +2403,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             details: 'Not configured',
           },
           s3: {
-            status: 'healthy' as 'healthy', 
+            status: 'healthy' as 'healthy',
             details: 'Not configured',
           },
           ai: {
@@ -2428,7 +2427,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             details: 'Health check failed',
           },
           s3: {
-            status: 'error', 
+            status: 'error',
             details: 'Health check failed',
           },
           ai: {
@@ -2515,13 +2514,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         },
         queryPerformance: performanceMetrics
           ? [
-              {
-                query: 'SELECT * FROM enhanced_terms',
-                averageTime: (performanceMetrics as any)?.averageResponseTime || 0,
-                callCount: (performanceMetrics as any)?.totalCachedQueries || 0,
-                lastExecuted: new Date(),
-              },
-            ]
+            {
+              query: 'SELECT * FROM enhanced_terms',
+              averageTime: (performanceMetrics as any)?.averageResponseTime || 0,
+              callCount: (performanceMetrics as any)?.totalCachedQueries || 0,
+              lastExecuted: new Date(),
+            },
+          ]
           : [],
       };
 
@@ -2572,8 +2571,8 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         if ('getPopularTerms' in this.baseStorage) {
           // Validate and convert timeframe parameter
-          const validTimeframe: 'day' | 'week' | 'month' = ['day', 'week', 'month'].includes(timeframe) 
-            ? (timeframe as 'day' | 'week' | 'month') 
+          const validTimeframe: 'day' | 'week' | 'month' = ['day', 'week', 'month'].includes(timeframe)
+            ? (timeframe as 'day' | 'week' | 'month')
             : 'week';
           popularTerms = await this.baseStorage.getPopularTerms(validTimeframe);
         }
@@ -2913,6 +2912,9 @@ export class EnhancedStorage implements IEnhancedStorage {
               viewCount: enhancedTerm.viewCount || 0,
               createdAt: enhancedTerm.createdAt || undefined,
               updatedAt: enhancedTerm.updatedAt || undefined,
+              relatedTerms: (enhancedTerm as any).relatedTerms || [],
+              prerequisites: (enhancedTerm as any).prerequisites || [],
+              nextTerms: (enhancedTerm as any).nextTerms || [],
               sections:
                 (enhancedTerm as any).sections?.map((section: any, index: number) => ({
                   id: parseInt(section.id) || index + 1,
@@ -2941,9 +2943,18 @@ export class EnhancedStorage implements IEnhancedStorage {
         // Convert base term to enhanced format
         const enhancedTerm: EnhancedTerm = {
           ...baseTerm,
-          slug: baseTerm.name.toLowerCase().replace(/\s+/g, '-'),
           subcategories: baseTerm.subcategories || [],
-          sections: this.generateDefaultSections(baseTerm),
+          sections: this.generateDefaultSections(baseTerm).map(section => ({
+            id: section.id.toString(),
+            termId: section.termId.toString(),
+            sectionId: section.id.toString(),
+            title: section.name,
+            content: '',
+            order: section.displayOrder,
+            metadata: {},
+            createdAt: section.createdAt,
+            updatedAt: section.updatedAt,
+          })),
           metadata: {
             lastAiUpdate: new Date(),
             dataSource: 'enhanced-storage',
@@ -2981,16 +2992,16 @@ export class EnhancedStorage implements IEnhancedStorage {
           const dbSections = await this.termsStorage.getTermSections(termId);
           if (dbSections && dbSections.length > 0) {
             logger.info(`[EnhancedStorage] getTermSections: Found ${dbSections.length} sections`);
-            
+
             // Convert database sections to TermSection format
             return dbSections.map(section => ({
               id: section.id,
               termId: section.termId,
               sectionId: section.id, // Use section id as sectionId
-              title: (section as any).sectionName || section.title || '',
-              content: (section as any).sectionData?.content || section.content || '',
-              order: (section as any).priority ?? section.order ?? 0,
-              metadata: (section as any).sectionData || section.metadata || {},
+              title: (section as any).sectionName || (section as any).title || '',
+              content: (section as any).sectionData?.content || (section as any).content || '',
+              order: (section as any).priority ?? (section as any).order ?? 0,
+              metadata: (section as any).sectionData || (section as any).metadata || {},
               createdAt: section.createdAt ?? new Date(),
               updatedAt: section.updatedAt ?? new Date(),
             }));
@@ -3036,11 +3047,11 @@ export class EnhancedStorage implements IEnhancedStorage {
   async getTermContent(termId: string): Promise<unknown> {
     try {
       logger.info(`[EnhancedStorage] getTermContent called for term: ${termId}`);
-      
+
       // Get sections that have AI-generated content
       const sections = await this.getTermSections(termId);
       const aiContent: Record<string, unknown> = {};
-      
+
       sections.forEach(section => {
         if ((section as any).sectionData?.content || section.content) {
           aiContent[(section as any).sectionName || section.title] = {
@@ -3050,7 +3061,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           };
         }
       });
-      
+
       return aiContent;
     } catch (error) {
       logger.error('[EnhancedStorage] getTermContent error:', error);
@@ -3074,7 +3085,12 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Try to update in enhanced storage
       try {
         if (this.termsStorage && typeof this.termsStorage.updateTermSection === 'function') {
-          await this.termsStorage.updateTermSection(termId, sectionId, data);
+          // Convert TermSection to TermSectionUpdate format
+          const updateData = {
+            ...data,
+            metadata: data.metadata ? (data.metadata as Record<string, unknown>) : undefined,
+          };
+          await this.termsStorage.updateTermSection(termId, sectionId, updateData);
           logger.info(`[EnhancedStorage] updateTermSection: Section updated successfully`);
           return;
         }
@@ -3085,7 +3101,12 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Fallback: Update in base storage if supported
       try {
         if (typeof this.baseStorage.updateTermSection === 'function') {
-          await this.baseStorage.updateTermSection(termId, sectionId, data);
+          // Convert TermSection to TermSectionUpdate format
+          const updateData = {
+            ...data,
+            metadata: data.metadata ? (data.metadata as Record<string, unknown>) : undefined,
+          };
+          await this.baseStorage.updateTermSection(termId, sectionId, updateData);
           logger.info(`[EnhancedStorage] updateTermSection: Section updated via base storage`);
           return;
         }
@@ -3118,7 +3139,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         const categoriesResult = await this.getCategories();
         allCategories = Array.isArray(categoriesResult)
           ? categoriesResult
-          : categoriesResult.data || [];
+          : (categoriesResult as any)?.data || [];
       } catch (error) {
         logger.warn('[EnhancedStorage] Failed to get categories:', error);
         allCategories = [];
@@ -3141,13 +3162,13 @@ export class EnhancedStorage implements IEnhancedStorage {
       searchResults.sort((a, b) => {
         const aExact = a.name.toLowerCase() === searchTerm;
         const bExact = b.name.toLowerCase() === searchTerm;
-        if (aExact && !bExact) {return -1;}
-        if (!aExact && bExact) {return 1;}
+        if (aExact && !bExact) { return -1; }
+        if (!aExact && bExact) { return 1; }
 
         const aStarts = a.name.toLowerCase().startsWith(searchTerm);
         const bStarts = b.name.toLowerCase().startsWith(searchTerm);
-        if (aStarts && !bStarts) {return -1;}
-        if (!aStarts && bStarts) {return 1;}
+        if (aStarts && !bStarts) { return -1; }
+        if (!aStarts && bStarts) { return 1; }
 
         return a.name.localeCompare(b.name);
       });
@@ -3270,14 +3291,15 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Initialize default stats
       const defaultStats: UserProgressStats = {
-        userId,
         totalTermsViewed: 0,
+        totalTermsCompleted: 0,
         totalTimeSpent: 0,
-        streakDays: 0,
-        favoriteTerms: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        favoriteCategories: [],
+        recentActivity: [],
         completedSections: 0,
-        averageRating: 0,
-        categoryProgress: {},
+        favoriteTerms: [],
         achievements: [],
         lastActivity: new Date(),
       };
@@ -3290,17 +3312,18 @@ export class EnhancedStorage implements IEnhancedStorage {
 
           // Map analytics data to progress stats
           const stats: UserProgressStats = {
-            userId,
             totalTermsViewed:
-              userAnalytics.totalViews || userAnalytics.totalTermsViewed || 0,
-            totalTimeSpent: userAnalytics.totalTimeSpent || 0,
-            streakDays: userAnalytics.currentStreak || 0,
-            favoriteTerms: userAnalytics.favoriteCount || 0,
-            completedSections: userAnalytics.sectionsCompleted || 0,
-            averageRating: userAnalytics.averageRating || 0,
-            categoryProgress: userAnalytics.categoryProgress || {},
-            achievements: userAnalytics.achievements || [],
-            lastActivity: userAnalytics.lastActivity || new Date(),
+              (userAnalytics as any).totalViews || (userAnalytics as any).totalTermsViewed || 0,
+            totalTermsCompleted: (userAnalytics as any).totalTermsCompleted || 0,
+            totalTimeSpent: (userAnalytics as any).totalTimeSpent || 0,
+            currentStreak: (userAnalytics as any).currentStreak || 0,
+            longestStreak: (userAnalytics as any).longestStreak || 0,
+            favoriteCategories: (userAnalytics as any).categoryProgress || [],
+            recentActivity: (userAnalytics as any).recentActivity || [],
+            completedSections: (userAnalytics as any).sectionsCompleted || 0,
+            favoriteTerms: (userAnalytics as any).favoriteTerms || [],
+            achievements: (userAnalytics as any).achievements || [],
+            lastActivity: (userAnalytics as any).lastActivity || new Date(),
           };
 
           logger.info(`[EnhancedStorage] getUserProgressStats: Retrieved stats for user ${userId}`);
@@ -3319,7 +3342,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           const userStreak = await this.baseStorage.getUserStreak(userId);
           if (userStreak) {
             defaultStats.streakDays = userStreak.currentStreak || 0;
-            defaultStats.lastActivity = userStreak.lastActivity || new Date();
+            defaultStats.lastActivity = (userStreak as any).lastActivityDate || new Date();
           }
         }
 
@@ -3327,7 +3350,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         if ('getUserFavorites' in this.baseStorage) {
           const favorites = await this.baseStorage.getUserFavorites(userId);
           if (Array.isArray(favorites)) {
-            defaultStats.favoriteTerms = favorites.length;
+            defaultStats.favoriteTerms = favorites.map((f: any) => f.id || f.termId || '');
           }
         }
 
@@ -3379,15 +3402,19 @@ export class EnhancedStorage implements IEnhancedStorage {
 
         // Generate realistic mock data for development
         const estimatedStats: UserProgressStats = {
-          userId,
           totalTermsViewed: Math.floor(Math.random() * 50) + 10, // 10-60 terms
+          totalTermsCompleted: Math.floor(Math.random() * 30) + 5, // 5-35 completed
           totalTimeSpent: Math.floor(Math.random() * 300) + 60, // 60-360 minutes
-          streakDays: Math.floor(Math.random() * 7), // 0-7 day streak
-          favoriteTerms: Math.floor(Math.random() * 20) + 5, // 5-25 favorites
+          currentStreak: Math.floor(Math.random() * 7), // 0-7 day streak
+          longestStreak: Math.floor(Math.random() * 14) + 5, // 5-19 day longest
+          favoriteCategories: [], // Empty for now
+          recentActivity: [], // Empty for now
+          favoriteTerms: Array.from({ length: Math.floor(Math.random() * 20) + 5 }, (_, i) => `term_${i}`),
           completedSections: Math.floor(Math.random() * 100) + 20, // 20-120 sections
-          averageRating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0 rating
-          categoryProgress,
-          achievements: ['First Step', 'Term Explorer'].slice(0, Math.floor(Math.random() * 3)), // 0-2 achievements
+          achievements: [
+            { id: 'first_step', name: 'First Step', description: 'Started learning', icon: '🎯', unlockedAt: new Date() },
+            { id: 'term_explorer', name: 'Term Explorer', description: 'Explored terms', icon: '📚', unlockedAt: new Date() }
+          ].slice(0, Math.floor(Math.random() * 3)), // 0-2 achievements
           lastActivity: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Within last week
         };
 
@@ -3406,14 +3433,15 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Return minimal stats on error
       return {
-        userId,
         totalTermsViewed: 0,
+        totalTermsCompleted: 0,
         totalTimeSpent: 0,
-        streakDays: 0,
-        favoriteTerms: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        favoriteCategories: [],
+        recentActivity: [],
+        favoriteTerms: [],
         completedSections: 0,
-        averageRating: 0,
-        categoryProgress: {},
         achievements: [],
         lastActivity: new Date(),
       };
@@ -3439,7 +3467,20 @@ export class EnhancedStorage implements IEnhancedStorage {
           logger.info(
             `[EnhancedStorage] getUserSectionProgress: Found ${progress.length} section progress records`
           );
-          return progress;
+          // Convert SectionUserProgress[] to SectionProgress[]
+          const convertedProgress: SectionProgress[] = progress.map((p: any) => ({
+            termId: p.termId || 'unknown',
+            termName: p.termName || p.termId || 'Unknown Term',
+            sectionId: p.sectionId || p.id || 'unknown',
+            sectionTitle: p.sectionTitle || p.sectionName || p.title || 'Unknown Section',
+            completedAt: p.completedAt || new Date(),
+            timeSpent: p.timeSpent || 0,
+            status: p.status || 'in_progress',
+            completionPercentage: p.completionPercentage || 0,
+            timeSpentMinutes: p.timeSpentMinutes || p.timeSpent || 0,
+            lastAccessed: p.lastAccessed || p.lastAccessedAt || new Date(),
+          }));
+          return convertedProgress;
         }
       } catch (baseError) {
         logger.warn(
@@ -3468,19 +3509,23 @@ export class EnhancedStorage implements IEnhancedStorage {
         const sectionId = mockSections[i % mockSections.length];
 
         mockProgress.push({
-          userId,
           termId,
+          termName: termId
+            .split('-')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' '),
           sectionId,
           sectionTitle: sectionId
             .split('-')
             .map(w => w.charAt(0).toUpperCase() + w.slice(1))
             .join(' '),
+          completedAt:
+            i < 10 ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) : new Date(),
+          timeSpent: Math.floor(Math.random() * 30) + 5,
           status: i < 10 ? 'completed' : i < 15 ? 'in_progress' : 'not_started',
           completionPercentage: i < 10 ? 100 : i < 15 ? Math.floor(Math.random() * 99) : 0,
           timeSpentMinutes: Math.floor(Math.random() * 30) + 5,
           lastAccessed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-          completedAt:
-            i < 10 ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) : undefined,
         });
       }
 
@@ -3521,14 +3566,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         logger.warn('[EnhancedStorage] Base storage tracking failed:', baseError);
       }
 
-      // Track analytics event
+      // Track analytics event - Note: analytics in context is data, not a service
       try {
         if (this.context?.analytics) {
-          this.context.analytics.trackEvent('term_view', {
-            userId,
-            termId,
-            sectionId: sectionId || 'overview',
-            timestamp: new Date(),
+          // Just log the analytics data for now since TermAnalytics is a data structure, not a service
+          logger.info('[EnhancedStorage] Analytics data available for tracking:', {
+            termId: this.context.analytics.termId,
+            totalViews: this.context.analytics.totalViews,
           });
         }
       } catch (analyticsError) {
@@ -3575,11 +3619,10 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Track analytics event
       try {
         if (this.context?.analytics) {
-          this.context.analytics.trackEvent('section_completion', {
-            userId,
-            termId,
-            sectionId,
-            timestamp: new Date(),
+          // Just log the analytics data for now since TermAnalytics is a data structure, not a service
+          logger.info('[EnhancedStorage] Analytics data available for section completion tracking:', {
+            termId: this.context.analytics.termId,
+            completionRate: this.context.analytics.completionRate,
           });
         }
       } catch (analyticsError) {
@@ -3623,7 +3666,7 @@ export class EnhancedStorage implements IEnhancedStorage {
             (existingStreak.lastActivityDate ||
               existingStreak.lastActivity ||
               new Date()
-          );
+            );
           const lastActivityDay = new Date(
             lastActivityDate.getFullYear(),
             lastActivityDate.getMonth(),
@@ -4377,7 +4420,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   async createEnhancedTerm(termData: Partial<Term>): Promise<Term> {
     try {
       logger.info('[EnhancedStorage] createEnhancedTerm called');
-      
+
       // Add analytics tracking
       termData.analytics = {
         createdAt: new Date(),
@@ -4439,7 +4482,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   async createTermSection(sectionData: Partial<TermSection>): Promise<TermSection> {
     try {
       logger.info('[EnhancedStorage] createTermSection called');
-      
+
       // Add user experience enhancements
       sectionData.ux = {
         readingTime: this.calculateReadingTime(sectionData.content),
@@ -4476,7 +4519,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   async createInteractiveElement(elementData: Partial<InteractiveElement>): Promise<InteractiveElement> {
     try {
       logger.info('[EnhancedStorage] createInteractiveElement called');
-      
+
       // Add interaction tracking
       elementData.tracking = {
         interactions: 0,
@@ -4522,7 +4565,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   async getEnhancedTermsStats(): Promise<EnhancedTermsStats> {
     try {
       logger.info('[EnhancedStorage] getEnhancedTermsStats called');
-      
+
       // Try enhanced storage first
       if (this.termsStorage && typeof this.termsStorage.getEnhancedTermsStats === 'function') {
         return await this.termsStorage.getEnhancedTermsStats();
@@ -4531,7 +4574,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Generate comprehensive stats
       const terms = await this.getTerms();
       const categories = await this.getCategories();
-      
+
       return {
         totalTerms: terms.length,
         totalCategories: categories.length,
@@ -4576,7 +4619,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   // Helper methods for calculations
   private calculateReadingTime(content: string | { content: string }): number {
-    if (!content) {return 0;}
+    if (!content) { return 0; }
     const text = typeof content === 'string' ? content : JSON.stringify(content);
     const wordsPerMinute = 200;
     const wordCount = text.split(/\s+/).length;
@@ -4584,36 +4627,36 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   private assessDifficulty(content: string | { content: string }): 'beginner' | 'intermediate' | 'advanced' {
-    if (!content) {return 'beginner';}
+    if (!content) { return 'beginner'; }
     const text = typeof content === 'string' ? content : JSON.stringify(content);
-    
+
     // Simple heuristic based on technical terms and complexity
     const technicalTerms = ['algorithm', 'optimization', 'gradient', 'neural', 'quantum', 'cryptographic'];
     const matches = technicalTerms.filter(term => text.toLowerCase().includes(term)).length;
-    
-    if (matches >= 3) {return 'advanced';}
-    if (matches >= 1) {return 'intermediate';}
+
+    if (matches >= 3) { return 'advanced'; }
+    if (matches >= 1) { return 'intermediate'; }
     return 'beginner';
   }
 
   private calculateAverageLength(texts: string[]): number {
-    if (!texts || texts.length === 0) {return 0;}
+    if (!texts || texts.length === 0) { return 0; }
     const totalLength = texts.reduce((sum, text) => sum + (text?.length || 0), 0);
     return Math.round(totalLength / texts.length);
   }
 
   private calculateCompletenessScore(terms: Term[]): number {
-    if (!terms || terms.length === 0) {return 0;}
-    
+    if (!terms || terms.length === 0) { return 0; }
+
     const scores = terms.map((term: PopularTerm) => {
       let score = 0;
-      if (term.definition) {score += 25;}
-      if (term.examples?.length > 0) {score += 25;}
-      if (term.references?.length > 0) {score += 25;}
-      if (term.relatedTerms?.length > 0) {score += 25;}
+      if (term.definition) { score += 25; }
+      if (term.examples?.length > 0) { score += 25; }
+      if (term.references?.length > 0) { score += 25; }
+      if (term.relatedTerms?.length > 0) { score += 25; }
       return score;
     });
-    
+
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / terms.length);
   }
 
@@ -4633,13 +4676,7 @@ export default enhancedStorage;
 
 // Export types for use in routes
 export type {
-  AdminStats,
-  ContentMetrics,
-  SearchResult,
-  DatabaseMetrics,
-  EnhancedTerm,
-  TermSection,
-  PaginationOptions,
-  PaginatedResult,
-  AdvancedSearchOptions,
+  AdminStats, AdvancedSearchOptions, ContentMetrics, DatabaseMetrics,
+  EnhancedTerm, PaginatedResult, PaginationOptions, SearchResult, TermSection
 };
+

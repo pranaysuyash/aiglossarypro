@@ -15,10 +15,10 @@ export const getEnhancedStorage = (): EnhancedStorage => {
       console.error('[EnhancedStorage] Failed to initialize:', error);
       // Return a mock object that won't crash the app
       _enhancedStorage = {
-        setContext: () => {},
+        setContext: () => { },
         requireAuth: () => { throw new Error('Storage not initialized'); },
         requireAdminAuth: () => { throw new Error('Storage not initialized'); },
-        logFailedAuth: () => {},
+        logFailedAuth: () => { },
       } as any;
     }
   }

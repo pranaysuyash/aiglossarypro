@@ -59,6 +59,7 @@ import type {
   Achievement,
   Term,
   PaginatedResult,
+  FeedbackStatistics,
 } from './types/storage.types';
 import type {
   IStorage as IStorageTypeSafe,
@@ -2816,15 +2817,7 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getFeedbackStats(): Promise<{
-    totalFeedback: number;
-    pendingReview: number;
-    reviewing: number;
-    resolved: number;
-    dismissed: number;
-    byType: Record<string, number>;
-    bySeverity: Record<string, number>;
-  }> {
+  async getFeedbackStats(): Promise<FeedbackStatistics> {
     try {
       // Get overall stats by status
       const statusStats = await db
@@ -2854,33 +2847,37 @@ export class OptimizedStorage implements IStorage {
         .groupBy(aiContentFeedback.severity);
 
       // Calculate totals
-      const stats = {
-        totalFeedback: 0,
-        pendingReview: 0,
-        reviewing: 0,
-        resolved: 0,
-        dismissed: 0,
+      const stats: FeedbackStatistics = {
+        total: 0,
+        byStatus: {
+          pending: 0,
+          reviewing: 0,
+          resolved: 0,
+          rejected: 0,
+        },
         byType: {} as Record<string, number>,
-        bySeverity: {} as Record<string, number>,
+        averageResolutionTime: 0,
+        recentTrends: [],
       };
 
       // Process status stats
       statusStats.forEach(({ status, count }) => {
         const countNum = Number(count);
-        stats.totalFeedback += countNum;
+        stats.total += countNum;
         
         switch (status) {
           case 'pending':
-            stats.pendingReview = countNum;
+            stats.byStatus.pending = countNum;
             break;
           case 'reviewing':
-            stats.reviewing = countNum;
+            stats.byStatus.reviewing = countNum;
             break;
           case 'resolved':
-            stats.resolved = countNum;
+            stats.byStatus.resolved = countNum;
             break;
           case 'dismissed':
-            stats.dismissed = countNum;
+          case 'rejected':
+            stats.byStatus.rejected = countNum;
             break;
         }
       });
@@ -2890,25 +2887,21 @@ export class OptimizedStorage implements IStorage {
         stats.byType[feedbackType] = Number(count);
       });
 
-      // Process severity stats
-      severityStats.forEach(({ severity, count }) => {
-        if (severity) {
-          stats.bySeverity[severity] = Number(count);
-        }
-      });
-
       return stats;
     } catch (error) {
       log.error('Error fetching feedback stats', { error });
       // Return empty stats on error
       return {
-        totalFeedback: 0,
-        pendingReview: 0,
-        reviewing: 0,
-        resolved: 0,
-        dismissed: 0,
+        total: 0,
+        byStatus: {
+          pending: 0,
+          reviewing: 0,
+          resolved: 0,
+          rejected: 0,
+        },
         byType: {},
-        bySeverity: {},
+        averageResolutionTime: 0,
+        recentTrends: [],
       };
     }
   }

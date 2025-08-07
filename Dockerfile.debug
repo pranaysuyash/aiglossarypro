@@ -1,34 +1,40 @@
-FROM node:20-alpine
+# Debug Dockerfile with extensive logging
+# Testing with both Alpine and Debian-based images
 
-# Install debugging tools
-RUN apk add --no-cache curl bash
+# Option 1: Try with Debian-based slim image (more compatible)
+FROM node:20-slim
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the entire project structure
-COPY . .
+# Copy the simple API files
+COPY simple-api.js ./
+COPY simple-package.json ./package.json
+COPY debug-entrypoint.sh ./
 
-# Set working directory to API
-WORKDIR /app/apps/api
+# Make entrypoint executable
+RUN chmod +x debug-entrypoint.sh
 
-# Debug: Show what files we have
-RUN ls -la dist/ || echo "No dist directory"
+# Install only production dependencies
+RUN npm install --production
 
-# Create startup script that shows debug info
-RUN cat > /app/debug-start.sh << 'STARTUP'
-#!/bin/bash
-echo "=== DEBUG INFO ==="
-echo "Working directory: $(pwd)"
-echo "Files in current dir:"
-ls -la
-echo "Files in dist/:"
-ls -la dist/ || echo "No dist/"
-echo "NODE_ENV: $NODE_ENV"
-echo "DATABASE_URL: ${DATABASE_URL:0:50}..."
-echo "Starting application..."
-exec node dist/index.js
-STARTUP
+# Add debugging info
+RUN echo "[BUILD] Node version: $(node --version)" && \
+    echo "[BUILD] NPM version: $(npm --version)" && \
+    echo "[BUILD] Platform: $(uname -m)" && \
+    echo "[BUILD] Files in /app:" && \
+    ls -la
 
-RUN chmod +x /app/debug-start.sh
+# Health check with more verbose output
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+  CMD curl -f http://localhost:3001/api/health 2>&1 || (echo "Health check failed" && exit 1)
 
-CMD ["/app/debug-start.sh"]
+EXPOSE 3001
+
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Use debug entrypoint
+ENTRYPOINT ["/app/debug-entrypoint.sh"]

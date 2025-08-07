@@ -3301,8 +3301,20 @@ export class OptimizedStorage implements IStorage {
     } = options;
 
     try {
-      // Start with basic query
-      let query = db.select().from(subcategories);
+      // Start with basic query - implement field selection for performance
+      const selectFields = _fields.includes('*') 
+        ? {} 
+        : _fields.reduce((acc, field) => {
+            // Map field names to database columns
+            if (field in subcategories) {
+              acc[field] = subcategories[field as keyof typeof subcategories];
+            }
+            return acc;
+          }, {} as Record<string, any>);
+      
+      let query = _fields.includes('*') 
+        ? db.select().from(subcategories)
+        : db.select(selectFields).from(subcategories);
 
       const conditions = [];
 
@@ -3411,7 +3423,7 @@ export class OptimizedStorage implements IStorage {
       fields?: string[];
     }
   ): Promise<{ data: ITerm[]; total: number }> {
-    const { offset = 0, limit = 50, sort = 'name', order = 'asc', _fields = ['*'] } = options;
+    const { offset = 0, limit = 50, sort = 'name', order = 'asc', fields: _fields = ['*'] } = options;
 
     // Get total count first
     const totalResult = await db
@@ -3424,18 +3436,29 @@ export class OptimizedStorage implements IStorage {
 
     const total = totalResult[0]?.count || 0;
 
-    // Get the actual data
+    // Get the actual data - implement field selection for performance optimization
+    const defaultFields = {
+      id: terms.id,
+      name: terms.name,
+      shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
+      viewCount: terms.viewCount,
+      categoryId: terms.categoryId,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt,
+    };
+    
+    const selectFields = _fields.includes('*') 
+      ? defaultFields 
+      : _fields.reduce((acc, field) => {
+          if (field in defaultFields) {
+            acc[field] = defaultFields[field as keyof typeof defaultFields];
+          }
+          return acc;
+        }, {} as Record<string, any>);
+    
     let query = db
-      .select({
-        id: terms.id,
-        name: terms.name,
-        shortDefinition: terms.shortDefinition,
-        definition: terms.definition,
-        viewCount: terms.viewCount,
-        categoryId: terms.categoryId,
-        createdAt: terms.createdAt,
-        updatedAt: terms.updatedAt,
-      })
+      .select(selectFields)
       .from(terms)
       .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
       .where(eq(termSubcategories.subcategoryId, subcategoryId));

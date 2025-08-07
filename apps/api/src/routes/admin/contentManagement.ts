@@ -80,6 +80,13 @@ export function registerContentManagementRoutes(app: Express): void {
    */
   app.get('/api/admin/content/stats', async (req: Request, res: Response) => {
     try {
+      // Extract query parameters for filtered stats
+      const { 
+        category = 'all',
+        dateRange = '30d',
+        includeAI = 'true'
+      } = req.query as { category?: string; dateRange?: string; includeAI?: string };
+      
       // Get basic term counts
       const totalTermsResult = await db
         .select({ count: sql<number>`count(*)` })

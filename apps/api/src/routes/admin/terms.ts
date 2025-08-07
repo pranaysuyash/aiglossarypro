@@ -125,6 +125,14 @@ export function registerAdminTermsRoutes(app: Express): void {
           return res.status(401).json({ error: 'Unauthorized' });
         }
         const _userId = req.user.id;
+        
+        // Log admin access to terms listing
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_terms_list',
+          entityType: 'admin',
+          metadata: { endpoint: 'GET /admin/enhanced-terms' },
+        });
 
         const {
           search = '',
@@ -374,6 +382,14 @@ export function registerAdminTermsRoutes(app: Express): void {
         }
 
         const _userId = req.user.id;
+        
+        // Log admin bulk update action
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_terms_bulk_update',
+          entityType: 'admin',
+          metadata: { changesCount: req.body.changes?.length || 0 },
+        });
 
         const { changes } = req.body;
 
@@ -519,6 +535,14 @@ export function registerAdminTermsRoutes(app: Express): void {
         }
 
         const _userId = req.user.id;
+        
+        // Log admin verification action
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_terms_verify',
+          entityType: 'admin',
+          metadata: { termCount: req.body.termIds?.length || 0, verified: req.body.verified },
+        });
 
         const { termIds, verified } = req.body;
 
@@ -572,6 +596,14 @@ export function registerAdminTermsRoutes(app: Express): void {
           return res.status(401).json({ error: 'Unauthorized' });
         }
         const _userId = req.user.id;
+        
+        // Log admin deletion action
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_terms_delete',
+          entityType: 'admin',
+          metadata: { termCount: req.body.termIds?.length || 0 },
+        });
 
         const { termIds } = req.body;
 
@@ -758,6 +790,14 @@ export function registerAdminTermsRoutes(app: Express): void {
           return res.status(401).json({ error: 'Unauthorized' });
         }
         const _userId = req.user.id;
+        
+        // Log admin analytics access
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_terms_analytics',
+          entityType: 'admin',
+          metadata: { endpoint: 'GET /admin/terms/analytics' },
+        });
 
         // Get comprehensive term analytics - only use existing fields
         const [totalStats] = await db
@@ -884,6 +924,14 @@ export function registerAdminTermsRoutes(app: Express): void {
           return res.status(401).json({ error: 'Unauthorized' });
         }
         const _userId = req.user.id;
+        
+        // Log admin export action
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_terms_export',
+          entityType: 'admin',
+          metadata: { format: req.query.format || 'csv' },
+        });
 
         const { format = 'csv', category = '' } = req.query;
 
@@ -1061,6 +1109,14 @@ export function registerAdminTermsRoutes(app: Express): void {
         }
 
         const _userId = req.user.id;
+        
+        // Log admin term creation
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_term_create',
+          entityType: 'admin',
+          metadata: { termName: req.body.name, useAI: req.body.useAI },
+        });
 
         const { name, shortDefinition, fullDefinition, mainCategories, useAI } = req.body;
 
@@ -1234,6 +1290,14 @@ export function registerAdminTermsRoutes(app: Express): void {
         }
 
         const _userId = req.user.id;
+        
+        // Log admin term update
+        await storage.logActivity({
+          userId: _userId,
+          action: 'admin_term_update',
+          entityType: 'admin',
+          metadata: { termId: req.params.termId },
+        });
 
         const { termId } = req.params;
 

@@ -745,6 +745,13 @@ router.get(
         total.totalGenerations > 0
           ? (total.totalGenerations / (Number(total.totalCost) || 1)) * 100
           : 0;
+      
+      // Calculate token efficiency metrics
+      const tokenEfficiency = {
+        averageTokensPerGeneration: total.totalGenerations > 0 ? _totalTokens / total.totalGenerations : 0,
+        inputOutputRatio: total.totalOutputTokens > 0 ? total.totalInputTokens / total.totalOutputTokens : 0,
+        costPerThousandTokens: _totalTokens > 0 ? (Number(total.totalCost) / _totalTokens) * 1000 : 0,
+      };
 
       // Generate mock data for advanced features not yet implemented
       const qualityDistribution = {
@@ -765,6 +772,7 @@ router.get(
           successRate: Number(total.successRate) || 0,
           averageQualityScore: avgQualityScore,
           totalCost: Number(total.totalCost) || 0,
+          totalTokens: _totalTokens,
           averageProcessingTime: (Number(total.averageLatency) || 0) / 1000,
           costEfficiency: costEfficiency / 100,
           qualityTrend: 'up' as const,
@@ -831,6 +839,8 @@ router.get(
         ],
 
         qualityDistribution,
+        
+        tokenEfficiency,
 
         costBreakdown: {
           byModel: modelStats.map((stat, _index) => ({

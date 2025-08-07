@@ -3,7 +3,8 @@
  * Configures BullMQ queues, workers, and event listeners
  */
 
-import { type ConnectionOptions, type Job, Queue, QueueEvents, Worker } from 'bullmq';
+import { Job, Queue, QueueEvents, Worker } from 'bullmq';
+import type { ConnectionOptions } from 'ioredis';
 import Redis from 'ioredis';
 import { log as logger } from '../utils/logger';
 import { type JobOptions, JobPriority, type JobProgressUpdate, JobType } from './types';

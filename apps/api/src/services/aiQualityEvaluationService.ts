@@ -118,8 +118,8 @@ export interface QualityAnalyticsResult {
  */
 export class AIQualityEvaluationService {
   private openai: OpenAI;
-  private readonly DEFAULT_MODEL = 'gpt-4.1-mini';
-  private readonly _EVALUATION_MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'o1-mini', 'gpt-4o-mini'];
+  private readonly DEFAULT_MODEL = 'gpt-4o-mini';
+  private readonly EVALUATION_MODELS = ['gpt-4o-mini', 'gpt-4', 'o1-mini', 'gpt-4-turbo'];
 
   private readonly MODEL_COSTS = {
     'gpt-4.1': { input: 0.025, output: 0.1 },
@@ -155,6 +155,51 @@ export class AIQualityEvaluationService {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
+  }
+
+  /**
+   * Get available evaluation models with their capabilities and costs
+   */
+  public getAvailableModels(): Array<{
+    model: string;
+    isDefault: boolean;
+    capabilities: string[];
+    costs: { input: number; output: number } | null;
+    recommendedFor: string[];
+  }> {
+    return this.EVALUATION_MODELS.map(model => ({
+      model,
+      isDefault: model === this.DEFAULT_MODEL,
+      capabilities: this.getModelCapabilities(model),
+      costs: this.MODEL_COSTS[model as keyof typeof this.MODEL_COSTS] || null,
+      recommendedFor: this.getModelRecommendations(model),
+    }));
+  }
+
+  /**
+   * Get capabilities for a specific model
+   */
+  private getModelCapabilities(model: string): string[] {
+    const capabilities: Record<string, string[]> = {
+      'gpt-4o-mini': ['fast', 'cost-effective', 'good-for-bulk'],
+      'gpt-4': ['high-quality', 'detailed-analysis', 'comprehensive'],
+      'gpt-4-turbo': ['balanced', 'fast', 'high-quality'],
+      'o1-mini': ['reasoning', 'analytical', 'problem-solving'],
+    };
+    return capabilities[model] || ['standard'];
+  }
+
+  /**
+   * Get recommendations for when to use each model
+   */
+  private getModelRecommendations(model: string): string[] {
+    const recommendations: Record<string, string[]> = {
+      'gpt-4o-mini': ['bulk-evaluation', 'quick-checks', 'cost-sensitive-operations'],
+      'gpt-4': ['detailed-evaluation', 'high-stakes-content', 'comprehensive-analysis'],
+      'gpt-4-turbo': ['balanced-workloads', 'medium-complexity-content'],
+      'o1-mini': ['complex-reasoning', 'analytical-content', 'technical-evaluation'],
+    };
+    return recommendations[model] || ['general-purpose'];
   }
 
   /**

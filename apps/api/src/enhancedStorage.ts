@@ -4151,7 +4151,15 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getRecentPurchases(limit = 10): Promise<RecentPurchase[]> {
     this.requireAdminAuth();
-    return await this.baseStorage.getRecentPurchases(limit);
+    const result = await this.baseStorage.getRecentPurchases(limit);
+    
+    // Handle both possible return types from different storage implementations
+    if (Array.isArray(result)) {
+      return result;
+    } else {
+      // If it's a paginated result object, return just the items array
+      return result.items;
+    }
   }
 
   async getRevenueByPeriod(period: string): Promise<RevenuePeriodData> {

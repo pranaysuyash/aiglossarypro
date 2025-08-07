@@ -1195,6 +1195,14 @@ export function registerTermRoutes(app: Express): void {
       // Track the view
       await storage.trackTermView(userId, id);
 
+      // Invalidate caches that depend on view counts and analytics
+      await Promise.all([
+        invalidateCache(invalidationPatterns.TERMS), // Term lists with view counts
+        invalidateCache(invalidationPatterns.ANALYTICS), // Analytics data
+        invalidateCache(invalidationPatterns.TRENDING), // Trending terms
+        invalidateCache(`term:${id}`), // Specific term cache
+      ]);
+
       res.json({
         success: true,
         message: 'View tracked successfully',

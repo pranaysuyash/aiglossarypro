@@ -771,6 +771,30 @@ export class BatchSafetyControlsService extends EventEmitter {
       }
     }
   }
+
+  /**
+   * Cleanup resources and stop health checks
+   * Important for preventing memory leaks
+   */
+  public stopHealthChecks(): void {
+    if (this._healthCheckInterval) {
+      clearInterval(this._healthCheckInterval);
+      this._healthCheckInterval = undefined;
+      logger.info('Batch safety health checks stopped');
+    }
+  }
+
+  /**
+   * Full cleanup method for graceful shutdown
+   */
+  public cleanup(): void {
+    this.stopHealthChecks();
+    this.violations.clear();
+    this.userLimitStatus.clear();
+    this.requestCounts.clear();
+    this.removeAllListeners();
+    logger.info('Batch safety controls service cleaned up');
+  }
 }
 
 // Export singleton instance

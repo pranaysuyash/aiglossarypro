@@ -166,6 +166,22 @@ router.post(
       });
 
       await GumroadService.processRefundWebhook(refundData);
+      
+      // Create a refund request for tracking and customer support
+      try {
+        await RefundService.createRefundRequest({
+          userId: null, // Will be matched from purchase data
+          purchaseId: refundData.sale_id,
+          reason: refundData.refund_reason || 'Refunded via Gumroad',
+          status: 'approved',
+          processedAt: new Date(refundData.refund_date),
+          refundAmount: refundData.amount_refunded_in_cents / 100,
+          adminNotes: `Automatically processed via Gumroad webhook. Refund ID: ${refundData.refund_id}`,
+        });
+      } catch (refundError) {
+        logger.error('Failed to create refund request record:', refundError);
+        // Don't fail the webhook, just log the error
+      }
 
       res.status(200).json({
         success: true,

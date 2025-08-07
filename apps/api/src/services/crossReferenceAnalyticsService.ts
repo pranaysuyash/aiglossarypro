@@ -324,32 +324,56 @@ class CrossReferenceAnalyticsService {
    * Private helper methods
    */
   private async bulkCalculateIncomingReferences(termIds: string[]) {
-    // Bulk calculate incoming references for multiple terms
+    // Bulk calculate incoming references for multiple terms using real data
     const results = new Map();
-
-    for (const termId of termIds) {
-      // This would analyze which terms users viewed before viewing this term
-      // For now, return mock data structure
-      const refs = Array.from({ length: Math.floor(Math.random() * 20) }, (_, i) => ({
-        termId: `term_${i}`,
-        termName: `Related Term ${i}`,
-        referenceCount: Math.floor(Math.random() * 50) + 5,
-        averageSessionGap: Math.floor(Math.random() * 300) + 30,
-      }));
+    
+    // Use Promise.all for parallel processing of incoming references
+    const incomingRefsPromises = termIds.map(async (termId) => {
+      const incomingRefs = await this.calculateIncomingReferences(termId);
+      return { termId, refs: incomingRefs };
+    });
+    
+    const incomingRefsResults = await Promise.all(incomingRefsPromises);
+    
+    for (const { termId, refs } of incomingRefsResults) {
       results.set(termId, refs);
     }
 
     return results;
   }
 
-  private async _calculateIncomingReferences(_termId: string) {
-    // This would analyze which terms users viewed before viewing this term
-    // For now, return mock data structure
-    return Array.from({ length: Math.floor(Math.random() * 20) }, (_, i) => ({
-      termId: `term_${i}`,
-      termName: `Related Term ${i}`,
-      referenceCount: Math.floor(Math.random() * 50) + 5,
-      averageSessionGap: Math.floor(Math.random() * 300) + 30,
+  private async calculateIncomingReferences(termId: string) {
+    // Analyze which terms users viewed before viewing this term
+    // Look at term views within user sessions to find navigation patterns
+    const incomingRefs = await db
+      .select({
+        sourceTermId: sql<string>`source_views.term_id`,
+        sourceTermName: sql<string>`source_terms.name`,
+        referenceCount: count(),
+        averageSessionGap: avg(sql<number>`
+          EXTRACT(EPOCH FROM (target_views.viewed_at - source_views.viewed_at))
+        `),
+      })
+      .from(termViews.as('target_views'))
+      .innerJoin(
+        termViews.as('source_views'),
+        and(
+          eq(sql`target_views.user_id`, sql`source_views.user_id`),
+          sql`target_views.viewed_at > source_views.viewed_at`,
+          sql`target_views.viewed_at - source_views.viewed_at <= INTERVAL '1 hour'`
+        )
+      )
+      .innerJoin(terms.as('source_terms'), eq(sql`source_views.term_id`, sql`source_terms.id`))
+      .where(eq(sql`target_views.term_id`, termId))
+      .groupBy(sql`source_views.term_id`, sql`source_terms.name`)
+      .orderBy(desc(count()))
+      .limit(20);
+
+    return incomingRefs.map(ref => ({
+      termId: ref.sourceTermId,
+      termName: ref.sourceTermName,
+      referenceCount: Number(ref.referenceCount),
+      averageSessionGap: Math.round(Number(ref.averageSessionGap) || 0),
     }));
   }
 

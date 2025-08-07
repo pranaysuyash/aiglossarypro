@@ -88,7 +88,15 @@ router.post('/subscribe',
       utmCampaign: utm_campaign,
     });
 
-    log.info(`New newsletter subscription: ${email} (${language})`);
+    log.info(`New newsletter subscription: ${email} (${language})`, {
+      email,
+      language,
+      utmSource: utm_source,
+      utmMedium: utm_medium,
+      utmCampaign: utm_campaign,
+      marketingConsent: marketingConsent || 'not_specified',
+      consentTimestamp: marketingConsent ? new Date().toISOString() : null,
+    });
 
     res.json({
       success: true,

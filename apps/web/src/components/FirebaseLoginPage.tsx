@@ -90,6 +90,15 @@ export default function FirebaseLoginPage() {
         // Check for premium status
         const userData = (response.data as any)?.user;
         const userType = userData.lifetimeAccess ? 'Premium' : 'Free';
+        
+        // Track login analytics
+        if (window.gtag) {
+          window.gtag('event', 'login', {
+            method: 'google',
+            user_type: userType,
+            has_premium: userData.lifetimeAccess || false
+          });
+        }
         const welcomeMessage = userData.lifetimeAccess
           ? `Welcome back, ${userData.email}! Your premium access is active.`
           : `Welcome back, ${userData.email}!`;
@@ -253,6 +262,15 @@ export default function FirebaseLoginPage() {
         // Check for premium status
         const userData = response.data?.user;
         const userType = userData?.lifetimeAccess ? 'Premium' : 'Free';
+        
+        // Track login analytics
+        if (window.gtag) {
+          window.gtag('event', 'login', {
+            method: 'email',
+            user_type: userType,
+            has_premium: userData?.lifetimeAccess || false
+          });
+        }
         const welcomeMessage = userData?.lifetimeAccess
           ? `Welcome back! Your premium access is active.`
           : `Welcome back!`;
@@ -700,7 +718,7 @@ export default function FirebaseLoginPage() {
                       <strong>Email:</strong> test@aimlglossary.com
                     </div>
                     <div>
-                      <strong>Password:</strong> testpassword123
+                      <strong>Password:</strong> [Use environment variable]
                     </div>
                   </div>
                   <Button
@@ -709,13 +727,13 @@ export default function FirebaseLoginPage() {
                     className="w-full"
                     onClick={async () => {
                       setEmail('test@aimlglossary.com');
-                      setPassword('testpassword123');
+                      setPassword(import.meta.env.VITE_TEST_USER_PASSWORD || '');
 
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
                           email: 'test@aimlglossary.com',
-                          password: 'testpassword123',
+                          password: import.meta.env.VITE_TEST_USER_PASSWORD || '',
                           firstName: 'Test',
                           lastName: 'User',
                         });
@@ -753,7 +771,7 @@ export default function FirebaseLoginPage() {
                       <strong>Email:</strong> premium@aimlglossary.com
                     </div>
                     <div>
-                      <strong>Password:</strong> testpassword123
+                      <strong>Password:</strong> [Use environment variable]
                     </div>
                   </div>
                   <Button
@@ -762,13 +780,13 @@ export default function FirebaseLoginPage() {
                     className="w-full"
                     onClick={async () => {
                       setEmail('premium@aimlglossary.com');
-                      setPassword('testpassword123');
+                      setPassword(import.meta.env.VITE_TEST_USER_PASSWORD || '');
 
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
                           email: 'premium@aimlglossary.com',
-                          password: 'testpassword123',
+                          password: import.meta.env.VITE_TEST_USER_PASSWORD || '',
                           firstName: 'Premium',
                           lastName: 'User',
                         });
@@ -804,7 +822,7 @@ export default function FirebaseLoginPage() {
                       <strong>Email:</strong> admin@aimlglossary.com
                     </div>
                     <div>
-                      <strong>Password:</strong> adminpass123
+                      <strong>Password:</strong> [Use environment variable]
                     </div>
                   </div>
                   <Button
@@ -813,13 +831,13 @@ export default function FirebaseLoginPage() {
                     className="w-full"
                     onClick={async () => {
                       setEmail('admin@aimlglossary.com');
-                      setPassword('adminpass123');
+                      setPassword(import.meta.env.VITE_ADMIN_USER_PASSWORD || '');
 
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
                           email: 'admin@aimlglossary.com',
-                          password: 'adminpass123',
+                          password: import.meta.env.VITE_ADMIN_USER_PASSWORD || '',
                           firstName: 'Admin',
                           lastName: 'User',
                         });

@@ -295,7 +295,19 @@ class OptimizedS3Client {
         queueSize: 4,
         partSize: 1024 * 1024 * 5, // 5MB chunks
         leavePartsOnError: false,
+        ...(abortSignal && { abortSignal }), // Add abort signal support
       });
+
+      // Track active uploads for management
+      if (abortSignal) {
+        const abortController = new AbortController();
+        this.activeUploads.set(key, abortController);
+        
+        abortSignal.addEventListener('abort', () => {
+          upload.abort();
+          this.activeUploads.delete(key);
+        });
+      }
 
       // Track upload progress
       upload.on('httpUploadProgress', progress => {
@@ -307,6 +319,9 @@ class OptimizedS3Client {
       const result = await upload.done();
       progressTracker(100, 100, 'complete');
 
+      // Clean up tracking
+      this.activeUploads.delete(key);
+
       return {
         key,
         etag: result.ETag || '',
@@ -314,6 +329,8 @@ class OptimizedS3Client {
       };
     } catch (error) {
       progressTracker(0, 100, 'error');
+      // Clean up tracking on error
+      this.activeUploads.delete(key);
       throw error;
     }
   }

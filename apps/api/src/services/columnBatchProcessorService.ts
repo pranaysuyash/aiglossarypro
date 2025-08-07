@@ -770,8 +770,40 @@ export class ColumnBatchProcessorService extends EventEmitter {
       const { hasContent, isAiGenerated, verificationStatus, lastUpdatedBefore, lastUpdatedAfter } =
         request.filterOptions;
 
-      // Complex filtering will require joining with sections and sectionItems
-      // For now, implement basic term-level filtering
+      // Apply content filtering options
+      if (hasContent !== undefined) {
+        // Filter based on whether terms have existing content
+        if (hasContent) {
+          whereConditions.push(sql`EXISTS (
+            SELECT 1 FROM sections s
+            JOIN section_items si ON s.id = si.section_id
+            WHERE s.term_id = ${enhancedTerms.id}
+            AND si.content IS NOT NULL
+            AND LENGTH(TRIM(si.content)) > 0
+          )`);
+        } else {
+          whereConditions.push(sql`NOT EXISTS (
+            SELECT 1 FROM sections s
+            JOIN section_items si ON s.id = si.section_id
+            WHERE s.term_id = ${enhancedTerms.id}
+            AND si.content IS NOT NULL
+            AND LENGTH(TRIM(si.content)) > 0
+          )`);
+        }
+      }
+
+      if (isAiGenerated !== undefined) {
+        whereConditions.push(
+          isAiGenerated 
+            ? sql`${enhancedTerms.isAiGenerated} = true`
+            : sql`${enhancedTerms.isAiGenerated} = false OR ${enhancedTerms.isAiGenerated} IS NULL`
+        );
+      }
+
+      if (verificationStatus) {
+        whereConditions.push(sql`${enhancedTerms.verificationStatus} = ${verificationStatus}`);
+      }
+
       if (lastUpdatedBefore) {
         whereConditions.push(sql`${enhancedTerms.updatedAt} < ${lastUpdatedBefore.toISOString()}`);
       }

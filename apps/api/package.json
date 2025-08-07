@@ -27,7 +27,6 @@
     "vite": "^5.4.19"
   },
   "devDependencies": {
-    "@types/express-rate-limit": "^6.0.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.9",
     "esbuild": "^0.25.8",

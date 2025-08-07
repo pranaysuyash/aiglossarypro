@@ -581,13 +581,36 @@ AI Glossary Pro Support Team`;
         return false;
       }
 
-      const testEmail = 'test@example.com';
+      const testEmail = process.env.TEST_EMAIL || 'test@aiglossarypro.com';
       const subject = 'Test Email - AI Glossary Pro';
-      const content = 'This is a test email to verify email configuration.';
+      const content = `
+        <h2>Email Configuration Test</h2>
+        <p>This is a test email to verify email configuration.</p>
+        <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+        <p><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</p>
+        <p>If you received this email, your email configuration is working correctly!</p>
+      `;
 
-      // Don't actually send test emails, just verify configuration
-      logger.info('Email configuration test - SES client is configured');
-      return true;
+      // Send actual test email if TEST_EMAIL environment variable is set
+      if (process.env.TEST_EMAIL && process.env.NODE_ENV !== 'production') {
+        try {
+          await this.sendEmail({
+            to: testEmail,
+            subject,
+            html: content,
+            from: this.fromEmail,
+          });
+          logger.info('Test email sent successfully', { to: testEmail });
+          return true;
+        } catch (sendError) {
+          logger.error('Failed to send test email:', sendError);
+          return false;
+        }
+      } else {
+        // Just verify configuration without sending
+        logger.info('Email configuration test - SES client is configured');
+        return true;
+      }
     } catch (error) {
       logger.error('Error testing email configuration:', error);
       return false;

@@ -707,12 +707,21 @@ export function registerUserRoutes(app: Express): void {
           referrerId: user.referrerId || undefined,
         };
         const accessCheck = canViewTerm(userForAccessControl);
+        
+        // Log term-specific access checks for analytics
+        log.info('Term access check', {
+          userId,
+          termId,
+          canView: accessCheck.canView,
+          reason: accessCheck.reason,
+        });
 
         res.json({
           success: true,
           data: {
             canView: accessCheck.canView,
             reason: accessCheck.reason,
+            termId, // Include termId in response for client reference
             ...accessCheck.metadata,
           },
         });

@@ -11,6 +11,13 @@ const router = Router();
  */
 router.get('/health', async (req, res) => {
   try {
+    // Log monitoring access for security auditing
+    log.info('Health check accessed', {
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+      source: req.get('x-monitoring-source') || 'unknown',
+    });
+    
     const health = monitoringService.getHealthStatus();
     const metrics = await monitoringService.getCurrentMetrics();
 

@@ -247,9 +247,43 @@ async function getTrendingAnalytics(timeRange: string): Promise<TrendingAnalytic
     .orderBy(desc(count()))
     .limit(5);
 
+  // Calculate average velocity score from trending terms
+  const trendingTermsResult = await db
+    .select({
+      velocityScore: sql<number>`
+        CASE 
+          WHEN COUNT(${termViews.id}) > 0 
+          THEN ((COUNT(${termViews.id}) - COALESCE(
+            (SELECT COUNT(*) FROM ${termViews} tv2 
+             WHERE tv2.term_id = ${terms.id} 
+             AND tv2.viewed_at >= ${new Date(startTime.getTime() - periodMs).toISOString()}
+             AND tv2.viewed_at < ${startTime.toISOString()}), 
+            0
+          )) / GREATEST(1, COALESCE(
+            (SELECT COUNT(*) FROM ${termViews} tv2 
+             WHERE tv2.term_id = ${terms.id} 
+             AND tv2.viewed_at >= ${new Date(startTime.getTime() - periodMs).toISOString()}
+             AND tv2.viewed_at < ${startTime.toISOString()}), 
+            0
+          ))) * 100
+          ELSE 0 
+        END`
+    })
+    .from(terms)
+    .leftJoin(termViews, and(
+      eq(termViews.termId, terms.id),
+      gte(termViews.viewedAt, startTime.toISOString())
+    ))
+    .groupBy(terms.id)
+    .having(sql`COUNT(${termViews.id}) > 0`);
+
+  const avgVelocity = trendingTermsResult.length > 0
+    ? trendingTermsResult.reduce((sum, term) => sum + Number(term.velocityScore), 0) / trendingTermsResult.length
+    : 0;
+
   return {
     totalTrendingTerms: totalTrendingResult[0]?.count || 0,
-    averageVelocityScore: 0, // Calculate if needed
+    averageVelocityScore: Math.round(avgVelocity * 100) / 100, // Round to 2 decimal places
     topCategories: topCategoriesResult.map(cat => ({
       categoryId: cat.categoryId || '',
       name: cat.categoryName || 'Uncategorized',
@@ -375,7 +409,12 @@ export function registerTrendingRoutes(app: Express): void {
           description: categories.description,
           viewCount: count(termViews.id),
           uniqueTermsViewed: sql<number>`COUNT(DISTINCT ${termViews.termId})`,
-          averageEngagement: sql<number>`0`,
+          averageEngagement: avg(sql<number>`
+            CASE 
+              WHEN ${termViews.viewedAt} IS NOT NULL 
+              THEN 1.0 
+              ELSE 0.0 
+            END`),
         })
         .from(categories)
         .leftJoin(terms, eq(categories.id, terms.categoryId))
@@ -426,6 +465,26 @@ export function registerTrendingRoutes(app: Express): void {
             userId: user?.id || null,
             termId,
             viewedAt: new Date(),
+          });
+          
+          // Log metadata for analytics if provided
+          if (metadata && Object.keys(metadata).length > 0) {
+            logger.info('Term interaction metadata', {
+              termId,
+              interactionType,
+              userId: user?.id,
+              metadata,
+              duration,
+            });
+          }
+        } else {
+          // For non-view interactions, just log them since we don't have a table yet
+          logger.info('Term interaction recorded', {
+            termId,
+            interactionType,
+            userId: user?.id,
+            metadata,
+            duration,
           });
         }
 

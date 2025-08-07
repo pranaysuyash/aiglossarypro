@@ -596,3 +596,90 @@ export class DatabaseError extends StorageError {
     this.name = 'DatabaseError';
   }
 }
+
+// ===== REVENUE ANALYTICS TYPES =====
+
+export interface RecentPurchase {
+  id: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  currency: string;
+  country?: string;
+  productId: string;
+  purchaseDate: Date;
+  status: 'completed' | 'pending' | 'refunded';
+  paymentMethod: string;
+  isUpgrade?: boolean;
+}
+
+export interface RevenuePeriodData {
+  period: string;
+  totalRevenue: number;
+  totalPurchases: number;
+  averageOrderValue: number;
+  conversionRate: number;
+  refundRate: number;
+  growthRate?: number;
+  previousPeriodComparison?: {
+    revenueChange: number;
+    purchaseChange: number;
+    conversionChange: number;
+  };
+}
+
+export interface CountryRevenue {
+  country: string;
+  countryCode: string;
+  totalRevenue: number;
+  totalPurchases: number;
+  averageOrderValue: number;
+  percentage: number;
+  growthRate?: number;
+}
+
+export interface ConversionFunnel {
+  totalVisitors: number;
+  signups: number;
+  purchaseIntents: number;
+  completedPurchases: number;
+  signupRate: number;
+  conversionRate: number;
+  dropoffPoints: {
+    stage: string;
+    dropoffRate: number;
+    suggestions: string[];
+  }[];
+}
+
+export interface RefundAnalytics {
+  totalRefunds: number;
+  refundRate: number;
+  totalRefundedAmount: number;
+  refundReasons: {
+    reason: string;
+    count: number;
+    percentage: number;
+  }[];
+  refundsByPeriod: {
+    period: string;
+    refundCount: number;
+    refundAmount: number;
+  }[];
+  averageRefundTime: number;
+}
+
+export interface PurchaseExport {
+  id: string;
+  userEmail: string;
+  amount: number;
+  currency: string;
+  country: string;
+  productId: string;
+  productName: string;
+  purchaseDate: Date;
+  status: string;
+  paymentMethod: string;
+  refundDate?: Date;
+  refundReason?: string;
+}

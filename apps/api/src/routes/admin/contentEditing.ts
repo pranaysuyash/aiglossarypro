@@ -222,7 +222,7 @@ router.post('/content/bulk-update-status', async (req, res) => {
           .where(eq(sections.termId, termId));
 
         for (const section of sectionsToUpdate) {
-          const _result = await db
+          const result = await db
             .update(sectionItems)
             .set({
               verificationStatus: status,
@@ -238,9 +238,15 @@ router.post('/content/bulk-update-status', async (req, res) => {
                 statusUpdatedAt: new Date().toISOString(),
               },
             })
-            .where(eq(sectionItems.sectionId, section.id));
+            .where(eq(sectionItems.sectionId, section.id))
+            .returning();
 
-          updatedCount++;
+          // Only increment if update actually affected rows
+          if (result && result.length > 0) {
+            updatedCount++;
+          } else {
+            logger.warn(`Failed to update verification status for section ${section.id}`);
+          }
         }
       }
     }

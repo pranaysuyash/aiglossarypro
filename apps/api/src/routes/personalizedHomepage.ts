@@ -301,6 +301,14 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
         if (learningStyle) {
           updatedProfile.learningStyle = learningStyle;
         }
+        
+        if (difficultyPreference) {
+          updatedProfile.difficultyPreference = difficultyPreference;
+        }
+        
+        if (contentTypes && Array.isArray(contentTypes)) {
+          updatedProfile.preferredContentTypes = contentTypes;
+        }
 
         if (preferredCategories) {
           // Boost specified categories in interests

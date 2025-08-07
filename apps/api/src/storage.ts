@@ -2877,13 +2877,13 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     // Get category name if categoryId is provided
-    const category = updatedTerm.categoryId
+    const categoryData = updatedTerm.categoryId
       ? await db.select().from(categories).where(eq(categories.id, updatedTerm.categoryId)).limit(1)
       : null;
 
     const termWithCategory = {
       ...updatedTerm,
-      category: category?.[0]?.name || '',
+      category: categoryData?.[0]?.name || '',
     };
     return dbTermToTerm(termWithCategory);
   }

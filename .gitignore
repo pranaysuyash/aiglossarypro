@@ -476,10 +476,20 @@ SECRETS.md
 CREDENTIALS.md
 KEYS.md
 
-# Ignore all shell scripts by default
-*.sh
-!scripts/example*.sh
-!scripts/template*.sh
+# Ignore deployment scripts (contain secrets)
+deploy*.sh
+scripts/deploy*.sh
+**/deploy-*.sh
+
+# Keep non-deployment scripts
+# *.sh files without 'deploy' in name are allowed
+
+# Docker build logs
+docker-build-*.log
+
+# Deployment artifacts
+deploy-task-def-*.json
+*task-def*.json
 
 # Ignore all JSON files in scripts directory
 scripts/*.json

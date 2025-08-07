@@ -48,6 +48,7 @@ import { referralRoutes } from './referral';
 import referralsRoutes from './referrals';
 import { registerRelationshipRoutes } from './relationships';
 import { registerSearchRoutes } from './search';
+import { registerAIRoutes } from '../aiRoutes';
 import { registerSectionRoutes } from './sections';
 import { registerSeoRoutes } from './seo';
 import { registerSubcategoryRoutes } from './subcategories';
@@ -126,6 +127,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     // Register analytics routes
     registerAnalyticsRoutes(app);
     logger.info('✅ Analytics routes registered');
+
+    // Register AI routes
+    registerAIRoutes(app);
+    logger.info('✅ AI routes registered');
 
     // Register personalization routes (for AI-powered recommendations)
     registerPersonalizationRoutes(app);

@@ -84,6 +84,18 @@ playwright-report/
 Trace-*.json
 docker-build-*.log
 
+# Deployment artifacts
+deploy-*.sh
+deploy-task-def-*.json
+*task-def*.json
+push-*.log
+monitoring/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
 # Large JSON trace files (keep package.json, tsconfig.json, etc)
 Trace-*.json
 

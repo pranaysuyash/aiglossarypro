@@ -5,7 +5,7 @@
   "containerDefinitions": [
     {
       "name": "api",
-      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:features-20250807-091235",
+      "image": "927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:full-ts-api-working",
       "cpu": 0,
       "portMappings": [
         {
@@ -37,6 +37,10 @@
           "value": "firebase-adminsdk-fbsvc@aiglossarypro.iam.gserviceaccount.com"
         },
         {
+          "name": "FIREBASE_AUTH_ENABLED",
+          "value": "true"
+        },
+        {
           "name": "SIMPLE_AUTH",
           "value": "false"
         },
@@ -60,23 +64,23 @@
       "secrets": [
         {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database:DATABASE_URL::"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt:JWT_SECRET::"
         },
         {
           "name": "OPENAI_API_KEY",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/openai"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/openai:OPENAI_API_KEY::"
         },
         {
           "name": "SESSION_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/session"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/session:SESSION_SECRET::"
         },
         {
           "name": "FIREBASE_PRIVATE_KEY_BASE64",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-private-key"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/firebase-private-key:FIREBASE_PRIVATE_KEY_BASE64::"
         }
       ],
       "logConfiguration": {
@@ -102,6 +106,7 @@
   "requiresCompatibilities": [
     "FARGATE"
   ],
-  "cpu": "512",
-  "memory": "1024"
+  "cpu": "1024",
+  "memory": "2048"
 }
+EOF < /dev/null

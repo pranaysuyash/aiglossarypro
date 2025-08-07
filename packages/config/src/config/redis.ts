@@ -14,7 +14,6 @@ interface RedisConfig {
   port?: number;
   password?: string;
   db?: number;
-  retryDelayOnFailover?: number;
   maxRetriesPerRequest?: number;
   connectTimeout?: number;
   commandTimeout?: number;
@@ -153,7 +152,6 @@ const redisConfig: RedisConfig = {
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD,
   db: parseInt(process.env.REDIS_DB || '0'),
-  retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3,
   connectTimeout: 10000,
   commandTimeout: 5000,
@@ -163,7 +161,6 @@ const redisConfig: RedisConfig = {
 // Production Redis configuration with additional settings
 const productionRedisConfig: RedisConfig = {
   ...redisConfig,
-  retryDelayOnFailover: 1000,
   maxRetriesPerRequest: 5,
   connectTimeout: 30000,
   commandTimeout: 15000,
@@ -187,6 +184,8 @@ const createRedisClient = (): RedisClient => {
   // Use actual Redis client only when explicitly enabled and URL is provided
   if (process.env.REDIS_ENABLED === 'true' && process.env.REDIS_URL) {
     try {
+      logger.info('[Redis] Starting with mock client, will upgrade to real Redis when available');
+      
       // Use dynamic import instead of require for ESM compatibility
       import('ioredis')
         .then(({ default: Redis }) => {
@@ -195,48 +194,72 @@ const createRedisClient = (): RedisClient => {
           const configToUse =
             process.env.NODE_ENV === 'production' ? productionRedisConfig : redisConfig;
 
-          const client = process.env.REDIS_URL
-            ? new Redis(process.env.REDIS_URL, {
-                ...configToUse,
-                lazyConnect: true,
-                maxRetriesPerRequest: configToUse.maxRetriesPerRequest,
-                // retryDelayOnFailover: configToUse.retryDelayOnFailover, // Not supported in newer versions
-                connectTimeout: configToUse.connectTimeout,
-                commandTimeout: configToUse.commandTimeout,
-                enableOfflineQueue: configToUse.enableOfflineQueue,
+          try {
+            const client = process.env.REDIS_URL
+              ? new Redis(process.env.REDIS_URL, {
+                  ...configToUse,
+                  lazyConnect: false, // Connect immediately to detect failures
+                  maxRetriesPerRequest: configToUse.maxRetriesPerRequest,
+                  // retryDelayOnFailover: configToUse.retryDelayOnFailover, // Not supported in newer versions
+                  connectTimeout: configToUse.connectTimeout,
+                  commandTimeout: configToUse.commandTimeout,
+                  enableOfflineQueue: configToUse.enableOfflineQueue,
+                  // Additional Upstash-specific options
+                  family: 4, // Force IPv4
+                  tls: {
+                    rejectUnauthorized: false // Accept self-signed certificates for Upstash
+                  }
+                })
+              : new Redis(configToUse);
+
+            // Add connection event listeners
+            client.on('connect', () => {
+              logger.info('[Redis] Connected to Redis server');
+              // Replace the global client with the real one only after successful connection
+              redisClient = new ProductionRedisClient(client);
+            });
+
+            client.on('ready', () => {
+              logger.info('[Redis] Redis client ready');
+            });
+
+            client.on('error', error => {
+              logger.error('[Redis] Redis client error:', error);
+              logger.warn('[Redis] Falling back to mock client due to connection error');
+              // Don't replace the client on error - keep using mock client
+            });
+
+            client.on('close', () => {
+              logger.info('[Redis] Redis connection closed');
+            });
+
+            client.on('reconnecting', () => {
+              logger.info('[Redis] Redis reconnecting...');
+            });
+
+            // Test the connection
+            client.ping()
+              .then(() => {
+                logger.info('[Redis] Connection test successful');
               })
-            : new Redis(configToUse);
-
-          // Add connection event listeners
-          client.on('connect', () => {
-            logger.info('[Redis] Connected to Redis server');
-          });
-
-          client.on('ready', () => {
-            logger.info('[Redis] Redis client ready');
-          });
-
-          client.on('error', error => {
-            logger.error('[Redis] Redis client error:', error);
-          });
-
-          client.on('close', () => {
-            logger.info('[Redis] Redis connection closed');
-          });
-
-          client.on('reconnecting', () => {
-            logger.info('[Redis] Redis reconnecting...');
-          });
-
-          // Replace the global client with the real one
-          redisClient = new ProductionRedisClient(client);
+              .catch(error => {
+                logger.error('[Redis] Connection test failed:', error);
+                logger.warn('[Redis] Keeping mock client due to ping failure');
+                // Close the failed client
+                client.disconnect();
+              });
+              
+          } catch (clientError) {
+            logger.error('[Redis] Failed to create Redis client:', clientError);
+            logger.warn('[Redis] Keeping mock client due to client creation failure');
+          }
         })
         .catch(error => {
           logger.error('[Redis] Failed to dynamically import ioredis:', error);
+          logger.warn('[Redis] Keeping mock client due to import failure');
         });
 
-      // Return mock client for immediate use, will be replaced by real client
-      logger.info('[Redis] Starting with mock client, will upgrade to real Redis when available');
+      // Return mock client for immediate use, will be replaced by real client if connection succeeds
       return new MockRedisClient();
     } catch (error) {
       logger.error('[Redis] Failed to initialize Redis client:', error);

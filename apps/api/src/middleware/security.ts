@@ -1,7 +1,6 @@
 import cors from 'cors';
 import type { NextFunction, Request, Response } from 'express';
-// TODO: Install express-rate-limit package
-// import rateLimit from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { z } from 'zod';
 import { log } from '../utils/logger';

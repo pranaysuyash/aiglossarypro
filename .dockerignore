@@ -91,6 +91,13 @@ deploy-task-def-*.json
 push-*.log
 monitoring/
 
+# Simple API files (must not be included in production builds)
+simple-api.js
+simple-package.json
+simple-server.js
+simple-api-*.js
+Dockerfile.simple
+
 # Database files
 *.db
 *.sqlite

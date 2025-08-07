@@ -20,12 +20,30 @@ const redisConnection: ConnectionOptions = {
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD,
   db: parseInt(process.env.REDIS_DB || '1'), // Use DB 1 for job queues
-  maxRetriesPerRequest: null,
+  maxRetriesPerRequest: 2,
   enableReadyCheck: false,
+  connectTimeout: 10000,
+  commandTimeout: 5000,
+  // Additional options for Upstash compatibility
+  family: 4, // Force IPv4
+  lazyConnect: true, // Don't connect until needed
 };
 
 // Create Redis connections for different BullMQ components
-const createRedisConnection = () => new Redis(redisConnection);
+const createRedisConnection = () => {
+  const redis = new Redis(redisConnection);
+  
+  // Add error handlers to prevent crashes
+  redis.on('error', (error) => {
+    logger.error('Redis connection error in job queue:', error);
+  });
+  
+  redis.on('connect', () => {
+    logger.info('Redis connected for job queue');
+  });
+  
+  return redis;
+};
 
 // Queue configuration
 export interface QueueConfig {
@@ -60,12 +78,29 @@ export class JobQueueManager extends EventEmitter {
       return;
     }
 
+    // Check if Redis is enabled
+    if (process.env.REDIS_ENABLED !== 'true') {
+      logger.info('Job queue system disabled (REDIS_ENABLED != true)');
+      return;
+    }
+
+    // Check if required Redis environment variables are present
+    if (!process.env.REDIS_HOST && !process.env.REDIS_URL) {
+      logger.warn('Redis configuration missing (no REDIS_HOST or REDIS_URL), skipping job queue initialization');
+      return;
+    }
+
     try {
       // Create Redis connection
       this.redisConnection = createRedisConnection();
       
-      // Test Redis connection
-      await this.redisConnection.ping();
+      // Test Redis connection with timeout
+      const pingPromise = this.redisConnection.ping();
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Redis ping timeout')), 5000);
+      });
+      
+      await Promise.race([pingPromise, timeoutPromise]);
       logger.info('Redis connection established for job queues');
 
       // Initialize queues for each job type
@@ -83,7 +118,8 @@ export class JobQueueManager extends EventEmitter {
       logger.error('Failed to initialize job queue manager:', {
         error: error instanceof Error ? error.message : String(error),
       });
-      throw error;
+      logger.warn('Continuing without job queue system');
+      // Don't throw - let the application continue without job queues
     }
   }
 

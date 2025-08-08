@@ -121,7 +121,7 @@ import { registerLocationRoutes } from './routes/location';
 import { registerSimpleAuthRoutes } from './routes/simpleAuth';
 import { initS3Client } from './s3Service';
 import { setupSwagger } from './swagger/setup';
-import { serveStatic } from './vite';
+import { serveStatic } from './vite-setup';
 
 // Express app already created at the top of the file
 // const wsInstance = expressWs(app);

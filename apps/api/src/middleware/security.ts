@@ -35,25 +35,13 @@ export const createRateLimit = (options: {
       options.keyGenerator ||
       (req => {
         // Use user ID if authenticated, otherwise IP
-        if (!req.user) {
-
-          return res.status(401).json({ error: 'Unauthorized' });
-
-        }
-
-        const user = req.user as unknown;
-        return user?.id || user?.claims?.sub || req.ip;
+        const user = req.user as any;
+        return user?.id || user?.claims?.sub || req.ip || 'anonymous';
       }),
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     handler: (req, res) => {
-      if (!req.user) {
-
-        return res.status(401).json({ error: 'Unauthorized' });
-
-      }
-
-      const user = req.user as unknown;
-      const identifier = user?.id || user?.claims?.sub || req.ip;
+      const user = req.user as any;
+      const identifier = user?.id || user?.claims?.sub || req.ip || 'anonymous';
 
       log.warn('Rate limit exceeded', {
         identifier,

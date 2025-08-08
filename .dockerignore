@@ -92,10 +92,11 @@ push-*.log
 monitoring/
 
 # Simple API files (must not be included in production builds)
-simple-api.js
-simple-package.json
-simple-server.js
-simple-api-*.js
+# Simple API files commented out for debug deployment
+# simple-api.js
+# simple-package.json
+# simple-server.js
+# simple-api-*.js
 Dockerfile.simple
 
 # Database files

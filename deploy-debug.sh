@@ -30,7 +30,7 @@ echo ""
 echo "2️⃣ Testing container locally..."
 docker run --rm \
   -e NODE_ENV=production \
-  -e PORT=3001 \
+  -e PORT=8080 \
   ${IMAGE_TAG} \
   node -e "console.log('Container can execute Node.js'); process.exit(0)"
 
@@ -67,13 +67,13 @@ cat > task-def-debug.json << EOF
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 3001,
+          "containerPort": 8080,
           "protocol": "tcp"
         }
       ],
       "environment": [
         {"name": "NODE_ENV", "value": "production"},
-        {"name": "PORT", "value": "3001"},
+        {"name": "PORT", "value": "8080"},
         {"name": "AWS_REGION", "value": "us-east-1"},
         {"name": "DEBUG", "value": "*"},
         {"name": "LOG_LEVEL", "value": "debug"}
@@ -85,7 +85,7 @@ cat > task-def-debug.json << EOF
         }
       ],
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:3001/api/health || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
         "interval": 30,
         "timeout": 10,
         "retries": 5,

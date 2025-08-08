@@ -126,7 +126,7 @@ import { registerSimpleAuthRoutes } from './routes/simpleAuth';
 import { registerLocationRoutes } from './routes/location';
 import { initS3Client } from './s3Service';
 import { setupSwagger } from './swagger/setup';
-import { serveStatic, _setupVite } from './vite';
+import { serveStatic, _setupVite } from './vite-setup';
 
 const app = express();
 

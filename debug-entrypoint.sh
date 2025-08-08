@@ -2,7 +2,7 @@
 
 # Debug entrypoint script to capture early startup issues
 echo "[DEBUG] Container starting at $(date)" >&2
-echo "[DEBUG] Environment: NODE_ENV=$NODE_ENV, PORT=$PORT" >&2
+echo "[DEBUG] Environment: NODE_ENV=$NODE_ENV, PORT=${PORT:-8080}" >&2
 echo "[DEBUG] Working directory: $(pwd)" >&2
 echo "[DEBUG] User: $(whoami)" >&2
 echo "[DEBUG] Node version: $(node --version 2>&1)" >&2

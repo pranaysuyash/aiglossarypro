@@ -8,6 +8,7 @@
     "build:tsc": "NODE_OPTIONS='--max-old-space-size=8192' tsc -p tsconfig.deploy.json --noEmitOnError false || true",
     "type-check": "tsc --noEmit",
     "dev": "node esbuild.dev.js",
+    "dev:bundled": "node esbuild.dev.bundled.js",
     "start": "node dist/index.js"
   },
   "dependencies": {

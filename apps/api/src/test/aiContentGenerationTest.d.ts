@@ -5,10 +5,10 @@
 declare function testAIContentGeneration(): Promise<{
     success: boolean;
     results: {
-        templatesLoaded: number;
-        singleGeneration: boolean;
-        bulkGeneration: boolean;
-        regeneration: boolean;
+        templatesLoaded: any;
+        singleGeneration: any;
+        bulkGeneration: any;
+        regeneration: any;
         testTerm: string;
         testTermId: string;
     };

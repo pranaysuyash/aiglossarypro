@@ -60,12 +60,18 @@ function startServer() {
   }
   
   console.log('🚀 Starting Node.js server...');
-  // Load env from root directory
+  
+  // First load environment variables
   require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
   
-  serverProcess = spawn('node', ['dist/index.js'], {
+  // Use the wrapper script that loads env before requiring server
+  serverProcess = spawn('node', ['dev-server.js'], {
     stdio: 'inherit',
-    env: { ...process.env, NODE_ENV: 'development' },
+    env: { 
+      ...process.env,  // This now has the loaded env vars
+      NODE_ENV: 'development', 
+      PORT: '3001' 
+    },
     cwd: __dirname
   });
   

@@ -1,9 +1,22 @@
-import * as Sentry from '@sentry/node';
 import type { NextFunction, Request, Response } from 'express';
-
 import logger from './logger';
+
+// Conditionally import Sentry to handle missing dependencies
+let Sentry: any;
+try {
+  Sentry = require('@sentry/node');
+} catch (error) {
+  logger.warn('Sentry module not available - error monitoring disabled');
+  Sentry = null;
+}
+
 // Initialize Sentry for server-side error tracking
 export const initSentry = () => {
+  if (!Sentry) {
+    logger.info('Sentry not available - skipping initialization');
+    return;
+  }
+
   if (process.env.NODE_ENV !== 'production') {
     // Skip Sentry in development unless explicitly enabled
     if (!process.env.SENTRY_DSN_DEV) {
@@ -88,6 +101,8 @@ export const captureAPIError = (
     body?: Record<string, unknown>;
   }
 ) => {
+  if (!Sentry) return;
+  
   Sentry.withScope(scope => {
     scope.setTag('errorType', 'api');
     scope.setContext('api', {
@@ -300,11 +315,13 @@ export const addBreadcrumb = (
 
 // Set user context
 export const setUser = (user: { id: string; email?: string; username?: string }) => {
+  if (!Sentry) return;
   Sentry.setUser(user);
 };
 
 // Clear user context (on logout)
 export const clearUser = () => {
+  if (!Sentry) return;
   Sentry.setUser(null);
 };
 
@@ -313,6 +330,11 @@ export const sentryRequestHandler = () => (_req: Request, _res: Response, next: 
   next();
 export const sentryTracingHandler = () => (_req: Request, _res: Response, next: NextFunction) =>
   next();
-export const sentryErrorHandler = () => Sentry.expressErrorHandler();
+export const sentryErrorHandler = () => {
+  if (!Sentry) {
+    return (_err: any, _req: Request, _res: Response, next: NextFunction) => next();
+  }
+  return Sentry.expressErrorHandler();
+};
 
 export default Sentry;

@@ -5,8 +5,8 @@
  * safety controls, cost management, and system reliability.
  */
 export declare const testHelpers: {
-    createTestOperation: (options?: Partial<any>) => Promise<string>;
-    waitForOperationCompletion: (operationId: string, timeout?: number) => Promise<import("../services/columnBatchProcessorService").ColumnBatchOperation>;
+    createTestOperation: (options?: Partial<any>) => Promise<any>;
+    waitForOperationCompletion: (operationId: string, timeout?: number) => Promise<any>;
     generateMockTerms: (count: number) => {
         id: string;
         name: string;

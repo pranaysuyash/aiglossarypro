@@ -157,7 +157,7 @@ async function startDevelopmentServers() {
   const serverProcess = spawnWithLogging('pnpm', ['--filter', 'api', 'dev'], {
     prefix: 'API',
     cwd: process.cwd(),
-    env: { ...process.env, NODE_ENV: 'development' },
+    env: { ...process.env, NODE_ENV: 'development', PORT: '3001' },
   });
 
   // Step 3: Wait for backend to be ready

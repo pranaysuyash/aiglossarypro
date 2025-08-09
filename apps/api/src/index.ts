@@ -57,7 +57,7 @@ console.log(`[INIT] ${new Date().toISOString()} - Environment validation complet
 // Import database pool and test function for connection testing
 console.log(`[DEBUG] ${new Date().toISOString()} - About to import database pool...`);
 
-import { pool, testConnection } from '@aiglossarypro/database';
+import { testConnection } from '@aiglossarypro/database';
 
 console.log(`[DEBUG] ${new Date().toISOString()} - Database pool imported successfully`);
 

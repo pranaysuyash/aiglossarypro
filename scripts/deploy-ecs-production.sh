@@ -47,6 +47,8 @@ RUNTIME_NODE_ENV="${RUNTIME_NODE_ENV:-production}"
 RUNTIME_PORT="${RUNTIME_PORT:-8080}"
 RUNTIME_USE_STANDARD_PG="${RUNTIME_USE_STANDARD_PG:-true}"
 RUNTIME_REDIS_ENABLED="${RUNTIME_REDIS_ENABLED:-false}"
+RUNTIME_ALLOW_DEGRADED_STARTUP="${RUNTIME_ALLOW_DEGRADED_STARTUP:-true}"
+RUNTIME_ALLOW_NO_AUTH_FOR_DEBUG="${RUNTIME_ALLOW_NO_AUTH_FOR_DEBUG:-true}"
 RUNTIME_NODE_OPTIONS="${RUNTIME_NODE_OPTIONS:---enable-source-maps --max-old-space-size=1536 --trace-uncaught --trace-warnings --unhandled-rejections=warn}"
 
 # Validation flags
@@ -137,6 +139,8 @@ cat > "$TMP_JSON" <<JSON
         { "name": "PORT", "value": "$RUNTIME_PORT" },
         { "name": "USE_STANDARD_PG", "value": "$RUNTIME_USE_STANDARD_PG" },
         { "name": "REDIS_ENABLED", "value": "$RUNTIME_REDIS_ENABLED" },
+        { "name": "ALLOW_DEGRADED_STARTUP", "value": "$RUNTIME_ALLOW_DEGRADED_STARTUP" },
+        { "name": "ALLOW_NO_AUTH_FOR_DEBUG", "value": "$RUNTIME_ALLOW_NO_AUTH_FOR_DEBUG" },
         { "name": "NODE_OPTIONS", "value": "$RUNTIME_NODE_OPTIONS" }
       ],
       "secrets": [

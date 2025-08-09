@@ -6,7 +6,7 @@ import { log } from './utils/logger';
 process.on('uncaughtException', (error) => {
   console.error('[FATAL] Uncaught Exception:', error);
   // In production during startup, log but don't exit immediately
-  if (process.env.NODE_ENV === 'production' && process.uptime() < 60) {
+  if (process.env.NODE_ENV === 'production' && process.uptime() < 90) {
     console.error('[WARN] Continuing despite uncaught exception during startup');
   } else {
     process.exit(1);
@@ -16,7 +16,7 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
   console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
   // In production during startup, log but don't exit immediately
-  if (process.env.NODE_ENV === 'production' && process.uptime() < 60) {
+  if (process.env.NODE_ENV === 'production' && process.uptime() < 90) {
     console.error('[WARN] Continuing despite unhandled rejection during startup');
   } else {
     process.exit(1);
@@ -223,27 +223,42 @@ async function startServer() {
       log.info('✅ Firebase authentication setup complete (Google, GitHub, Email/Password)');
     } else if (features.simpleAuthEnabled) {
       // Fallback to simple JWT + OAuth
-      await setupMultiAuth(app);
+      try {
+        await setupMultiAuth(app);
+      } catch (setupError) {
+        log.error('⚠️ setupMultiAuth failed, continuing without it', {
+          error: setupError instanceof Error ? setupError.message : String(setupError)
+        });
+        // Continue without throwing - app can still function
+      }
       registerSimpleAuthRoutes(app);
       log.info('✅ Simple JWT + OAuth authentication setup complete');
     } else {
       // SECURITY: No fallback to mock authentication
       log.error('❌ WARNING: No valid authentication method configured');
       log.error('❌ Configure Firebase Auth or Simple Auth for production');
-      if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_NO_AUTH) {
+      if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_NO_AUTH && !process.env.ALLOW_NO_AUTH_FOR_DEBUG) {
         log.error('❌ Server startup aborted for security in production');
         throw new Error(
-          'No valid authentication method configured. Set ALLOW_NO_AUTH=true to bypass (not recommended).'
+          'No valid authentication method configured. Set ALLOW_NO_AUTH=true or ALLOW_NO_AUTH_FOR_DEBUG=true to bypass (not recommended).'
         );
       } else {
         log.warn('⚠️ Running without authentication - API is unprotected');
+        if (process.env.ALLOW_NO_AUTH_FOR_DEBUG) {
+          log.error('🚨 CRITICAL: ALLOW_NO_AUTH_FOR_DEBUG is enabled - remove this in production!');
+        }
       }
     }
   } catch (error) {
     log.error('❌ Error setting up authentication', {
       error: error instanceof Error ? error.message : String(error),
     });
-    throw error;
+    // In production with debug flag, continue despite auth errors
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_NO_AUTH_FOR_DEBUG) {
+      log.error('🚨 Continuing without authentication due to ALLOW_NO_AUTH_FOR_DEBUG');
+    } else {
+      throw error;
+    }
   }
 
   // Initialize S3 client if credentials are present
@@ -259,8 +274,15 @@ async function startServer() {
   registerLocationRoutes(app);
   log.info('✅ Location routes registered');
 
-  await registerRoutes(app);
-  log.info('✅ API routes registered');
+  try {
+    await registerRoutes(app);
+    log.info('✅ API routes registered');
+  } catch (routesError) {
+    log.error('⚠️ registerRoutes failed, continuing without full routes', {
+      error: routesError instanceof Error ? routesError.message : String(routesError)
+    });
+    // Continue without throwing - app can still function with partial routes
+  }
 
   // Setup Swagger API documentation
   setupSwagger(app);

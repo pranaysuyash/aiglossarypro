@@ -46,7 +46,8 @@ PLATFORM="${PLATFORM:-linux/amd64}"
 RUNTIME_NODE_ENV="${RUNTIME_NODE_ENV:-production}"
 RUNTIME_PORT="${RUNTIME_PORT:-8080}"
 RUNTIME_USE_STANDARD_PG="${RUNTIME_USE_STANDARD_PG:-true}"
-RUNTIME_NODE_OPTIONS="${RUNTIME_NODE_OPTIONS:---enable-source-maps --max-old-space-size=1536 --trace-uncaught --trace-warnings}"
+RUNTIME_REDIS_ENABLED="${RUNTIME_REDIS_ENABLED:-false}"
+RUNTIME_NODE_OPTIONS="${RUNTIME_NODE_OPTIONS:---enable-source-maps --max-old-space-size=1536 --trace-uncaught --trace-warnings --unhandled-rejections=warn}"
 
 # Validation flags
 VALIDATE_LOCAL="${VALIDATE_LOCAL:-0}"
@@ -113,7 +114,8 @@ if [[ "$VALIDATE_LOCAL" == "1" ]]; then
 fi
 
 # --- Build task definition JSON ---
-TMP_JSON=$(mktemp /tmp/taskdef.XXXXXX.json)
+# macOS-safe mktemp to avoid "File exists" race condition
+TMP_JSON=$(mktemp -t taskdef).json
 
 cat > "$TMP_JSON" <<JSON
 {
@@ -134,6 +136,7 @@ cat > "$TMP_JSON" <<JSON
         { "name": "NODE_ENV", "value": "$RUNTIME_NODE_ENV" },
         { "name": "PORT", "value": "$RUNTIME_PORT" },
         { "name": "USE_STANDARD_PG", "value": "$RUNTIME_USE_STANDARD_PG" },
+        { "name": "REDIS_ENABLED", "value": "$RUNTIME_REDIS_ENABLED" },
         { "name": "NODE_OPTIONS", "value": "$RUNTIME_NODE_OPTIONS" }
       ],
       "secrets": [

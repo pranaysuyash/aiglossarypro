@@ -1,6 +1,6 @@
 // Database package exports
-// Export default db connection
-export { db, pool } from './db';
+// Export default db connection - use wrapper for environment detection
+export { db, pool, testConnection, closePool } from './db-wrapper';
 
 // Export monitored db and functions
 export { 

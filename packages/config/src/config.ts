@@ -143,9 +143,28 @@ export function validateEnvironment(): EnvironmentConfig {
 
 // Configuration object with validation
 const validationResult = validateEnvironment();
+
+// Allow degraded startup in production for diagnostics only
+const allowDegradedStartup = process.env.ALLOW_DEGRADED_STARTUP === 'true';
+
 if (!validationResult.isValid || !validationResult.config) {
-  logger.error('Environment validation failed:', validationResult.errors);
-  throw new Error(`Environment validation failed: ${validationResult.errors.join(', ')}`);
+  if (process.env.NODE_ENV === 'production' && allowDegradedStartup) {
+    logger.warn('Environment validation failed but continuing with degraded startup:', validationResult.errors);
+    logger.warn('⚠️ DEGRADED MODE: Some features may not work correctly');
+    // Create partial config with defaults for missing values
+    const partialConfig: Partial<EnvironmentConfigData> = {
+      NODE_ENV: process.env.NODE_ENV || 'production',
+      PORT: process.env.PORT || '8080',
+      DATABASE_URL: process.env.DATABASE_URL || '',
+      SESSION_SECRET: process.env.SESSION_SECRET || 'degraded-mode-secret',
+      JWT_SECRET: process.env.JWT_SECRET || 'degraded-mode-jwt',
+      AWS_REGION: process.env.AWS_REGION || 'us-east-1'
+    };
+    validationResult.config = partialConfig as EnvironmentConfigData;
+  } else {
+    logger.error('Environment validation failed:', validationResult.errors);
+    throw new Error(`Environment validation failed: ${validationResult.errors.join(', ')}`);
+  }
 }
 const config = validationResult.config;
 

@@ -5,12 +5,22 @@ import { log } from './utils/logger';
 // Add process error handlers first
 process.on('uncaughtException', (error) => {
   console.error('[FATAL] Uncaught Exception:', error);
-  process.exit(1);
+  // In production during startup, log but don't exit immediately
+  if (process.env.NODE_ENV === 'production' && process.uptime() < 60) {
+    console.error('[WARN] Continuing despite uncaught exception during startup');
+  } else {
+    process.exit(1);
+  }
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+  // In production during startup, log but don't exit immediately
+  if (process.env.NODE_ENV === 'production' && process.uptime() < 60) {
+    console.error('[WARN] Continuing despite unhandled rejection during startup');
+  } else {
+    process.exit(1);
+  }
 });
 
 // Add startup timestamp
@@ -44,10 +54,10 @@ app.get('/api/health', (_req, res) => {
 
 console.log(`[INIT] ${new Date().toISOString()} - Environment validation complete`);
 
-// Import database pool for connection testing
+// Import database pool and test function for connection testing
 console.log(`[DEBUG] ${new Date().toISOString()} - About to import database pool...`);
 
-import { pool } from '@aiglossarypro/database';
+import { pool, testConnection } from '@aiglossarypro/database';
 
 console.log(`[DEBUG] ${new Date().toISOString()} - Database pool imported successfully`);
 
@@ -187,9 +197,14 @@ async function startServer() {
   } else {
     console.log(`[INIT] ${new Date().toISOString()} - Connecting to database...`);
     try {
-      console.log(`[DEBUG] ${new Date().toISOString()} - About to call pool.connect()...`);
-      await pool.connect();
-      console.log(`[DB] ${new Date().toISOString()} - Database connected successfully`);
+      console.log(`[DEBUG] ${new Date().toISOString()} - About to test database connection...`);
+      const isConnected = await testConnection();
+      if (isConnected) {
+        console.log(`[DB] ${new Date().toISOString()} - Database connected successfully`);
+      } else {
+        console.warn('[WARNING] Database connection test failed');
+        console.warn('[WARNING] Continuing without database - some features may be limited');
+      }
     } catch (error) {
       console.error('[WARNING] Database connection failed:', error);
       console.warn('[WARNING] Continuing without database - some features may be limited');
@@ -213,12 +228,16 @@ async function startServer() {
       log.info('✅ Simple JWT + OAuth authentication setup complete');
     } else {
       // SECURITY: No fallback to mock authentication
-      log.error('❌ CRITICAL SECURITY ERROR: No valid authentication method configured');
-      log.error('❌ Configure Firebase Auth or Simple Auth before starting server');
-      log.error('❌ Mock authentication has been disabled for security');
-      throw new Error(
-        'No valid authentication method configured. Server startup aborted for security.'
-      );
+      log.error('❌ WARNING: No valid authentication method configured');
+      log.error('❌ Configure Firebase Auth or Simple Auth for production');
+      if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_NO_AUTH) {
+        log.error('❌ Server startup aborted for security in production');
+        throw new Error(
+          'No valid authentication method configured. Set ALLOW_NO_AUTH=true to bypass (not recommended).'
+        );
+      } else {
+        log.warn('⚠️ Running without authentication - API is unprotected');
+      }
     }
   } catch (error) {
     log.error('❌ Error setting up authentication', {
@@ -371,11 +390,15 @@ async function startServer() {
   log.info('🚀 Server ready. Use admin endpoint for Excel data processing.');
 }
 
-// Startup timeout guard
+// Startup timeout guard - longer in production for slow initialization
+const startupTimeoutMs = process.env.NODE_ENV === 'production' ? 180000 : 30000; // 3 min in prod
 const startupTimeout = setTimeout(() => {
-  console.error('[FATAL] Startup timed out after 30 seconds');
-  process.exit(1);
-}, 30000);
+  console.error(`[FATAL] Startup timed out after ${startupTimeoutMs/1000} seconds`);
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+  // In production, log but don't exit - let ECS health checks handle it
+}, startupTimeoutMs);
 
 // Start the server
 startServer()

@@ -5,12 +5,12 @@
 declare function testAIContentGeneration(): Promise<{
     success: boolean;
     results: {
-        templatesLoaded: any;
-        singleGeneration: any;
-        bulkGeneration: any;
-        regeneration: any;
-        testTerm: string;
-        testTermId: string;
+        templatesLoaded: number;
+        singleGeneration: boolean;
+        bulkGeneration: boolean;
+        regeneration: boolean;
+        testTerm: any;
+        testTermId: any;
     };
     error?: undefined;
 } | {

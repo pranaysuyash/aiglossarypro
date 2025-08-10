@@ -29,13 +29,12 @@ fi
 
 # Step 1: Update system and install dependencies
 echo -e "${YELLOW}1️⃣ Installing system dependencies...${NC}"
-yum update -y
-yum install -y nginx git docker jq aws-cli
-amazon-linux-extras install -y nginx1
+dnf update -y
+dnf install -y nginx git docker jq aws-cli
 
 # Install Node.js 20 for building frontend
 curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-yum install -y nodejs
+dnf install -y nodejs
 
 # Install pnpm
 npm install -g pnpm@9.15.1

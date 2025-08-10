@@ -1,14 +1,14 @@
 #!/bin/bash
-# deploy-to-ec2.sh - One-command deployment to EC2
-# Usage: ./deploy-to-ec2.sh [frontend|api|both]
+# deploy-to-ec2.sh - Secure deployment to EC2
+# Usage: 
+#   EC2_IP=3.89.152.227 SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh [frontend|api|both]
 
 set -e
 
-# Configuration
-EC2_IP="3.89.152.227"
-EC2_USER="ec2-user"
-SSH_KEY="$HOME/.ssh/aiglossarypro-ec2.pem"
-PROJECT_ROOT="/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro"
+# Required environment variables (no hardcoded secrets)
+: "${EC2_IP:?Error: Set EC2_IP environment variable}"
+: "${SSH_KEY:?Error: Set SSH_KEY environment variable (path to .pem file)}"
+: "${EC2_USER:=ec2-user}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -33,44 +33,43 @@ print_warning() {
 # Check what to deploy
 DEPLOY_TYPE=${1:-both}
 
-# Navigate to project root
-cd "$PROJECT_ROOT"
-
 # Function to deploy frontend
 deploy_frontend() {
     print_status "Starting frontend deployment..."
     
-    # Check if .env.production exists
+    # Check if .env.production exists (NEVER create it with real keys)
     if [ ! -f "apps/web/.env.production" ]; then
-        print_warning "Creating .env.production with Firebase config..."
-        cat > apps/web/.env.production << 'EOF'
-# Production Environment Variables
-VITE_API_BASE_URL=http://3.89.152.227/api
-
-# Firebase Configuration
-VITE_FIREBASE_API_KEY=AIzaSyBqJ7OMRjr54_CMJpEDMWKR6XQ4Y8qzfdg
-VITE_FIREBASE_AUTH_DOMAIN=aiglossarypro.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=aiglossarypro
-VITE_FIREBASE_STORAGE_BUCKET=aiglossarypro.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=449850174939
-VITE_FIREBASE_APP_ID=1:449850174939:web:08d7973752807207d24bfe
-EOF
+        print_error "apps/web/.env.production is missing! Create it with your Firebase config first."
+        echo "Example format:"
+        echo "  VITE_API_BASE_URL=http://$EC2_IP/api"
+        echo "  VITE_FIREBASE_API_KEY=your-key-here"
+        echo "  VITE_FIREBASE_AUTH_DOMAIN=your-domain.firebaseapp.com"
+        echo "  VITE_FIREBASE_PROJECT_ID=your-project-id"
+        echo "  VITE_FIREBASE_STORAGE_BUCKET=your-bucket.firebasestorage.app"
+        echo "  VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id"
+        echo "  VITE_FIREBASE_APP_ID=your-app-id"
+        exit 1
     fi
     
-    # Build frontend
+    # Build frontend locally
     print_status "Building frontend locally..."
     NODE_ENV=production pnpm -F @aiglossarypro/web build
     
-    # Clean any TSX/JSX references from HTML
-    print_status "Cleaning build output..."
-    if [ -f "dist/public/index.html" ]; then
-        grep -v '\.tsx">' dist/public/index.html | grep -v 'data:text/jsx' > /tmp/index.html
-        mv /tmp/index.html dist/public/index.html
+    # Check which output directory exists and use it consistently
+    if [ -d "apps/web/dist" ]; then
+        BUILD_DIR="apps/web/dist"
+    elif [ -d "dist/public" ]; then
+        BUILD_DIR="dist/public"
+    else
+        print_error "Build output not found in apps/web/dist or dist/public"
+        exit 1
     fi
+    
+    print_status "Using build directory: $BUILD_DIR"
     
     # Package frontend
     print_status "Packaging frontend..."
-    tar czf /tmp/frontend.tgz -C dist/public .
+    tar czf /tmp/frontend.tgz -C "$BUILD_DIR" .
     
     # Upload to EC2
     print_status "Uploading to EC2..."
@@ -79,14 +78,18 @@ EOF
     # Deploy on EC2
     print_status "Deploying frontend on EC2..."
     ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "$EC2_USER@$EC2_IP" << 'EOF'
+        set -e
         sudo rm -rf /var/www/html/*
         sudo mkdir -p /var/www/html
-        cd /var/www/html
-        sudo tar xzf /tmp/frontend.tgz
+        sudo tar xzf /tmp/frontend.tgz -C /var/www/html
         sudo chown -R nginx:nginx /var/www/html
+        sudo nginx -t
         sudo systemctl reload nginx
-        rm /tmp/frontend.tgz
+        rm -f /tmp/frontend.tgz
 EOF
+    
+    # Clean up local temp file
+    rm -f /tmp/frontend.tgz
     
     print_status "Frontend deployed successfully!"
 }
@@ -95,37 +98,82 @@ EOF
 deploy_api() {
     print_status "Starting API deployment..."
     
-    # First, push latest code to git
-    print_status "Pushing latest code to git..."
-    git add .
-    git commit -m "Deploy: API updates $(date +%Y-%m-%d_%H:%M:%S)" || true
-    git push origin main || true
+    # Check if there are uncommitted changes
+    if ! git diff-index --quiet HEAD --; then
+        print_warning "You have uncommitted changes. Please commit them first:"
+        git status --short
+        read -p "Do you want to continue anyway? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
     
     # Deploy API on EC2
     print_status "Deploying API on EC2..."
     ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "$EC2_USER@$EC2_IP" << 'EOF'
+        set -e
+        
+        # Ensure swap is available for t3.small
+        echo "Checking swap space..."
+        if ! swapon --show | grep -q /swapfile; then
+            echo "Creating swap file..."
+            sudo fallocate -l 4G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=4096
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+            echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+        fi
+        
         cd ~/aiglossarypro
         
         # Pull latest code
         echo "Pulling latest code..."
         git pull
         
-        # Install dependencies
-        echo "Installing dependencies..."
-        pnpm install --frozen-lockfile
+        # Ensure pnpm is available
+        corepack enable >/dev/null 2>&1 || true
+        corepack prepare pnpm@latest --activate >/dev/null 2>&1 || true
         
-        # Build API
+        # Build API only
         echo "Building API..."
-        pnpm -F @aiglossarypro/api build
+        pnpm --filter @aiglossarypro/api build
+        
+        # Install production dependencies for API only
+        echo "Installing production dependencies for API..."
+        pnpm --filter @aiglossarypro/api... install --prod --frozen-lockfile
+        
+        # Verify the real API exists
+        if [ ! -f "apps/api/dist/index.js" ]; then
+            echo "Error: apps/api/dist/index.js not found after build!"
+            exit 1
+        fi
         
         # Restart API with PM2
-        echo "Restarting API..."
+        echo "Restarting API with PM2..."
         pm2 delete all || true
         set -a && source /etc/aiglossarypro/api.env && set +a
         pm2 start "node apps/api/dist/index.js" --name aiglossarypro-api --update-env
         pm2 save
         
-        # Show status
+        # Verify PM2 is running the real API
+        echo "Verifying PM2 configuration..."
+        pm2 describe aiglossarypro-api | grep -E "apps/api/dist/index.js" || {
+            echo "Error: PM2 is not running the real API!"
+            pm2 status
+            exit 1
+        }
+        
+        # Test API health locally
+        echo "Testing API health..."
+        sleep 3
+        curl -sSf http://127.0.0.1:8080/api/health >/dev/null || {
+            echo "Error: API health check failed!"
+            pm2 logs --lines 20
+            exit 1
+        }
+        
+        echo "API deployment successful!"
         pm2 status
 EOF
     
@@ -134,36 +182,46 @@ EOF
 
 # Function to verify deployment
 verify_deployment() {
-    print_status "Verifying deployment..."
+    print_status "Running verification gates..."
     
-    # Test frontend
-    print_status "Testing frontend..."
-    FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://$EC2_IP/")
-    if [ "$FRONTEND_STATUS" = "200" ]; then
-        print_status "Frontend is accessible (HTTP $FRONTEND_STATUS)"
+    # Gate 1: Verify PM2 is running the real API
+    print_status "Gate 1: Checking PM2 configuration..."
+    ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "$EC2_USER@$EC2_IP" \
+        "pm2 describe aiglossarypro-api 2>/dev/null | grep -E 'apps/api/dist/index.js' >/dev/null" || {
+        print_error "PM2 is not running the real API (apps/api/dist/index.js)"
+    }
+    
+    # Gate 2: Test API health
+    print_status "Gate 2: Testing API health endpoint..."
+    if curl -sSf "http://$EC2_IP/api/health" >/dev/null 2>&1; then
+        print_status "API health check passed"
     else
-        print_error "Frontend returned HTTP $FRONTEND_STATUS"
+        print_error "API health check failed"
     fi
     
-    # Test API health
-    print_status "Testing API health..."
-    API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://$EC2_IP/api/health")
-    if [ "$API_STATUS" = "200" ]; then
-        print_status "API is healthy (HTTP $API_STATUS)"
+    # Gate 3: Test frontend assets
+    print_status "Gate 3: Testing frontend assets..."
+    ASSET=$(curl -s "http://$EC2_IP/" | grep -o 'assets/[^"]*\.js' | head -1)
+    if [ -n "$ASSET" ]; then
+        if curl -sI "http://$EC2_IP/$ASSET" | grep -q '200'; then
+            print_status "Frontend assets are being served correctly"
+        else
+            print_warning "Frontend assets may not be loading correctly"
+        fi
     else
-        print_error "API health check returned HTTP $API_STATUS"
+        print_warning "No frontend assets found in index.html"
     fi
     
-    # Test API data
-    print_status "Testing API data endpoint..."
-    API_DATA=$(curl -s "http://$EC2_IP/api/terms?limit=1" | head -c 100)
-    if [[ "$API_DATA" == *"["* ]] || [[ "$API_DATA" == *"{"* ]]; then
+    # Gate 4: Test API data endpoint
+    print_status "Gate 4: Testing API data endpoint..."
+    API_RESPONSE=$(curl -s "http://$EC2_IP/api/terms?limit=1" 2>/dev/null | head -c 100)
+    if [[ "$API_RESPONSE" == *"["* ]] || [[ "$API_RESPONSE" == *"{"* ]]; then
         print_status "API is returning data"
     else
         print_warning "API may not be returning expected data"
     fi
     
-    print_status "Deployment verification complete!"
+    print_status "All verification gates complete!"
     echo ""
     echo "🚀 Application is live at: http://$EC2_IP/"
 }

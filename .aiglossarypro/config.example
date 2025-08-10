@@ -1,0 +1,26 @@
+# AIGlossaryPro EC2 Configuration
+# Copy this file to ~/.aiglossarypro/config and fill in your values
+
+# EC2 Instance
+INSTANCE_ID=i-XXXXXXXXXXXXXXXXX
+ELASTIC_IP=XX.XXX.XXX.XXX
+
+# SSH Access
+KEY_PATH=~/.ssh/aiglossarypro-ec2.pem
+SSH_USER=ec2-user
+
+# AWS Configuration
+AWS_REGION=us-east-1
+AWS_ACCOUNT_ID=927289246324
+
+# Domain
+DOMAIN=aiglossarypro.com
+EMAIL=admin@aiglossarypro.com
+
+# ECR Repository
+ECR_REPO=aiglossarypro-api
+
+# Secrets Manager ARNs
+DATABASE_URL_ARN=arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/database
+SESSION_SECRET_ARN=arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/session
+JWT_SECRET_ARN=arn:aws:secretsmanager:us-east-1:927289246324:secret:aiglossarypro/jwt

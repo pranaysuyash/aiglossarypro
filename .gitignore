@@ -28,6 +28,13 @@ __pycache__/
 # Environment files
 .env
 .env.*
+
+# Credentials and sensitive docs
+EC2_CREDENTIALS.md
+*_CREDENTIALS.md
+*_SECRETS.md
+.aiglossarypro/config
+~/.aiglossarypro/
 .env.local
 .env.development.local
 .env.test.local

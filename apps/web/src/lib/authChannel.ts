@@ -15,7 +15,9 @@ export function getAuthChannel(): BroadcastChannel | null {
 
 export function getTabId(): string {
   if (!myTabId) {
-    myTabId = crypto.randomUUID();
+    myTabId = typeof crypto?.randomUUID === 'function' 
+      ? crypto.randomUUID() 
+      : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
   return myTabId;
 }

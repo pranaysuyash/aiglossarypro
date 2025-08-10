@@ -359,7 +359,9 @@ export function useOfflineData() {
       const queue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
       const newItem: SyncQueueItem = {
         ...item,
-        id: crypto.randomUUID(),
+        id: typeof crypto?.randomUUID === 'function' 
+          ? crypto.randomUUID() 
+          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
       };
 

@@ -512,3 +512,4 @@ deployment/**/*
 
 secrets/**/*
 credentials/**/*
+secrets/

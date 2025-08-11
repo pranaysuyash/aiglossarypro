@@ -28,20 +28,25 @@ echo "apps/web/.env.production" >> .gitignore
 After making code changes:
 
 ```bash
+# Get current EC2 IP (changes when instance restarts)
+EC2_IP=$(aws ec2 describe-instances --instance-ids i-045ff31e850f8b78d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+echo "Current EC2 IP: $EC2_IP"
+
 # Deploy everything (frontend + API)
-EC2_IP=3.89.152.227 SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh
+EC2_IP=$EC2_IP SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh
 
 # Deploy only frontend changes
-EC2_IP=3.89.152.227 SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh frontend
+EC2_IP=$EC2_IP SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh frontend
 
 # Deploy only API changes  
-EC2_IP=3.89.152.227 SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh api
+EC2_IP=$EC2_IP SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh api
 ```
 
 Or export the variables once per session:
 ```bash
-export EC2_IP=3.89.152.227
+export EC2_IP=$(aws ec2 describe-instances --instance-ids i-045ff31e850f8b78d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
 export SSH_KEY=~/.ssh/aiglossarypro-ec2.pem
+echo "Using EC2 IP: $EC2_IP"
 
 # Then just run:
 ./deploy-to-ec2.sh
@@ -123,4 +128,6 @@ EOF
 
 The script is now secure and reliable. No experiments, no hardcoded secrets, proper verification gates.
 
-**Live URL**: http://3.89.152.227/
+**Live URL**: http://54.159.81.177/ (Current as of Aug 11, 2025)
+
+> **Note**: EC2 public IP changes when instance stops/starts. Use the AWS command above to get current IP, or consider setting up an Elastic IP for a permanent address.

@@ -61,7 +61,7 @@ Successfully migrated from complex ECS/ALB/CloudFront architecture to simple EC2
 ```
 Internet (Port 80)
     ↓
-EC2 Instance (3.89.152.227)
+EC2 Instance (52.0.112.85)
     ↓
 Nginx Reverse Proxy
     ├── /api/* → localhost:8080 (Node.js API)
@@ -255,7 +255,7 @@ EOF
 
 ```bash
 # SSH to instance
-ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227
+ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85
 
 # Update system
 sudo dnf update -y
@@ -432,7 +432,7 @@ Nginx Status:
 active
 
 Network:
-3.89.152.227
+52.0.112.85
 
 === Verification Complete ===
 ```
@@ -927,29 +927,29 @@ test -n "$ASSET" && curl -s -o /dev/null -w "%{http_code}\n" "http://localhost/$
 
 ```bash
 # Test frontend loads
-curl -s -o /dev/null -w "%{http_code}\n" http://3.89.152.227/
+curl -s -o /dev/null -w "%{http_code}\n" http://52.0.112.85/
 # Expected: 200
 
 # Test API health
-curl -s http://3.89.152.227/api/health | jq '.'
+curl -s http://52.0.112.85/api/health | jq '.'
 # Expected: {"status":"healthy",...}
 
 # Test terms endpoint
-curl -s http://3.89.152.227/api/terms | jq '.'
+curl -s http://52.0.112.85/api/terms | jq '.'
 # Expected: {"data":[],"page":1,"limit":20,"total":0,"totalPages":0}
 
 # Test categories
-curl -s http://3.89.152.227/api/categories | jq '.'
+curl -s http://52.0.112.85/api/categories | jq '.'
 # Expected: Array of 4 categories
 
 # Test search
-curl -s "http://3.89.152.227/api/search?q=machine" | jq '.'
+curl -s "http://52.0.112.85/api/search?q=machine" | jq '.'
 # Expected: {"query":"machine","results":[],"total":0,"facets":{}}
 ```
 
 ### 9.3 Browser Testing
 
-1. Open browser to http://3.89.152.227/
+1. Open browser to http://52.0.112.85/
 2. Open Developer Console (F12)
 3. Check Network tab - all assets should load with 200 status
 4. Check Console tab - no errors should appear
@@ -1432,7 +1432,7 @@ aiglossarypro/
 
 **GET /health**
 ```bash
-curl http://3.89.152.227/health
+curl http://52.0.112.85/health
 ```
 Response:
 ```json
@@ -1447,7 +1447,7 @@ Response:
 
 **GET /api/health**
 ```bash
-curl http://3.89.152.227/api/health
+curl http://52.0.112.85/api/health
 ```
 Response: Same as /health
 
@@ -1455,7 +1455,7 @@ Response: Same as /health
 
 **GET /api/terms**
 ```bash
-curl "http://3.89.152.227/api/terms?page=1&limit=20"
+curl "http://52.0.112.85/api/terms?page=1&limit=20"
 ```
 Response:
 ```json
@@ -1470,7 +1470,7 @@ Response:
 
 **GET /api/terms/:id**
 ```bash
-curl http://3.89.152.227/api/terms/123
+curl http://52.0.112.85/api/terms/123
 ```
 Response:
 ```json
@@ -1484,7 +1484,7 @@ Response:
 
 **GET /api/categories**
 ```bash
-curl http://3.89.152.227/api/categories
+curl http://52.0.112.85/api/categories
 ```
 Response:
 ```json
@@ -1500,7 +1500,7 @@ Response:
 
 **GET /api/search**
 ```bash
-curl "http://3.89.152.227/api/search?q=neural+network"
+curl "http://52.0.112.85/api/search?q=neural+network"
 ```
 Response:
 ```json
@@ -1516,7 +1516,7 @@ Response:
 
 **GET /api/auth/status**
 ```bash
-curl http://3.89.152.227/api/auth/status
+curl http://52.0.112.85/api/auth/status
 ```
 Response:
 ```json
@@ -1527,7 +1527,7 @@ Response:
 
 **GET /api/user/profile**
 ```bash
-curl http://3.89.152.227/api/user/profile
+curl http://52.0.112.85/api/user/profile
 ```
 Response:
 ```json

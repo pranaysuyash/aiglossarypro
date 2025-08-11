@@ -2,7 +2,7 @@
 
 ## Current Status
 - **EC2 Instance**: i-045ff31e850f8b78d (running)
-- **Public IP**: 3.89.152.227
+- **Public IP**: 52.0.112.85
 - **Instance Type**: t3.small
 - **Key Pair**: aiglossarypro-ec2.pem
 - **Security Group**: Allows HTTP (80), SSH (22)
@@ -13,7 +13,7 @@
 ~/.ssh/aiglossarypro-ec2.pem
 
 # SSH command
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85
 ```
 
 ## Current EC2 State
@@ -170,9 +170,9 @@ aws sts get-caller-identity
 5. `/etc/nginx/nginx.conf` - Nginx proxy config
 
 ## Expected Behavior
-- `http://3.89.152.227/` - React frontend loads
-- `http://3.89.152.227/api/health` - Returns {"status":"ok","timestamp":"..."}
-- `http://3.89.152.227/api/terms` - Returns actual terms from database
+- `http://52.0.112.85/` - React frontend loads
+- `http://52.0.112.85/api/health` - Returns {"status":"ok","timestamp":"..."}
+- `http://52.0.112.85/api/terms` - Returns actual terms from database
 
 ## If Build Fails (Memory Issues)
 ```bash
@@ -187,7 +187,7 @@ aws ec2 start-instances --instance-ids i-045ff31e850f8b78d
 
 # Option 3: Build locally and upload (most reliable)
 # [Local] pnpm -F @aiglossarypro/web build
-# [Local] scp -i ~/.ssh/aiglossarypro-ec2.pem -r dist/public/* ec2-user@3.89.152.227:/tmp/webdist/
+# [Local] scp -i ~/.ssh/aiglossarypro-ec2.pem -r dist/public/* ec2-user@52.0.112.85:/tmp/webdist/
 # [EC2] sudo cp -r /tmp/webdist/* /var/www/html/
 ```
 
@@ -202,15 +202,15 @@ pm2 logs --lines 50
 ## Success Verification
 ```bash
 # These should all return 200 OK:
-curl -I http://3.89.152.227/
-curl -I http://3.89.152.227/api/health
-curl -s http://3.89.152.227/api/terms?limit=1 | jq '.'
+curl -I http://52.0.112.85/
+curl -I http://52.0.112.85/api/health
+curl -s http://52.0.112.85/api/terms?limit=1 | jq '.'
 ```
 
 ## Access Credentials Summary for ChatGPT
 - **Instance ID**: i-045ff31e850f8b78d
 - **SSH Key**: ~/.ssh/aiglossarypro-ec2.pem
-- **Public IP**: 3.89.152.227
+- **Public IP**: 52.0.112.85
 - **User**: ec2-user
 - **Database**: Neon PostgreSQL (connection string in env file)
 - **Package Manager**: pnpm (REQUIRED)

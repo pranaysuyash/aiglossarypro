@@ -6,7 +6,7 @@
 ```bash
 # Create apps/web/.env.production with YOUR Firebase keys (never commit this!)
 cat > apps/web/.env.production << 'EOF'
-VITE_API_BASE_URL=http://3.89.152.227/api
+VITE_API_BASE_URL=http://52.0.112.85/api
 VITE_FIREBASE_API_KEY=your-actual-key-here
 VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your-project-id
@@ -28,9 +28,8 @@ echo "apps/web/.env.production" >> .gitignore
 After making code changes:
 
 ```bash
-# Get current EC2 IP (changes when instance restarts)
-EC2_IP=$(aws ec2 describe-instances --instance-ids i-045ff31e850f8b78d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
-echo "Current EC2 IP: $EC2_IP"
+# Using permanent Elastic IP (won't change on restart)
+EC2_IP=52.0.112.85
 
 # Deploy everything (frontend + API)
 EC2_IP=$EC2_IP SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh
@@ -44,9 +43,8 @@ EC2_IP=$EC2_IP SSH_KEY=~/.ssh/aiglossarypro-ec2.pem ./deploy-to-ec2.sh api
 
 Or export the variables once per session:
 ```bash
-export EC2_IP=$(aws ec2 describe-instances --instance-ids i-045ff31e850f8b78d --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+export EC2_IP=52.0.112.85  # Permanent Elastic IP
 export SSH_KEY=~/.ssh/aiglossarypro-ec2.pem
-echo "Using EC2 IP: $EC2_IP"
 
 # Then just run:
 ./deploy-to-ec2.sh
@@ -94,17 +92,17 @@ echo "Using EC2 IP: $EC2_IP"
 
 ### SSH to EC2
 ```bash
-ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227
+ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85
 ```
 
 ### Check API logs
 ```bash
-ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227 "pm2 logs --lines 50"
+ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85 "pm2 logs --lines 50"
 ```
 
 ### Emergency API restart (with verification)
 ```bash
-ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227 << 'EOF'
+ssh -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85 << 'EOF'
 pm2 delete all
 set -a && source /etc/aiglossarypro/api.env && set +a
 pm2 start "node apps/api/dist/index.js" --name aiglossarypro-api
@@ -128,6 +126,6 @@ EOF
 
 The script is now secure and reliable. No experiments, no hardcoded secrets, proper verification gates.
 
-**Live URL**: http://54.159.81.177/ (Current as of Aug 11, 2025)
+**Live URL**: http://52.0.112.85/ (Permanent Elastic IP)
 
-> **Note**: EC2 public IP changes when instance stops/starts. Use the AWS command above to get current IP, or consider setting up an Elastic IP for a permanent address.
+> **✅ Elastic IP Configured**: This is a permanent IP address that won't change when the instance restarts.

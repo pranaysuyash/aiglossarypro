@@ -2,9 +2,9 @@
 
 **Last Updated**: August 10, 2025  
 **Current Status**: ✅ PRODUCTION DEPLOYED  
-**Live URL**: http://3.89.152.227/  
+**Live URL**: http://52.0.112.85/  
 **EC2 Instance**: i-045ff31e850f8b78d (t3.small)  
-**Instance IP**: 3.89.152.227  
+**Elastic IP**: 52.0.112.85 (permanent - won't change on restart)  
 
 ---
 
@@ -23,7 +23,7 @@ Successfully migrated AIGlossaryPro from AWS ECS ($41/month) to EC2 ($15-20/mont
 
 ### SSH Access
 ```bash
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85
 ```
 
 ### Key Files
@@ -71,7 +71,7 @@ cd /Users/pranay/Projects/AIMLGlossary/AIGlossaryPro
 # Create environment variables (replace with your Firebase config)
 cat > apps/web/.env.production << 'EOF'
 # Production Environment Variables
-VITE_API_BASE_URL=http://3.89.152.227/api
+VITE_API_BASE_URL=http://52.0.112.85/api
 
 # Firebase Configuration (replace with your values)
 VITE_FIREBASE_API_KEY=your-firebase-api-key
@@ -96,10 +96,10 @@ tar czf /tmp/frontend.tgz -C dist/public .
 ### 2. Deploy Frontend to EC2
 ```bash
 # Upload to EC2
-scp -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem /tmp/frontend.tgz ec2-user@3.89.152.227:/tmp/
+scp -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem /tmp/frontend.tgz ec2-user@52.0.112.85:/tmp/
 
 # Deploy on EC2
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227 << 'EOF'
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85 << 'EOF'
 sudo rm -rf /var/www/html/*
 sudo mkdir -p /var/www/html
 cd /var/www/html
@@ -111,7 +111,7 @@ EOF
 
 ### 3. Deploy API (Real Application)
 ```bash
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@3.89.152.227 << 'EOF'
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/aiglossarypro-ec2.pem ec2-user@52.0.112.85 << 'EOF'
 cd ~/aiglossarypro
 git pull
 pnpm install --frozen-lockfile
@@ -250,8 +250,8 @@ ASSET=$(grep -o 'assets/[^"]*\.js' /var/www/html/index.html | head -1)
 curl -I "http://127.0.0.1/$ASSET" | grep "200 OK"
 
 # 5. Test external access
-curl -I http://3.89.152.227/
-curl -I http://3.89.152.227/api/health
+curl -I http://52.0.112.85/
+curl -I http://52.0.112.85/api/health
 ```
 
 ---
@@ -294,7 +294,7 @@ Build locally and upload tar archive:
 ```bash
 # Local
 tar czf frontend.tgz -C apps/web/dist .
-scp -i ~/.ssh/aiglossarypro-ec2.pem frontend.tgz ec2-user@3.89.152.227:/tmp/
+scp -i ~/.ssh/aiglossarypro-ec2.pem frontend.tgz ec2-user@52.0.112.85:/tmp/
 
 # EC2
 sudo tar xzf /tmp/frontend.tgz -C /var/www/html/
@@ -311,8 +311,8 @@ pm2 status
 sudo systemctl status nginx
 
 # Test endpoints
-curl http://3.89.152.227/api/health
-curl -I http://3.89.152.227/
+curl http://52.0.112.85/api/health
+curl -I http://52.0.112.85/
 
 # View logs
 pm2 logs --lines 50
@@ -416,7 +416,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=[YOUR_SENDER_ID]
 VITE_FIREBASE_APP_ID=[YOUR_APP_ID]
 
 # API URL
-VITE_API_BASE_URL=http://3.89.152.227/api
+VITE_API_BASE_URL=http://52.0.112.85/api
 ```
 
 #### Runtime Variables (EC2 Server)

@@ -4,8 +4,10 @@ import { nanoid } from 'nanoid';
 import * as fs from 'node:fs';
 import type { Server } from 'node:http';
 import * as path from 'node:path';
-import * as vite from 'vite';
 import { log as logger } from './utils/logger';
+
+// Dynamic import Vite only when needed (development)
+let vite: any = null;
 
 // __dirname is not available in ES modules but since we're compiling to CommonJS,
 // we can use a workaround
@@ -18,6 +20,16 @@ export function log(message: string, source = 'express') {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  // Dynamic import Vite only when needed to avoid bundling in production
+  if (!vite) {
+    try {
+      vite = await import('vite');
+    } catch (error) {
+      logger.error('Vite not available - development mode disabled', { error });
+      return;
+    }
+  }
+
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
@@ -57,7 +69,9 @@ export async function setupVite(app: Express, server: Server) {
       const page = await viteServer.transformIndexHtml(url, template);
       res.status(200).set({ 'Content-Type': 'text/html' }).end(page);
     } catch (e) {
-      viteServer.ssrFixStacktrace(e as Error);
+      if (viteServer?.ssrFixStacktrace) {
+        viteServer.ssrFixStacktrace(e as Error);
+      }
       next(e);
     }
   });

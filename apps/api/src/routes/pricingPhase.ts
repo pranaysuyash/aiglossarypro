@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { db } from '@aiglossarypro/database/db';
+import { db } from '@aiglossarypro/database';
 import { systemConfig } from '@aiglossarypro/shared/schema';
 import { eq } from 'drizzle-orm';
 

@@ -10,7 +10,7 @@ import {
   supportCannedResponses,
   supportMessages,
   supportTickets,
-} from '@aiglossarypro/database/db/support-schema';
+} from '@aiglossarypro/database';
 import { productionEmailService } from './productionEmailService';
 import { log } from '../utils/logger';
 import * as fs from 'fs/promises';

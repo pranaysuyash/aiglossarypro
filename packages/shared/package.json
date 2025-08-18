@@ -5,44 +5,64 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     },
     "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js",
       "require": "./dist/schema.js",
-      "types": "./dist/schema.d.ts"
+      "default": "./dist/schema.js"
     },
     "./enhancedSchema": {
+      "types": "./dist/enhancedSchema.d.ts",
+      "import": "./dist/enhancedSchema.js",
       "require": "./dist/enhancedSchema.js",
-      "types": "./dist/enhancedSchema.d.ts"
+      "default": "./dist/enhancedSchema.js"
     },
     "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
       "require": "./dist/types.js",
-      "types": "./dist/types.d.ts"
+      "default": "./dist/types.js"
     },
     "./types/*": {
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js",
       "require": "./dist/types/*.js",
-      "types": "./dist/types/*.d.ts"
+      "default": "./dist/types/*.js"
     },
     "./abTestingSchema": {
+      "types": "./dist/abTestingSchema.d.ts",
+      "import": "./dist/abTestingSchema.js",
       "require": "./dist/abTestingSchema.js",
-      "types": "./dist/abTestingSchema.d.ts"
+      "default": "./dist/abTestingSchema.js"
     },
     "./featureFlags": {
+      "types": "./dist/featureFlags.d.ts",
+      "import": "./dist/featureFlags.js",
       "require": "./dist/featureFlags.js",
-      "types": "./dist/featureFlags.d.ts"
+      "default": "./dist/featureFlags.js"
     },
     "./errorManager": {
+      "types": "./dist/errorManager.d.ts",
+      "import": "./dist/errorManager.js",
       "require": "./dist/errorManager.js",
-      "types": "./dist/errorManager.d.ts"
+      "default": "./dist/errorManager.js"
     },
     "./295ColumnStructure": {
+      "types": "./dist/295ColumnStructure.d.ts",
+      "import": "./dist/295ColumnStructure.js",
       "require": "./dist/295ColumnStructure.js",
-      "types": "./dist/295ColumnStructure.d.ts"
+      "default": "./dist/295ColumnStructure.js"
     },
     "./completeColumnStructure": {
+      "types": "./dist/completeColumnStructure.d.ts",
+      "import": "./dist/completeColumnStructure.js",
       "require": "./dist/completeColumnStructure.js",
-      "types": "./dist/completeColumnStructure.d.ts"
+      "default": "./dist/completeColumnStructure.js"
     }
   },
   "scripts": {

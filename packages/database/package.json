@@ -3,6 +3,20 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./db/*": {
+      "types": "./dist/db/*.d.ts",
+      "import": "./dist/db/*.js",
+      "require": "./dist/db/*.js",
+      "default": "./dist/db/*.js"
+    }
+  },
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "dev": "tsc --watch",

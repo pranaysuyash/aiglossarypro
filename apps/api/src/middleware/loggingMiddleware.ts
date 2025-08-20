@@ -1,5 +1,4 @@
-import type { NextFunction, Request, Response } from 'express'
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { log, performanceTimer } from '../utils/logger';
 import { addBreadcrumb, captureAPIError } from '../utils/sentry';
@@ -194,11 +193,8 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
 // User context middleware (for logging user info)
 export const userContextMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   const sessionUser = ((req as any).session as any)?.user;
-  if (!req.user) {
-
-    return res.status(401).json({ error: 'Unauthorized' });
-
-  }
+  // Do not enforce auth here; this middleware only enriches logging context.
+  // Authorization is handled by dedicated auth middleware.
 
   const authUser = req.user as unknown;
 

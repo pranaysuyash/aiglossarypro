@@ -1,21 +1,28 @@
-# Critical Production Deployment Issue - Need ChatGPT Analysis
+# Critical Production Deployment Issue - ChatGPT Help Needed (UPDATED)
 
 **Date**: August 18, 2025  
-**Priority**: URGENT - API down, Redis deletion warning active  
-**Issue**: Node.js monorepo module resolution in production bundle
+**Priority**: URGENT - API endpoints failing with 500 errors  
+**Status**: Partially resolved workspace bundling, NEW ISSUE: All endpoints except health return 500
 
 ---
 
-## 🚨 **PROBLEM STATEMENT**
+## 🚨 **UPDATED PROBLEM STATEMENT**
 
-Our production API on EC2 (52.0.112.85:8080) is stuck in restart loop due to:
+**✅ RESOLVED**: Module resolution and Vite bundling issues fixed  
+**❌ NEW ISSUE**: All API endpoints except `/health` return 500 Internal Server Error
 
-```
-Error: Cannot find module '@aiglossarypro/database/db/support-schema'
-Require stack: /home/ec2-user/aiglossarypro/apps/api/dist/index.js
-```
+### **Current Status:**
+- Health endpoint: ✅ `{"status":"healthy"}` (200 OK)  
+- Terms endpoint: ❌ `{"success":false,"message":"An unexpected error occurred"}` (500)
+- Categories endpoint: ❌ `{"success":false,"message":"An unexpected error occurred"}` (500)  
+- Auth endpoints: ❌ `{"success":false,"message":"An unexpected error occurred"}` (500)
+- Search endpoints: ❌ `{"success":false,"message":"An unexpected error occurred"}` (500)
 
-**Key Finding**: The esbuild bundle contains `require("@aiglossarypro/database/db/support-schema")` instead of bundling the actual module code.
+### **Key Observations:**
+- Database connection pool shows: `totalCreated: 0, totalConnections: 0`
+- Pool monitoring works (basic app functionality intact)
+- API starts successfully with no module resolution errors
+- All workspace packages properly bundled (no require() calls)
 
 ---
 
@@ -238,6 +245,41 @@ plugins: [{
 
 ---
 
-**URGENT**: Please provide esbuild configuration to resolve workspace package bundling in monorepo production deployment.
+## 🆘 **NEW CRITICAL QUESTION FOR CHATGPT**
 
-**Current Status**: Production API down, Redis at risk, need immediate solution to get app live for testing.
+**Why are all API endpoints except health returning 500 errors after successful bundling?**
+
+### **Current Evidence:**
+1. **✅ Workspace bundling FIXED** - No more require() calls for @aiglossarypro packages
+2. **✅ Vite issues RESOLVED** - Removed problematic Vite import from production bundle  
+3. **✅ Health endpoint works** - Basic API functionality confirmed
+4. **❌ All other endpoints fail** - Database/route handler issue suspected
+
+### **Database Connection Issue:**
+```
+Connection pool metrics: {
+  totalConnections: 0,
+  idleConnections: 0, 
+  totalCreated: 0
+}
+```
+
+### **Test Results:**
+```bash
+curl http://52.0.112.85:8080/health
+# ✅ {"status":"healthy"} (200 OK)
+
+curl http://52.0.112.85:8080/terms?limit=2  
+# ❌ {"success":false,"message":"An unexpected error occurred"} (500)
+
+curl http://52.0.112.85:8080/categories
+# ❌ {"success":false,"message":"An unexpected error occurred"} (500)
+```
+
+### **Questions for ChatGPT:**
+1. **Why might database connections not be established despite app starting successfully?**
+2. **How to debug 500 errors when PM2 logs show no specific error details?**
+3. **Could the bundling process have affected database imports/connections?**
+4. **What's the best way to get detailed error information for endpoint failures?**
+
+**Context**: We fixed the original workspace bundling issue, but now need to resolve endpoint-level failures to get the full API working.

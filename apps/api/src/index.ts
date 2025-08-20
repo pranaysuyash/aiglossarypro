@@ -57,7 +57,7 @@ console.log(`[INIT] ${new Date().toISOString()} - Environment validation complet
 // Import database pool and test function for connection testing
 console.log(`[DEBUG] ${new Date().toISOString()} - About to import database pool...`);
 
-import { testConnection } from '@aiglossarypro/database';
+// Defer database import to ensure env is loaded first
 
 console.log(`[DEBUG] ${new Date().toISOString()} - Database pool imported successfully`);
 
@@ -131,7 +131,7 @@ import { registerLocationRoutes } from './routes/location';
 import { registerSimpleAuthRoutes } from './routes/simpleAuth';
 import { initS3Client } from './s3Service';
 import { setupSwagger } from './swagger/setup';
-import { serveStatic } from './vite-setup';
+// Defer importing vite-setup in production to avoid bringing dev deps into runtime
 
 // Express app already created at the top of the file
 // const wsInstance = expressWs(app);
@@ -198,6 +198,7 @@ async function startServer() {
     console.log(`[INIT] ${new Date().toISOString()} - Connecting to database...`);
     try {
       console.log(`[DEBUG] ${new Date().toISOString()} - About to test database connection...`);
+      const { testConnection } = await import('@aiglossarypro/database');
       const isConnected = await testConnection();
       if (isConnected) {
         console.log(`[DB] ${new Date().toISOString()} - Database connected successfully`);
@@ -345,6 +346,7 @@ async function startServer() {
   } else if (serverConfig.nodeEnv === 'production') {
     log.info('📦 Setting up static file serving for production...');
     try {
+      const { serveStatic } = await import('./vite-setup');
       serveStatic(app);
       log.info('✅ Static file serving setup complete');
     } catch (error) {

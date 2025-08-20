@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import type { Request, Response } from 'express';
-import fetch from 'node-fetch';
+// Use built-in fetch available in Node >= 18
 
 import logger from '../utils/logger';
 interface CDNMetrics {

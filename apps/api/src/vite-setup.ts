@@ -1,6 +1,7 @@
 import type { Express } from 'express';
 import express from 'express';
-import { nanoid } from 'nanoid';
+// Use a simple cache-busting token generator to avoid ESM-only deps in prod
+const cacheBust = () => Date.now().toString(36);
 import * as fs from 'node:fs';
 import type { Server } from 'node:http';
 import * as path from 'node:path';
@@ -65,7 +66,7 @@ export async function setupVite(app: Express, server: Server) {
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, 'utf-8');
-      template = template.replace(`src="/src/main.tsx"`, `src="/src/main.tsx?v=${nanoid()}"`);
+      template = template.replace(`src="/src/main.tsx"`, `src="/src/main.tsx?v=${cacheBust()}"`);
       const page = await viteServer.transformIndexHtml(url, template);
       res.status(200).set({ 'Content-Type': 'text/html' }).end(page);
     } catch (e) {

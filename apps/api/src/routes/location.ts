@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from 'express';
-import fetch from 'node-fetch';
+// Use built-in fetch available in Node >= 18
 import NodeCache from 'node-cache';
 
 const locationCache = new NodeCache({ stdTTL: 60 * 60 * 24 }); // Cache for 24 hours

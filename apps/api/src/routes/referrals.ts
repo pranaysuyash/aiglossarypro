@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { nanoid } from 'nanoid';
+// Simple code generator to avoid ESM-only nanoid in CJS builds
+const genCode = (len = 8) =>
+  Array.from({ length: len }, () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return chars[Math.floor(Math.random() * chars.length)];
+  }).join('');
 import { z } from 'zod';
 import { pool } from '@aiglossarypro/database';
 import { requireAuth } from '../middleware/auth';
@@ -61,7 +66,7 @@ router.post('/generate-code', requireAuth, async (req, res) => {
     }
 
     // Generate unique referral code
-    let referralCode = customCode || `AI${nanoid(8).toUpperCase()}`;
+    let referralCode = customCode || `AI${genCode(8)}`;
 
     // Ensure code is unique
     while (true) {
@@ -70,7 +75,7 @@ router.post('/generate-code', requireAuth, async (req, res) => {
       ]);
 
       if (existing.rows.length === 0) {break;}
-      referralCode = `AI${nanoid(8).toUpperCase()}`;
+      referralCode = `AI${genCode(8)}`;
     }
 
     // Create referral code record

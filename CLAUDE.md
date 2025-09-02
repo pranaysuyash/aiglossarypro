@@ -1,6 +1,6 @@
 # CLAUDE.md - AIGlossaryPro Production Deployment Guide
 
-**Last Updated**: August 6, 2025  
+**Last Updated**: September 2, 2025  
 **Status**: Production Integration Complete ✅  
 **API URL**: https://d1m7nnfj3im4kp.cloudfront.net/api/  
 **Frontend URL**: https://d1m7nnfj3im4kp.cloudfront.net/
@@ -11,11 +11,11 @@
 
 ### **✅ FULLY OPERATIONAL**
 - **Frontend**: React app served via S3 + CloudFront (200 OK)
-- **API Core**: Health, Terms, Categories endpoints working
-- **Enhanced API**: Auth, Search, User profile endpoints deployed
-- **Infrastructure**: ECS Fargate + ALB + CloudFront integrated
-- **Monitoring**: Comprehensive CloudWatch setup active
-- **Cost**: $39.48/month with optimization recommendations
+- **API Core**: Health, Terms, Categories endpoints working via EC2
+- **Backend**: Node.js API running on EC2 instance (t3.small)
+- **Infrastructure**: EC2 + ALB + CloudFront integrated
+- **Monitoring**: CloudWatch setup active
+- **Cost**: ~$39/month (EC2 + ALB + CloudFront)
 
 ### **🔧 KEY WORKING ENDPOINTS**
 ```bash
@@ -32,29 +32,26 @@ curl https://d1m7nnfj3im4kp.cloudfront.net/api/user/profile
 
 ---
 
-## 🚀 **DEPLOYMENT PROCESS (PROVEN WORKING)**
+## 🚀 **DEPLOYMENT PROCESS (CURRENT ARCHITECTURE)**
 
-### **1. Build and Deploy API Updates**
+### **1. EC2 Backend Deployment**
 ```bash
-# Build new Docker image
-docker build -f Dockerfile.simple -t enhanced-api-$(date +%H%M%S) .
+# SSH to EC2 instance
+ssh -i your-key.pem ec2-user@52.0.112.85
 
-# Tag for ECR
-docker tag enhanced-api-XXXXXX:latest 927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:enhanced-api-XXXXXX
-
-# Push to ECR
-docker push 927289246324.dkr.ecr.us-east-1.amazonaws.com/aiglossarypro-api:enhanced-api-XXXXXX
+# Update code on EC2
+cd /path/to/api
+git pull origin main
+npm install
+pm2 restart all
 ```
 
-### **2. Update ECS Task Definition**
-```bash
-# Update new-task-def.json with new image
-# Register new task definition
-aws ecs register-task-definition --cli-input-json file://new-task-def.json
-
-# Update service (replace XX with new revision)
-aws ecs update-service --cluster aiglossarypro --service aiglossarypro-api-production --task-definition aiglossarypro-api:XX --force-new-deployment
-```
+### **2. Current EC2 Instance**
+- **Instance ID**: i-045ff31e850f8b78d
+- **Instance Type**: t3.small
+- **Public IP**: 52.0.112.85
+- **Private IP**: 172.31.46.188
+- **Status**: Running and healthy
 
 ### **3. Clear CloudFront Cache (CRITICAL)**
 ```bash

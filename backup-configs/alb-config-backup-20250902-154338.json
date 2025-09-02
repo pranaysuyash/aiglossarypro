@@ -1,0 +1,39 @@
+{
+    "LoadBalancers": [
+        {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:927289246324:loadbalancer/app/aiglossarypro-api-alb/6d7fc95e4741d076",
+            "DNSName": "aiglossarypro-api-alb-1884179415.us-east-1.elb.amazonaws.com",
+            "CanonicalHostedZoneId": "Z35SXDOTRQ7X7K",
+            "CreatedTime": "2025-08-02T06:14:21.605000+00:00",
+            "LoadBalancerName": "aiglossarypro-api-alb",
+            "Scheme": "internet-facing",
+            "VpcId": "vpc-00aff02c4878befa0",
+            "State": {
+                "Code": "active"
+            },
+            "Type": "application",
+            "AvailabilityZones": [
+                {
+                    "ZoneName": "us-east-1e",
+                    "SubnetId": "subnet-05ba78c9937ad65c4",
+                    "LoadBalancerAddresses": []
+                },
+                {
+                    "ZoneName": "us-east-1c",
+                    "SubnetId": "subnet-0688cb3b1905aca74",
+                    "LoadBalancerAddresses": []
+                },
+                {
+                    "ZoneName": "us-east-1d",
+                    "SubnetId": "subnet-0a6b43ab8b1053961",
+                    "LoadBalancerAddresses": []
+                }
+            ],
+            "SecurityGroups": [
+                "sg-07f1231d0b4c87925"
+            ],
+            "IpAddressType": "ipv4",
+            "EnablePrefixForIpv6SourceNat": "off"
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 # CLAUDE.md - AIGlossaryPro Production Deployment Guide
 
 **Last Updated**: September 2, 2025  
-**Status**: Production Integration Complete ✅  
+**Status**: Production Integration Complete ✅ (Direct CloudFront → EC2)  
 **API URL**: https://d1m7nnfj3im4kp.cloudfront.net/api/  
 **Frontend URL**: https://d1m7nnfj3im4kp.cloudfront.net/
 
@@ -9,13 +9,13 @@
 
 ## 🎯 **CURRENT SYSTEM STATUS**
 
-### **✅ FULLY OPERATIONAL**
+### **✅ FULLY OPERATIONAL (Cost Optimized)**
 - **Frontend**: React app served via S3 + CloudFront (200 OK)
-- **API Core**: Health, Terms, Categories endpoints working via EC2
+- **API Core**: Health, Terms, Categories endpoints working via direct EC2
 - **Backend**: Node.js API running on EC2 instance (t3.small)
-- **Infrastructure**: EC2 + ALB + CloudFront integrated
+- **Infrastructure**: Direct CloudFront → EC2 (ALB removed)
 - **Monitoring**: CloudWatch setup active
-- **Cost**: ~$39/month (EC2 + ALB + CloudFront)
+- **Cost**: ~$17/month (54% reduction - ALB eliminated)
 
 ### **🔧 KEY WORKING ENDPOINTS**
 ```bash
@@ -32,9 +32,16 @@ curl https://d1m7nnfj3im4kp.cloudfront.net/api/user/profile
 
 ---
 
-## 🚀 **DEPLOYMENT PROCESS (CURRENT ARCHITECTURE)**
+## 🚀 **DEPLOYMENT PROCESS (DIRECT CLOUDFRONT → EC2)**
 
-### **1. EC2 Backend Deployment**
+### **1. Current Architecture**
+```
+Users → CloudFront (d1m7nnfj3im4kp.cloudfront.net)
+    ├─ Frontend (/*) → S3 
+    └─ API (/api/*) → EC2 Direct (ec2-52-0-112-85.compute-1.amazonaws.com:8080)
+```
+
+### **2. EC2 Backend Deployment**
 ```bash
 # SSH to EC2 instance
 ssh -i your-key.pem ec2-user@52.0.112.85
@@ -46,16 +53,17 @@ npm install
 pm2 restart all
 ```
 
-### **2. Current EC2 Instance**
+### **3. Current EC2 Instance**
 - **Instance ID**: i-045ff31e850f8b78d
 - **Instance Type**: t3.small
 - **Public IP**: 52.0.112.85
+- **Public DNS**: ec2-52-0-112-85.compute-1.amazonaws.com
 - **Private IP**: 172.31.46.188
-- **Status**: Running and healthy
+- **Status**: Running and healthy (direct CloudFront routing)
 
-### **3. Clear CloudFront Cache (CRITICAL)**
+### **4. Clear CloudFront Cache (CRITICAL)**
 ```bash
-aws cloudfront create-invalidation --distribution-id ESF8YR50LSGU8 --paths "/api/auth/*" "/api/search*" "/api/user/*"
+aws cloudfront create-invalidation --distribution-id ESF8YR50LSGU8 --paths "/api/*"
 ```
 
 ---

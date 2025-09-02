@@ -1,0 +1,174 @@
+{
+    "Reservations": [
+        {
+            "ReservationId": "r-0ae3353bdfb5c6187",
+            "OwnerId": "927289246324",
+            "Groups": [],
+            "Instances": [
+                {
+                    "Architecture": "x86_64",
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "AttachTime": "2025-08-10T07:35:59+00:00",
+                                "DeleteOnTermination": true,
+                                "Status": "attached",
+                                "VolumeId": "vol-00644d416486f2fa9"
+                            }
+                        }
+                    ],
+                    "ClientToken": "3a209e38-509a-4155-90b3-c673baf23138",
+                    "EbsOptimized": false,
+                    "EnaSupport": true,
+                    "Hypervisor": "xen",
+                    "IamInstanceProfile": {
+                        "Arn": "arn:aws:iam::927289246324:instance-profile/AIGlossaryPro-EC2-Role",
+                        "Id": "AIPA5PZV7AJ2BNUWT4C3J"
+                    },
+                    "NetworkInterfaces": [
+                        {
+                            "Association": {
+                                "IpOwnerId": "927289246324",
+                                "PublicDnsName": "ec2-52-0-112-85.compute-1.amazonaws.com",
+                                "PublicIp": "52.0.112.85"
+                            },
+                            "Attachment": {
+                                "AttachTime": "2025-08-10T07:35:58+00:00",
+                                "AttachmentId": "eni-attach-09caf719dc9bf5663",
+                                "DeleteOnTermination": true,
+                                "DeviceIndex": 0,
+                                "Status": "attached",
+                                "NetworkCardIndex": 0
+                            },
+                            "Description": "",
+                            "Groups": [
+                                {
+                                    "GroupId": "sg-05505263b72da8903",
+                                    "GroupName": "AIGlossaryPro-EC2-SG"
+                                }
+                            ],
+                            "Ipv6Addresses": [],
+                            "MacAddress": "0e:87:a1:89:2c:ef",
+                            "NetworkInterfaceId": "eni-09e4a2a295d1be7f4",
+                            "OwnerId": "927289246324",
+                            "PrivateDnsName": "ip-172-31-46-188.ec2.internal",
+                            "PrivateIpAddress": "172.31.46.188",
+                            "PrivateIpAddresses": [
+                                {
+                                    "Association": {
+                                        "IpOwnerId": "927289246324",
+                                        "PublicDnsName": "ec2-52-0-112-85.compute-1.amazonaws.com",
+                                        "PublicIp": "52.0.112.85"
+                                    },
+                                    "Primary": true,
+                                    "PrivateDnsName": "ip-172-31-46-188.ec2.internal",
+                                    "PrivateIpAddress": "172.31.46.188"
+                                }
+                            ],
+                            "SourceDestCheck": true,
+                            "Status": "in-use",
+                            "SubnetId": "subnet-0688cb3b1905aca74",
+                            "VpcId": "vpc-00aff02c4878befa0",
+                            "InterfaceType": "interface",
+                            "Operator": {
+                                "Managed": false
+                            }
+                        }
+                    ],
+                    "RootDeviceName": "/dev/xvda",
+                    "RootDeviceType": "ebs",
+                    "SecurityGroups": [
+                        {
+                            "GroupId": "sg-05505263b72da8903",
+                            "GroupName": "AIGlossaryPro-EC2-SG"
+                        }
+                    ],
+                    "SourceDestCheck": true,
+                    "Tags": [
+                        {
+                            "Key": "Project",
+                            "Value": "AIGlossaryPro"
+                        },
+                        {
+                            "Key": "Name",
+                            "Value": "AIGlossaryPro-Server"
+                        },
+                        {
+                            "Key": "Environment",
+                            "Value": "Production"
+                        }
+                    ],
+                    "VirtualizationType": "hvm",
+                    "CpuOptions": {
+                        "CoreCount": 1,
+                        "ThreadsPerCore": 2
+                    },
+                    "CapacityReservationSpecification": {
+                        "CapacityReservationPreference": "open"
+                    },
+                    "HibernationOptions": {
+                        "Configured": false
+                    },
+                    "MetadataOptions": {
+                        "State": "applied",
+                        "HttpTokens": "required",
+                        "HttpPutResponseHopLimit": 2,
+                        "HttpEndpoint": "enabled",
+                        "HttpProtocolIpv6": "disabled",
+                        "InstanceMetadataTags": "disabled"
+                    },
+                    "EnclaveOptions": {
+                        "Enabled": false
+                    },
+                    "BootMode": "uefi-preferred",
+                    "PlatformDetails": "Linux/UNIX",
+                    "UsageOperation": "RunInstances",
+                    "UsageOperationUpdateTime": "2025-08-10T07:35:58+00:00",
+                    "PrivateDnsNameOptions": {
+                        "HostnameType": "ip-name",
+                        "EnableResourceNameDnsARecord": false,
+                        "EnableResourceNameDnsAAAARecord": false
+                    },
+                    "MaintenanceOptions": {
+                        "AutoRecovery": "default",
+                        "RebootMigration": "default"
+                    },
+                    "CurrentInstanceBootMode": "uefi",
+                    "NetworkPerformanceOptions": {
+                        "BandwidthWeighting": "default"
+                    },
+                    "Operator": {
+                        "Managed": false
+                    },
+                    "InstanceId": "i-045ff31e850f8b78d",
+                    "ImageId": "ami-0a51a024e4b0c1050",
+                    "State": {
+                        "Code": 16,
+                        "Name": "running"
+                    },
+                    "PrivateDnsName": "ip-172-31-46-188.ec2.internal",
+                    "PublicDnsName": "ec2-52-0-112-85.compute-1.amazonaws.com",
+                    "StateTransitionReason": "",
+                    "KeyName": "aiglossarypro-ec2",
+                    "AmiLaunchIndex": 0,
+                    "ProductCodes": [],
+                    "InstanceType": "t3.small",
+                    "LaunchTime": "2025-08-10T14:40:47+00:00",
+                    "Placement": {
+                        "GroupName": "",
+                        "Tenancy": "default",
+                        "AvailabilityZone": "us-east-1c"
+                    },
+                    "Monitoring": {
+                        "State": "disabled"
+                    },
+                    "SubnetId": "subnet-0688cb3b1905aca74",
+                    "VpcId": "vpc-00aff02c4878befa0",
+                    "PrivateIpAddress": "172.31.46.188",
+                    "PublicIpAddress": "52.0.112.85"
+                }
+            ]
+        }
+    ]
+}
